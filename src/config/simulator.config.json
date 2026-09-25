@@ -933,6 +933,852 @@
       "source": "estimated",
       "estimated": true,
       "$comment": "Generic 12-inch tablet, landscape-natural (for example a Galaxy Tab S-series Plus). Density assumed 2.0."
+    },
+    {
+      "id": "pixel-9-pro-fold",
+      "platform": "android",
+      "name": "Pixel 9 Pro Fold",
+      "enabled": true,
+      "class": "book-foldable",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 443,
+            "height": 995
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2424
+          },
+          "density": 2.4375,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "1080×2424 px at 390 dpi (2.4375)."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 851,
+            "height": 883
+          },
+          "pixels": {
+            "width": 2076,
+            "height": 2152
+          },
+          "density": 2.4375,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 425.5,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "2076×2152 px at 390 dpi. Flexible display: the crease has no width and hides nothing (OcclusionType.NONE). Inner width 851 dp is Expanded."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        },
+        {
+          "id": "rear-display",
+          "label": "Rear display mode",
+          "display": "outer",
+          "features": [],
+          "windowArea": "rear-display",
+          "note": "Rear display mode (WindowAreaController.transferActivityToWindowArea): the app moves to the outer display so the rear cameras can frame the user. Documented only: the simulator shows the outer display."
+        },
+        {
+          "id": "dual-screen",
+          "label": "Dual-screen mode",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "windowArea": "dual-screen",
+          "note": "Dual-screen mode (WindowAreaController.presentContentOnWindowArea): the app keeps the inner display and presents extra content on the outer one. Documented only: the outer presentation is not rendered."
+        }
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "The emulator profile the Android density crash was seen on. Outer 443×995 dp, inner 851×883 dp (brief values, consistent with the pixel sizes at 2.4375)."
+    },
+    {
+      "id": "galaxy-z-fold-7",
+      "platform": "android",
+      "name": "Galaxy Z Fold 7",
+      "enabled": true,
+      "class": "book-foldable",
+      "displays": {
+        "cover": {
+          "label": "Cover display",
+          "size": {
+            "width": 411,
+            "height": 960
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2520
+          },
+          "density": 2.625,
+          "cornerRadius": 36,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "1080×2520 px. Default density assumed 420 dpi (2.625): verify with adb shell wm density."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 750,
+            "height": 832
+          },
+          "pixels": {
+            "width": 1968,
+            "height": 2184
+          },
+          "density": 2.625,
+          "cornerRadius": 24,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 36,
+              "hole": {
+                "diameter": 20,
+                "offset": 0.85
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 320,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 375,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "1968×2184 px. At 2.625 the inner width is 750 dp: Medium, not Expanded. Samsung may ship a different inner density; confirm on device."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "display": "cover",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book (Flex mode)",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ]
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop (Flex mode)",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ]
+        },
+        {
+          "id": "dual-screen",
+          "label": "Dual-screen mode",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "windowArea": "dual-screen",
+          "note": "Dual-screen mode (WindowAreaController.presentContentOnWindowArea): the app keeps the inner display and presents extra content on the outer one. Documented only: the outer presentation is not rendered."
+        }
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "All dp values estimated from pixels and an assumed density."
+    },
+    {
+      "id": "galaxy-z-flip-7",
+      "platform": "android",
+      "name": "Galaxy Z Flip 7",
+      "enabled": true,
+      "class": "clamshell",
+      "displays": {
+        "cover": {
+          "label": "Cover display (FlexWindow)",
+          "size": {
+            "width": 352,
+            "height": 339
+          },
+          "density": 2.6875,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 0,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "observed",
+            "estimated": true,
+            "$note": "The observed 352×339 dp app window already excludes the cover screen system areas."
+          },
+          "coverScreen": {
+            "userGranted": true,
+            "note": "Samsung only runs an app on the cover screen when the user allows it (Settings › Advanced features › Labs › Apps allowed on cover screen, or Good Lock MultiStar). No manifest flag puts an app there."
+          },
+          "source": "observed",
+          "estimated": true,
+          "$note": "App window observed on a physical Galaxy Z Flip 7 running an Android app: 352×339 dp, wider than tall, and Compact width. Landscape is not wide. Density 2.6875 is estimated from the 948 px panel width; the cover density differs from the inner display."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 360,
+            "height": 880
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2520
+          },
+          "density": 3.0,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 440,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Brief value 360×880 dp. Samsung specifies 1080×2520 px, which at 3.0 gives 360×840 dp: confirm with adb shell wm size / wm density."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "display": "cover",
+          "features": [],
+          "note": "Only when the user has allowed the app on the cover screen."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "The most valuable cell in the matrix: the cover window is landscape-shaped but Compact width."
+    },
+    {
+      "id": "galaxy-z-trifold",
+      "platform": "android",
+      "name": "Galaxy Z TriFold",
+      "enabled": true,
+      "class": "tri-fold",
+      "displays": {
+        "cover": {
+          "label": "Cover display",
+          "size": {
+            "width": 411,
+            "height": 960
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2520
+          },
+          "density": 2.625,
+          "cornerRadius": 36,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 823,
+            "height": 603
+          },
+          "pixels": {
+            "width": 2160,
+            "height": 1584
+          },
+          "density": 2.625,
+          "cornerRadius": 24,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 300,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "left",
+              "axis": "vertical",
+              "position": 274,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            },
+            {
+              "id": "right",
+              "axis": "vertical",
+              "position": 548,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Two hinges: the model is a list of folds, never one. 2160×1584 px at an assumed 2.625."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "display": "cover",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Fully open, flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "left",
+              "state": "FLAT"
+            },
+            {
+              "hinge": "right",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "left-half",
+          "label": "Left hinge half-open",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "left",
+              "state": "HALF_OPENED"
+            },
+            {
+              "hinge": "right",
+              "state": "FLAT"
+            }
+          ],
+          "estimated": true
+        },
+        {
+          "id": "both-half",
+          "label": "Both hinges half-open",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "left",
+              "state": "HALF_OPENED"
+            },
+            {
+              "hinge": "right",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "Three separating areas.",
+          "estimated": true
+        }
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "Dimensions estimated; confirm with the device."
+    },
+    {
+      "id": "huawei-mate-xt",
+      "platform": "android",
+      "name": "Huawei Mate XT",
+      "enabled": true,
+      "class": "tri-fold",
+      "displays": {
+        "single": {
+          "label": "Single panel",
+          "size": {
+            "width": 336,
+            "height": 744
+          },
+          "pixels": {
+            "width": 1008,
+            "height": 2232
+          },
+          "density": 3.0,
+          "cornerRadius": 24,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 36,
+              "hole": {
+                "diameter": 20,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true
+        },
+        "dual": {
+          "label": "Two panels",
+          "size": {
+            "width": 683,
+            "height": 744
+          },
+          "pixels": {
+            "width": 2048,
+            "height": 2232
+          },
+          "density": 3.0,
+          "cornerRadius": 24,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 36,
+              "hole": {
+                "diameter": 20,
+                "offset": 0.25
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "outer",
+              "axis": "vertical",
+              "position": 341.5,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true
+        },
+        "triple": {
+          "label": "Three panels",
+          "size": {
+            "width": 1061,
+            "height": 744
+          },
+          "pixels": {
+            "width": 3184,
+            "height": 2232
+          },
+          "density": 3.0,
+          "cornerRadius": 24,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 300,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "outer",
+              "axis": "vertical",
+              "position": 353.7,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            },
+            {
+              "id": "inner",
+              "axis": "vertical",
+              "position": 707.3,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true
+        }
+      },
+      "postures": [
+        {
+          "id": "single",
+          "label": "One panel",
+          "display": "single",
+          "features": []
+        },
+        {
+          "id": "dual",
+          "label": "Two panels, flat",
+          "display": "dual",
+          "features": [
+            {
+              "hinge": "outer",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "triple",
+          "label": "Three panels, flat",
+          "display": "triple",
+          "features": [
+            {
+              "hinge": "outer",
+              "state": "FLAT"
+            },
+            {
+              "hinge": "inner",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "triple-half",
+          "label": "Three panels, one hinge half-open",
+          "display": "triple",
+          "features": [
+            {
+              "hinge": "outer",
+              "state": "FLAT"
+            },
+            {
+              "hinge": "inner",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "source": "estimated",
+      "estimated": true,
+      "$comment": "Z-fold with a single flexible screen shown as one, two or three panels. Density assumed 3.0. Global builds run EMUI (Android based)."
     }
   ],
   "layoutRules": [

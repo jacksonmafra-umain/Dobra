@@ -2,7 +2,7 @@
 // are resolved per WindowInsets type for the current rotation and navigation mode.
 import type { DeviceSpec, Rect, SimulatorConfig } from '../config/types';
 import type { Environment, InsetPart, Insets, Selection } from './environment';
-import { splitRegions } from './folds';
+import { splitRegions, type FoldFeature } from './folds';
 import { windowSizeClass } from './sizeClass';
 
 type AndroidDeviceSpec = Extract<DeviceSpec, { platform: 'android' }>;
@@ -36,8 +36,13 @@ export function unionInsets(parts: InsetPart[]): Insets {
 export function resolveAndroidDevice(config: SimulatorConfig, spec: DeviceSpec, sel: Selection): Environment {
   const device = spec as AndroidDeviceSpec;
   const profile = config.platforms.android;
-  const [, display] = findAndroidDisplay(device, sel.displayId);
-  const rotation = display.rotation.supported ? (sel.rotation ?? 0) : 0;
+  const postures = device.postures ?? [];
+  const posture = postures.length
+    ? (postures.find((p) => p.id === sel.pose) ?? postures.find((p) => p.display === sel.displayId) ?? postures[0])
+    : null;
+  const [, display] = findAndroidDisplay(device, posture?.display ?? sel.displayId);
+  const rotationLocked = !display.rotation.supported || posture?.rotation !== undefined;
+  const rotation = !display.rotation.supported ? 0 : (posture?.rotation ?? sel.rotation ?? 0);
   const navMode = sel.navMode ?? 'gesture';
   const natural = display.size;
   const width = rotation === 90 ? natural.height : natural.width;
@@ -74,7 +79,10 @@ export function resolveAndroidDevice(config: SimulatorConfig, spec: DeviceSpec, 
 
   const union = unionInsets(parts);
   const statusBarHeight = Math.max(ins.statusBar, union.top);
-  const folds = [] as Environment['folds'];
+  const folds = (posture?.features ?? []).map((f) => {
+    const h = display.hinges!.find((x) => x.id === f.hinge)!;
+    return foldFeature(h, f.state, natural, rotation);
+  });
 
   return {
     platform: 'android',
@@ -96,14 +104,24 @@ export function resolveAndroidDevice(config: SimulatorConfig, spec: DeviceSpec, 
     cameraRegion: 0,
     estimated: display.estimated || !!ins.estimated,
     supportedOrientations: ['portrait', 'landscape'],
-    pose: null,
-    poses: [],
+    pose: posture,
+    poses: postures,
     folds,
     regions: splitRegions(width, height, folds),
     reservedRegions: [],
     cameraActive: false,
     liveActivity: false,
-    android: { density: display.density, rotation, navMode, parts, statusBarHeight, cutout, navigationBar },
+    android: {
+      density: display.density,
+      rotation,
+      navMode,
+      parts,
+      statusBarHeight,
+      cutout,
+      navigationBar,
+      coverScreen: display.coverScreen ?? null,
+      rotationLocked,
+    },
   };
 }
 
@@ -127,4 +145,39 @@ function holeRect(
     case 'right':
       return { x: width - across - d, y: height * hole.offset - d / 2, width: d, height: d };
   }
+}
+
+type HingeSpec = NonNullable<AndroidDisplaySpec['hinges']>[number];
+
+/**
+ * androidx.window FoldingFeature for one hinge in window coordinates. isSeparating is true when the
+ * hinge is HALF_OPENED or physically occludes content; that, not the state, decides a split.
+ */
+export function foldFeature(
+  h: HingeSpec,
+  state: 'FLAT' | 'HALF_OPENED',
+  natural: { width: number; height: number },
+  rotation: 0 | 90,
+): FoldFeature {
+  const nat =
+    h.axis === 'vertical'
+      ? { x: h.position, y: 0, width: h.width, height: natural.height }
+      : { x: 0, y: h.position, width: natural.width, height: h.width };
+  // ROTATION_90: natural (x, y) lands at (y, naturalWidth - x).
+  const rect = rotation === 90 ? { x: nat.y, y: natural.width - nat.x - nat.width, width: nat.height, height: nat.width } : nat;
+  const axis = rotation === 90 ? (h.axis === 'vertical' ? 'horizontal' : 'vertical') : h.axis;
+  const isSeparating = state === 'HALF_OPENED' || h.occlusion === 'FULL';
+  return {
+    axis,
+    rect,
+    separating: isSeparating,
+    occludes: h.occlusion === 'FULL',
+    estimated: !!h.estimated,
+    android: {
+      orientation: axis === 'vertical' ? 'VERTICAL' : 'HORIZONTAL',
+      state,
+      occlusionType: h.occlusion,
+      isSeparating,
+    },
+  };
 }

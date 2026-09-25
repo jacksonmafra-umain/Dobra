@@ -190,6 +190,19 @@ const androidInsets = z.strictObject({
   estimated: z.boolean().optional(),
 });
 
+/** A hinge on a display, in its natural orientation. Width 0 is a flexible display with a crease. */
+const hinge = z.strictObject({
+  id: z.string(),
+  axis: z.enum(['vertical', 'horizontal']),
+  /** Distance of the hinge's leading edge from the natural left (vertical) or top (horizontal), dp. */
+  position: nonNeg,
+  width: nonNeg,
+  /** androidx.window FoldingFeature.OcclusionType: FULL when a physical gap hides content. */
+  occlusion: z.enum(['NONE', 'FULL']),
+  source: sourceRef,
+  estimated: z.boolean().optional(),
+});
+
 const androidDisplay = z.strictObject({
   label: z.string(),
   size: size,
@@ -198,8 +211,24 @@ const androidDisplay = z.strictObject({
   cornerRadius: nonNeg,
   rotation: z.strictObject({ supported: z.boolean() }),
   insets: androidInsets,
+  hinges: z.array(hinge).optional(),
+  /** Outer displays apps do not get by default. */
+  coverScreen: z.strictObject({ userGranted: z.boolean(), note: z.string() }).optional(),
   source: sourceRef,
   estimated: z.boolean(),
+});
+
+const posture = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  display: z.string(),
+  /** Rotation the posture implies (tabletop turns a book-style hinge horizontal). Omit to follow the user's choice. */
+  rotation: z.union([z.literal(0), z.literal(90)]).optional(),
+  features: z.array(z.strictObject({ hinge: z.string(), state: z.enum(['FLAT', 'HALF_OPENED']) })),
+  /** WindowAreaController presentation modes. The simulator documents them; it cannot render both displays. */
+  windowArea: z.enum(['rear-display', 'dual-screen']).optional(),
+  note: z.string().optional(),
+  estimated: z.boolean().optional(),
 });
 
 const androidDevice = z.strictObject({
@@ -209,6 +238,7 @@ const androidDevice = z.strictObject({
   enabled: z.boolean(),
   class: z.enum(['phone', 'book-foldable', 'clamshell', 'tri-fold', 'tablet', 'desktop']),
   displays: z.record(z.string(), androidDisplay),
+  postures: z.array(posture).optional(),
   source: sourceRef,
   estimated: z.boolean(),
 });
@@ -357,6 +387,23 @@ export const configSchema = z
                 issue([...path, 'size', axis], `${disp.size[axis]} dp does not match ${disp.pixels[axis]} px / ${disp.density} = ${derived.toFixed(1)} dp; mark it estimated or fix it`);
             }
           }
+        }
+        d.postures?.forEach((p, pi) => {
+          const path = ['devices', di, 'postures', pi];
+          const disp = d.displays[p.display];
+          if (!disp) return issue([...path, 'display'], `Posture uses display "${p.display}", which device "${d.id}" does not have`);
+          const hinges = new Set((disp.hinges ?? []).map((h) => h.id));
+          p.features.forEach((f, fi) => {
+            if (!hinges.has(f.hinge)) issue([...path, 'features', fi, 'hinge'], `Display "${p.display}" has no hinge "${f.hinge}"`);
+          });
+        });
+        for (const [displayId, disp] of Object.entries(d.displays)) {
+          disp.hinges?.forEach((h, hi) => {
+            const path = ['devices', di, 'displays', displayId, 'hinges', hi];
+            checkSource(h.source, [...path, 'source']);
+            const extent = h.axis === 'vertical' ? disp.size.width : disp.size.height;
+            if (h.position + h.width > extent) issue([...path, 'position'], `Hinge runs past the display edge (${extent} dp)`);
+          });
         }
         return;
       }

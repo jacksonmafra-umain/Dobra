@@ -1,4 +1,4 @@
-import type { BarAxis, DeviceSpec, Orientation, Platform, PoseSpec, Rect, SafeArea, SimulatorConfig, Size } from '../config/types';
+import type { BarAxis, DeviceSpec, Orientation, Platform, Rect, SafeArea, SimulatorConfig, Size } from '../config/types';
 import { resolveAndroidDevice } from './android';
 import { resolveIosDevice } from './ios';
 import type { FoldFeature } from './folds';
@@ -26,6 +26,16 @@ export interface Selection {
 
 export type NavMode = 'gesture' | 'three-button';
 
+/** A pose (iOS) or posture (Android) the device can be put in. */
+export interface PoseInfo {
+  id: string;
+  label: string;
+  display: string;
+  estimated?: boolean;
+  note?: string;
+  windowArea?: 'rear-display' | 'dual-screen';
+}
+
 export interface Insets {
   top: number;
   right: number;
@@ -52,6 +62,10 @@ export interface AndroidDetails {
   statusBarHeight: number;
   cutout: Rect | null;
   navigationBar: { edge: 'bottom' | 'right' | 'left'; size: number } | null;
+  /** The display is a cover screen the user must allow apps on (Samsung). */
+  coverScreen: { userGranted: boolean; note: string } | null;
+  /** Rotation is fixed by the posture or the display. */
+  rotationLocked: boolean;
 }
 
 export interface ReservedRegion {
@@ -86,8 +100,8 @@ export interface Environment {
   cameraRegion: number;
   estimated: boolean;
   supportedOrientations: Orientation[];
-  pose: PoseSpec | null;
-  poses: PoseSpec[];
+  pose: PoseInfo | null;
+  poses: PoseInfo[];
   folds: FoldFeature[];
   /** Logical areas of the window after separating folds split it. One area when nothing separates. */
   regions: Rect[];
@@ -159,7 +173,17 @@ function freeEnvironment(config: SimulatorConfig, size: Size, platform: Platform
 }
 
 function freeAndroidDetails(): AndroidDetails {
-  return { density: 1, rotation: 0, navMode: 'gesture', parts: [], statusBarHeight: 0, cutout: null, navigationBar: null };
+  return {
+    density: 1,
+    rotation: 0,
+    navMode: 'gesture',
+    parts: [],
+    statusBarHeight: 0,
+    cutout: null,
+    navigationBar: null,
+    coverScreen: null,
+    rotationLocked: false,
+  };
 }
 
 export function capitalize(s: string): string {
