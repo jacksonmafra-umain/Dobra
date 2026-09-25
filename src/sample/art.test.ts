@@ -31,10 +31,15 @@ describe('sample art', () => {
   });
 
   it('resolves .png names to the same art as the name without extension', () => {
-    expect(asset('reward_fries.png')).toBe(asset('reward_fries.svg'));
+    expect(asset('reward_fries.png').split('#')[0]).toBe(asset('reward_fries.svg').split('#')[0]);
   });
 
   it('throws on unknown names', () => {
     expect(() => asset('nope.svg')).toThrow(/Missing sample asset "nope.svg"/);
+  });
+
+  it('ends each URI with the requested name, so CSS selectors like [src$="IcChevronRight.svg"] still match', () => {
+    expect(asset('IcChevronRight.svg').endsWith('#IcChevronRight.svg')).toBe(true);
+    expect(asset('reward_fries.png').endsWith('#reward_fries.png')).toBe(true);
   });
 });
