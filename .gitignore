@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-single/
+matrix-out/
+*.tsbuildinfo
+.DS_Store
+# Build exports of the simulator. They are build output.
+/size-class-simulator-v*.html
