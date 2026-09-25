@@ -249,6 +249,18 @@ function ReservedPanel({
             <dd>split at the hinge bounds ({layout.posture})</dd>
           </div>
         )}
+        {env.pose?.note && (
+          <div>
+            <dt>{env.platform === 'android' ? 'posture' : 'pose'}</dt>
+            <dd>{env.pose.note}</dd>
+          </div>
+        )}
+        {env.android?.coverScreen && (
+          <div>
+            <dt>cover screen</dt>
+            <dd>{env.android.coverScreen.note}</dd>
+          </div>
+        )}
         {modal && (
           <div>
             <dt>{modal}</dt>

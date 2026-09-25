@@ -29,7 +29,6 @@ export function App({ config }: { config: SimulatorConfig }) {
   const screen = screens.find((s) => s.id === screenId) ?? screens[0];
   const device = findDevice(config, sel.deviceId);
   const displayIds = Object.keys(device.displays);
-  const rotationSupported = device.platform === 'android' && Object.values(device.displays).some((d) => d.rotation.supported);
   const env = resolveEnvironment(config, sel);
   const layout = resolveLayout(config, env, screen);
 
@@ -63,6 +62,10 @@ export function App({ config }: { config: SimulatorConfig }) {
   const toggleOverlay = (key: keyof OverlayToggles) => setOverlays((o) => ({ ...o, [key]: !o[key] }));
   const resizeFree = (w: number, h: number) => setSel((s) => ({ ...s, free: clampFree(w, h) }));
   const onOuter = env.pose?.display === 'outer';
+  // The first pose is the closed one; "open" is the first pose on another display.
+  const closedPose = env.poses[0];
+  const openPose = env.poses.find((p) => p.display !== closedPose?.display);
+  const isClosed = !!closedPose && env.pose?.display === closedPose.display;
 
   return (
     <div className="app" data-theme={theme}>
@@ -103,7 +106,7 @@ export function App({ config }: { config: SimulatorConfig }) {
           {env.poses.length > 0 ? (
             <>
               <div className="control">
-                <span>Pose</span>
+                <span>{env.platform === 'android' ? 'Posture' : 'Pose'}</span>
                 <div className="seg">
                   {env.poses.map((p) => (
                     <button
@@ -124,12 +127,12 @@ export function App({ config }: { config: SimulatorConfig }) {
                 <button
                   className="seg-single seg-single--accent"
                   disabled={!!sel.free}
-                  onClick={() => setSel((s) => ({ ...s, pose: onOuter ? 'open' : 'closed' }))}
+                  onClick={() => setSel((s) => ({ ...s, pose: (isClosed ? openPose : closedPose)?.id }))}
                 >
-                  {onOuter ? 'Open device' : 'Close device'}
+                  {isClosed ? 'Open device' : 'Close device'}
                 </button>
               </div>
-              <div className="control">
+              <div className="control" hidden={env.platform !== 'ios'}>
                 <span>Reserved regions</span>
                 <div className="seg">
                   <button
@@ -176,9 +179,9 @@ export function App({ config }: { config: SimulatorConfig }) {
                   {([0, 90] as const).map((r) => (
                     <button
                       aria-pressed={(env.android?.rotation ?? 0) === r}
-                      disabled={r === 90 && env.android?.rotation !== 90 && !rotationSupported}
+                      disabled={!!env.android?.rotationLocked && (env.android?.rotation ?? 0) !== r}
                       onClick={() => setSel((s) => ({ ...s, rotation: r }))}
-                      title={r === 0 ? 'Natural orientation of the display' : 'Rotated 90° from natural'}
+                      title={env.android?.rotationLocked ? 'Fixed by the posture or display' : r === 0 ? 'Natural orientation of the display' : 'Rotated 90° from natural'}
                       key={r}
                     >
                       {r}°{(env.android?.rotation ?? 0) === r ? ` · ${env.orientation}` : ''}
