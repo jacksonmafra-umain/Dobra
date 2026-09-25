@@ -83,11 +83,12 @@ imported into the plugin as JSON and is stored in the document's shared plugin d
 ```ts
 // catalog
 loadCatalog(json?: unknown): Catalog                     // zod; throws with the offending path
-type Category = 'phone' | 'foldable-book' | 'foldable-flip' | 'dual-screen' | 'multi-fold' | 'tablet'
+type Category = 'phone' | 'foldable-book' | 'foldable-flip' | 'dual-screen' | 'multi-fold' | 'tablet' | 'desktop'
 categoryOf(d: DeviceSpec): Category
 
 // targets: one artboard = one Target
-interface Target { deviceId: string; displayId: string; pose?: string; orientation: Orientation }
+interface Target { deviceId: string; displayId: string; pose?: string; orientation: Orientation; rotation?: 0 | 90 }
+// The key carries the derived orientation; Android's rotation round-trips through `rotation`.
 targetKey(t: Target): string                             // "galaxy-z-fold-7/inner/book/landscape"
 parseTargetKey(s: string): Target | null
 enumerateTargets(c: Catalog, filter?: TargetFilter): Target[]
