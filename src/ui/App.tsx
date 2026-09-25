@@ -29,6 +29,7 @@ export function App({ config }: { config: SimulatorConfig }) {
   const screen = screens.find((s) => s.id === screenId) ?? screens[0];
   const device = findDevice(config, sel.deviceId);
   const displayIds = Object.keys(device.displays);
+  const rotationSupported = device.platform === 'android' && Object.values(device.displays).some((d) => d.rotation.supported);
   const env = resolveEnvironment(config, sel);
   const layout = resolveLayout(config, env, screen);
 
@@ -86,10 +87,16 @@ export function App({ config }: { config: SimulatorConfig }) {
                 }))
               }
             >
-              {devices.map((d) => (
-                <option value={d.id} key={d.id}>
-                  {d.name}
-                </option>
+              {PLATFORMS.map((p) => (
+                <optgroup label={config.platforms[p].label} key={p}>
+                  {devices
+                    .filter((d) => d.platform === p)
+                    .map((d) => (
+                      <option value={d.id} key={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                </optgroup>
               ))}
             </select>
           </label>
@@ -155,13 +162,44 @@ export function App({ config }: { config: SimulatorConfig }) {
                     onClick={() => setSel((s) => ({ ...s, displayId: id }))}
                     key={id}
                   >
-                    {device.displays[id].label}
+                    {device.displays[id]!.label}
                   </button>
                 ))}
               </div>
             </div>
           ) : null}
-          <div className="control">
+          {env.platform === 'android' && !sel.free && (
+            <>
+              <div className="control">
+                <span>Rotation</span>
+                <div className="seg">
+                  {([0, 90] as const).map((r) => (
+                    <button
+                      aria-pressed={(env.android?.rotation ?? 0) === r}
+                      disabled={r === 90 && env.android?.rotation !== 90 && !rotationSupported}
+                      onClick={() => setSel((s) => ({ ...s, rotation: r }))}
+                      title={r === 0 ? 'Natural orientation of the display' : 'Rotated 90° from natural'}
+                      key={r}
+                    >
+                      {r}°{(env.android?.rotation ?? 0) === r ? ` · ${env.orientation}` : ''}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="control">
+                <span>System navigation</span>
+                <div className="seg">
+                  <button aria-pressed={env.android?.navMode === 'gesture'} onClick={() => setSel((s) => ({ ...s, navMode: 'gesture' }))}>
+                    Gesture
+                  </button>
+                  <button aria-pressed={env.android?.navMode === 'three-button'} onClick={() => setSel((s) => ({ ...s, navMode: 'three-button' }))}>
+                    3-button
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+          <div className="control" hidden={env.platform === 'android' && !sel.free}>
             <span>Orientation</span>
             <div className="seg">
               {(['portrait', 'landscape'] as const).map((o) => (

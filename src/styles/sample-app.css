@@ -1548,3 +1548,69 @@
 .screen__scroll > * {
   padding-bottom: calc(var(--floating-bar-clearance, 0px) + var(--xxxxlarge));
 }
+/* Android system chrome */
+.android-status {
+  z-index: 30;
+  color: var(--fg-primary);
+  pointer-events: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  font: 500 14px/1 Roboto, system-ui, sans-serif;
+  display: flex;
+  position: absolute;
+  inset: 0 0 auto;
+}
+.android-status__icons {
+  align-items: center;
+  gap: 4px;
+  display: flex;
+}
+.android-cutout {
+  z-index: 40;
+  background: #000;
+  border-radius: 50%;
+  position: absolute;
+}
+.android-nav {
+  z-index: 40;
+  pointer-events: none;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  position: absolute;
+}
+.android-nav--bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.android-nav--right,
+.android-nav--left {
+  top: 0;
+  bottom: 0;
+  flex-direction: column-reverse;
+}
+.android-nav--right {
+  right: 0;
+}
+.android-nav--left {
+  left: 0;
+}
+.android-nav--three-button {
+  background: var(--bg-secondary);
+  justify-content: space-evenly;
+  color: var(--fg-secondary);
+  font-size: 12px;
+}
+.android-nav__handle {
+  background: var(--fg-primary);
+  border-radius: 3px;
+  width: 108px;
+  height: 4px;
+  opacity: 0.8;
+}
+.android-nav__button {
+  width: 24px;
+  text-align: center;
+}

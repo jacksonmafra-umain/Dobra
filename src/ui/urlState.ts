@@ -56,6 +56,8 @@ export function readUrlState(search = location.search): UrlState {
       pose: q.get('pose') ?? undefined,
       cameraActive: q.get('camera') === '1',
       liveActivity: q.get('live') === '1',
+      rotation: q.get('rot') === '90' ? 90 : 0,
+      navMode: q.get('nav') === '3btn' ? 'three-button' : 'gesture',
     },
     screenId: q.get('screen') ?? 'home',
     theme: q.get('theme') ? (q.get('theme') === 'dark' ? 'dark' : 'light') : systemTheme(),
@@ -74,6 +76,10 @@ export function writeUrlState(state: UrlState, env: Environment): string {
   if (sel.cameraActive) q.set('camera', '1');
   if (sel.liveActivity) q.set('live', '1');
   q.set('o', env.orientation);
+  if (env.android && !env.isFree) {
+    q.set('rot', String(env.android.rotation));
+    if (env.android.navMode === 'three-button') q.set('nav', '3btn');
+  }
   if (sel.free) {
     q.set('free', `${sel.free.width}x${sel.free.height}`);
     q.set('fp', env.platform);

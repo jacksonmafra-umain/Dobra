@@ -4,6 +4,7 @@ import type { ScreenSpec, SimulatorConfig } from '../config/types';
 import type { Environment } from '../engine/environment';
 import type { Layout } from '../engine/layout';
 import { placeModal, type ModalKind } from '../engine/modal';
+import { AndroidChrome } from './androidChrome';
 import { DynamicIsland, HomeIndicator, LiveActivityIsland, StatusBar } from './chrome';
 import { useCollisions, type Collision } from './collisions';
 import { Modal } from './modal';
@@ -119,7 +120,7 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
           selectedTab={screen.tab}
         />
       )}
-      <StatusBar env={env} />
+      {env.platform === 'ios' ? <StatusBar env={env} /> : <AndroidChrome env={env} />}
       <DynamicIsland env={env} />
       {env.reservedRegions
         .filter((r) => r.kind === 'live-activity')
