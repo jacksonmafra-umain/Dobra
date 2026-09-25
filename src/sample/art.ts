@@ -1,10 +1,13 @@
 // Neutral generated art for the sample app. Every image is an SVG built here, so the repo ships
 // no third-party image files.
 
-type Art = { kind: 'photo'; hue: number } | { kind: 'glyph'; d: string } | { kind: 'shape'; body: string };
+type Art = { kind: 'photo'; hue: number } | { kind: 'glyph'; d: string; color: string } | { kind: 'shape'; body: string };
 
 const photo = (hue: number): Art => ({ kind: 'photo', hue });
-const glyph = (d: string): Art => ({ kind: 'glyph', d });
+const glyph = (d: string, color = '#000'): Art => ({ kind: 'glyph', d, color });
+/** Mid-tone accent for the sample logo, legible on light and dark surfaces. */
+const LOGO = '#1f8a70';
+const logo = (): Art => glyph(GLYPHS.logo, LOGO);
 const shape = (body: string): Art => ({ kind: 'shape', body });
 
 const GLYPHS = {
@@ -19,7 +22,7 @@ const GLYPHS = {
   bag: 'M5 8h14l-1 12H6L5 8ZM9 8a3 3 0 0 1 6 0',
   plate: 'M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
   dots: 'M6 12h.01M12 12h.01M18 12h.01',
-  logo: 'M4 18V6l8 8 8-8v12',
+  logo: 'M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3ZM12 8v8M8 10.5l4 2.5 4-2.5',
   dot: 'M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
   social: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z',
 } as const;
@@ -47,9 +50,8 @@ const ART: Record<string, Art> = {
   ic_deal_timeout_16: glyph(GLYPHS.clock), ic_reward_locked_16: glyph(GLYPHS.lock),
   ic_location_default_32: glyph(GLYPHS.pin), ic_deals_32: glyph(GLYPHS.tag),
   ic_food_32: glyph(GLYPHS.plate), ic_order_32: glyph(GLYPHS.bag), ic_more_32: glyph(GLYPHS.dots),
-  ic_logo_filled_32: glyph(GLYPHS.logo), ic_logo_default_32: glyph(GLYPHS.logo),
-  ic_logo_default_mask_32: glyph(GLYPHS.logo), ImSampleLogo: glyph(GLYPHS.logo),
-  member_logo_group: glyph(GLYPHS.logo), member_logo_vector: glyph(GLYPHS.logo),
+  ic_logo_filled_32: logo(), ic_logo_default_32: logo(), ic_logo_default_mask_32: logo(),
+  ImSampleLogo: logo(), member_logo_group: logo(), member_logo_vector: logo(),
   ImDeals: glyph(GLYPHS.tag), Bag: glyph(GLYPHS.bag), UserLocation: glyph(GLYPHS.dot),
   SelectedDot: glyph(GLYPHS.dot), BuildingBlockPaginatorItem: glyph(GLYPHS.dot),
   Pin2: glyph(GLYPHS.pin), Pin3: glyph(GLYPHS.pin), MapPinSingleDefault: glyph(GLYPHS.pin),
@@ -70,7 +72,7 @@ function render(art: Art): string {
     case 'photo':
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${art.hue} 70% 72%)"/><stop offset="1" stop-color="hsl(${art.hue + 30} 60% 48%)"/></linearGradient></defs><rect width="160" height="120" fill="url(#g)"/><circle cx="80" cy="64" r="30" fill="hsl(${art.hue} 40% 92% / .55)"/></svg>`;
     case 'glyph':
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${art.d}"/></svg>`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${art.color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${art.d}"/></svg>`;
     case 'shape':
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="#8a8a8a" preserveAspectRatio="none">${art.body}</svg>`;
   }

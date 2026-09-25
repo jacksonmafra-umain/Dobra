@@ -42,4 +42,12 @@ describe('sample art', () => {
     expect(asset('IcChevronRight.svg').endsWith('#IcChevronRight.svg')).toBe(true);
     expect(asset('reward_fries.png').endsWith('#reward_fries.png')).toBe(true);
   });
+
+  it('draws logos with a neutral mark in a colour that shows on light and dark', () => {
+    for (const name of ['ImSampleLogo.svg', 'ic_logo_filled_32.svg', 'member_logo_group.svg']) {
+      const svg = decodeURIComponent(asset(name).split(',')[1].split('#')[0]);
+      expect(svg).not.toContain('stroke="#000"');
+      expect(svg).not.toContain('M4 18V6l8 8 8-8v12');
+    }
+  });
 });
