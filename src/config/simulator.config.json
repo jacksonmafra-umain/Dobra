@@ -1,10 +1,9 @@
 {
   "$comment": "Size-Class Simulator config. Everything the simulator shows is driven from this file. Sizes are in the unit of the device's platform: points (pt) on iOS, density-independent pixels (dp) on Android. See README.md > Editing the config.",
   "version": "0.5.0",
-  "figmaFile": "SAMPLE_FILE_KEY",
   "sources": {
-    "figma-ui": "01. UI – Sample design system · 📱 Screens & related components (SAMPLE_FILE_KEY, node 0:0)",
-    "figma-tokens": "01. Styles + Tokens · Device & Orientation collection (hSafeAreaInset 24/62, bottomSafeAreaInset 21)",
+    "figma-ui": "Sample design system: screens and components",
+    "figma-tokens": "Sample design system: device and orientation tokens (hSafeAreaInset 24/62, bottomSafeAreaInset 21)",
     "apple-device": "Apple device spec (not in our Figma: Figma frames are 375×812 portrait / 812 landscape)",
     "estimated": "Estimated: not confirmed. Verify in Xcode 27.1 Device Hub.",
     "androidx-window": "androidx.window documentation (WindowSizeClass, FoldingFeature, WindowInsets): developer.android.com/develop/ui/compose/layouts/adaptive",
@@ -2394,10 +2393,8 @@
       "experience": "navigation",
       "tab": "home",
       "enabled": true,
-      "figma": {
-        "portrait": "0:0",
-        "landscape": "0:0"
-      },
+      "figma": null,
+      "source": "sample app screen",
       "components": [
         "news_story_hero",
         "action_card",
@@ -2433,11 +2430,8 @@
       "experience": "navigation",
       "tab": "deals",
       "enabled": true,
-      "figma": {
-        "portrait": "0:0",
-        "landscape": "0:0",
-        "$comment": "LoyaltyDashboard, State=Default"
-      },
+      "figma": null,
+      "source": "sample app screen",
       "components": [
         "action_card",
         "bonus_campaign_banner",
@@ -2472,11 +2466,8 @@
       "experience": "navigation",
       "tab": "deals",
       "enabled": true,
-      "figma": {
-        "portrait": "0:0",
-        "landscape": "0:0",
-        "$comment": "RewardsList, State=Default"
-      },
+      "figma": null,
+      "source": "sample app screen",
       "components": [
         "reward_card"
       ],
@@ -2511,7 +2502,7 @@
       "tab": "order",
       "enabled": true,
       "figma": null,
-      "source": "built from Sample design system components — not in Figma yet",
+      "source": "sample app screen",
       "components": [],
       "toolbar": {
         "component": "toolbar",
@@ -2544,7 +2535,7 @@
       "tab": "order",
       "enabled": true,
       "figma": null,
-      "source": "built from Sample design system components — not in Figma yet",
+      "source": "sample app screen",
       "components": [],
       "toolbar": {
         "component": "toolbar",

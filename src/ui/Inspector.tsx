@@ -288,7 +288,7 @@ function ReservedPanel({
 }
 
 function DesignSource({ config, env, screen }: { config: SimulatorConfig; env: Environment; screen: ScreenSpec }) {
-  if (!screen.figma) return <p className="source source--warn">Not in Figma yet. {screen.source}</p>;
+  if (!screen.figma) return <p className="source">Design source: {screen.source}</p>;
   const link = (node: string) => `https://www.figma.com/design/${config.figmaFile}/?node-id=${node.replace(':', '-')}`;
   const node = screen.figma[env.orientation];
   if (node) {

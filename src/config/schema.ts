@@ -321,7 +321,8 @@ const tabItem = z.strictObject({ id: z.string(), title: z.string(), icon: z.stri
 export const configSchema = z
   .strictObject({
     version: z.string(),
-    figmaFile: z.string(),
+    /** Figma file key the screens' frame ids live in. Required only when a screen names a frame. */
+    figmaFile: z.string().optional(),
     sources: z.record(z.string(), z.string()),
     platforms: z.strictObject({ ios: iosProfile, android: androidProfile }),
     components: z.record(z.string(), componentSpec),
@@ -450,6 +451,7 @@ export const configSchema = z
     const tabs = new Set(cfg.tabBar.items.map((t) => t.id));
     cfg.screens.forEach((s, si) => {
       if (!tabs.has(s.tab)) issue(['screens', si, 'tab'], `Screen "${s.id}" selects tab "${s.tab}", which the tab bar does not have`);
+      if (s.figma && !cfg.figmaFile) issue(['figmaFile'], `Screen "${s.id}" names Figma frames, so the config needs a "figmaFile"`);
       if (!s.figma && !s.source) issue(['screens', si, 'source'], `Screen "${s.id}" has no Figma frame, so it needs a "source" explaining where it comes from`);
       s.components.forEach((c, ci) => {
         if (!cfg.components[c]) issue(['screens', si, 'components', ci], `Unknown component "${c}"`);
