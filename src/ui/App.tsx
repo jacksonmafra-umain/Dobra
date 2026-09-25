@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import rawConfig from '../config/simulator.config.json';
 import type { SimulatorConfig } from '../config/types';
 import { describeChanges, type Snapshot } from '../engine/diff';
 import { findDevice, resolveEnvironment, type Selection } from '../engine/environment';
@@ -13,9 +12,7 @@ import { Overlays, type OverlayToggles } from './Overlays';
 import { clampFree, FREE_MAX, FREE_MIN, readUrlState, writeUrlState, type Theme } from './urlState';
 import { WhatChanged, type ChangeEntry } from './WhatChanged';
 
-const config = rawConfig as unknown as SimulatorConfig;
-
-export function App() {
+export function App({ config }: { config: SimulatorConfig }) {
   const initial = useMemo(() => readUrlState(), []);
   const [sel, setSel] = useState<Selection>(initial.selection);
   const [modal, setModal] = useState<ModalKind | null>(null);

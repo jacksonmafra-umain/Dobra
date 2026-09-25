@@ -526,3 +526,18 @@ body {
   font-weight: 600;
 }
 
+.config-error {
+  padding: 24px;
+  gap: 12px;
+}
+.config-error h1 {
+  margin: 0;
+  font-size: 18px;
+  color: #dc2626;
+}
+.config-error ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
