@@ -1,4 +1,5 @@
 import type { BarAxis, DeviceSpec, Orientation, Platform, PoseSpec, Rect, SafeArea, SimulatorConfig, Size } from '../config/types';
+import { resolveAndroidDevice } from './android';
 import { resolveIosDevice } from './ios';
 import type { FoldFeature } from './folds';
 import { windowSizeClass, type SizeClass } from './sizeClass';
@@ -17,6 +18,40 @@ export interface Selection {
   pose?: string;
   cameraActive?: boolean;
   liveActivity?: boolean;
+  /** Android: display rotation from its natural orientation. */
+  rotation?: 0 | 90;
+  /** Android: system navigation mode. The bottom inset differs between the two. */
+  navMode?: NavMode;
+}
+
+export type NavMode = 'gesture' | 'three-button';
+
+export interface Insets {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+export type InsetKind = 'statusBar' | 'navigationBar' | 'displayCutout' | 'waterfall' | 'captionBar' | 'ime';
+
+/** One WindowInsets type and the edges it occupies. */
+export interface InsetPart {
+  kind: InsetKind;
+  insets: Insets;
+  source: string;
+}
+
+/** Android-only facts about the resolved window. */
+export interface AndroidDetails {
+  density: number;
+  rotation: 0 | 90;
+  navMode: NavMode;
+  /** Insets by WindowInsets type; safeArea is their union. */
+  parts: InsetPart[];
+  statusBarHeight: number;
+  cutout: Rect | null;
+  navigationBar: { edge: 'bottom' | 'right' | 'left'; size: number } | null;
 }
 
 export interface ReservedRegion {
@@ -59,6 +94,7 @@ export interface Environment {
   reservedRegions: ReservedRegion[];
   cameraActive: boolean;
   liveActivity: boolean;
+  android: AndroidDetails | null;
 }
 
 export function findDevice(config: SimulatorConfig, id: string): DeviceSpec {
@@ -73,7 +109,7 @@ export function resolveEnvironment(config: SimulatorConfig, sel: Selection): Env
     return freeEnvironment(config, sel.free, platform);
   }
   const device = findDevice(config, sel.deviceId);
-  return resolveIosDevice(config, device, sel);
+  return device.platform === 'ios' ? resolveIosDevice(config, device, sel) : resolveAndroidDevice(config, device, sel);
 }
 
 function freeEnvironment(config: SimulatorConfig, size: Size, platform: Platform): Environment {
@@ -118,7 +154,12 @@ function freeEnvironment(config: SimulatorConfig, size: Size, platform: Platform
     reservedRegions: [],
     cameraActive: false,
     liveActivity: false,
+    android: platform === 'android' ? freeAndroidDetails() : null,
   };
+}
+
+function freeAndroidDetails(): AndroidDetails {
+  return { density: 1, rotation: 0, navMode: 'gesture', parts: [], statusBarHeight: 0, cutout: null, navigationBar: null };
 }
 
 export function capitalize(s: string): string {

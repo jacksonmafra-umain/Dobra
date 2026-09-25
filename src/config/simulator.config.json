@@ -638,6 +638,301 @@
           "$comment": "Interpretation to confirm: partially open and standing, so the hinge runs across the middle."
         }
       ]
+    },
+    {
+      "id": "android-compact-phone",
+      "platform": "android",
+      "name": "Compact Android phone (360×780)",
+      "enabled": true,
+      "class": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 360,
+            "height": 780
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2340
+          },
+          "density": 3.0,
+          "cornerRadius": 36,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 32,
+              "hole": {
+                "diameter": 20,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 280,
+              "landscape": 200
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "estimated",
+          "estimated": true
+        }
+      },
+      "source": "estimated",
+      "estimated": true,
+      "$comment": "Generic small phone. The narrowest common Android window: the baseline for compact width."
+    },
+    {
+      "id": "pixel-9",
+      "platform": "android",
+      "name": "Pixel 9",
+      "enabled": true,
+      "class": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 411,
+            "height": 923
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2424
+          },
+          "density": 2.625,
+          "cornerRadius": 44,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 48,
+              "hole": {
+                "diameter": 26,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true
+        }
+      },
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "1080×2424 px at the default 420 dpi (2.625). Verify with adb shell wm size / wm density."
+    },
+    {
+      "id": "pixel-9-pro-xl",
+      "platform": "android",
+      "name": "Pixel 9 Pro XL",
+      "enabled": true,
+      "class": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 448,
+            "height": 997
+          },
+          "pixels": {
+            "width": 1344,
+            "height": 2992
+          },
+          "density": 3.0,
+          "cornerRadius": 48,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 52,
+              "hole": {
+                "diameter": 28,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 300,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true
+        }
+      },
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "Large phone. 1344×2992 px; the default density is assumed to be 480 dpi (3.0). Verify on device."
+    },
+    {
+      "id": "pixel-tablet",
+      "platform": "android",
+      "name": "Pixel Tablet",
+      "enabled": true,
+      "class": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 1280,
+            "height": 800
+          },
+          "pixels": {
+            "width": 2560,
+            "height": 1600
+          },
+          "density": 2.0,
+          "cornerRadius": 24,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 420,
+              "landscape": 340
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "No cutout: the camera sits in the bezel. With 3-button navigation the taskbar keeps the buttons at the bottom in both orientations."
+          },
+          "source": "device-spec",
+          "estimated": true
+        }
+      },
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "2560×1600 px at 320 dpi (2.0). Natural orientation is landscape."
+    },
+    {
+      "id": "tablet-10",
+      "platform": "android",
+      "name": "Generic 10\" tablet",
+      "enabled": true,
+      "class": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 800,
+            "height": 1280
+          },
+          "pixels": {
+            "width": 1200,
+            "height": 1920
+          },
+          "density": 1.5,
+          "cornerRadius": 16,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 380,
+              "landscape": 320
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "estimated",
+          "estimated": true
+        }
+      },
+      "source": "estimated",
+      "estimated": true,
+      "$comment": "Generic 10-inch tablet in portrait-natural orientation (for example a Galaxy Tab A)."
+    },
+    {
+      "id": "tablet-12",
+      "platform": "android",
+      "name": "Generic 12\" tablet",
+      "enabled": true,
+      "class": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 1400,
+            "height": 876
+          },
+          "pixels": {
+            "width": 2800,
+            "height": 1752
+          },
+          "density": 2.0,
+          "cornerRadius": 20,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 440,
+              "landscape": 360
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "estimated",
+          "estimated": true
+        }
+      },
+      "source": "estimated",
+      "estimated": true,
+      "$comment": "Generic 12-inch tablet, landscape-natural (for example a Galaxy Tab S-series Plus). Density assumed 2.0."
     }
   ],
   "layoutRules": [

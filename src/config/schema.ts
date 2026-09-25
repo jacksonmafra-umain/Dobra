@@ -167,6 +167,53 @@ const iosDevice = z.strictObject({
 });
 
 // ---------------------------------------------------------------------------------------------
+// Android devices. Sizes are dp in the display's natural orientation; every value names a source.
+
+const edge = z.enum(['top', 'right', 'bottom', 'left']);
+
+const androidInsets = z.strictObject({
+  statusBar: nonNeg,
+  /** Display cutout on a natural edge. Its size is the inset it produces, not the camera diameter. */
+  cutout: z
+    .strictObject({ edge, size: nonNeg, hole: z.strictObject({ diameter: pos, offset: z.number().min(0).max(1) }).optional() })
+    .nullable(),
+  navigationBar: z.strictObject({
+    gesture: nonNeg,
+    threeButton: nonNeg,
+    /** Phones move the 3-button bar to the side in landscape; large screens keep it at the bottom (taskbar). */
+    threeButtonLandscape: z.enum(['side', 'bottom']),
+  }),
+  /** Curved screen edges on the natural left and right. */
+  waterfall: nonNeg.optional(),
+  ime: z.strictObject({ portrait: pos, landscape: pos }),
+  source: sourceRef,
+  estimated: z.boolean().optional(),
+});
+
+const androidDisplay = z.strictObject({
+  label: z.string(),
+  size: size,
+  pixels: size.optional(),
+  density: pos,
+  cornerRadius: nonNeg,
+  rotation: z.strictObject({ supported: z.boolean() }),
+  insets: androidInsets,
+  source: sourceRef,
+  estimated: z.boolean(),
+});
+
+const androidDevice = z.strictObject({
+  id: z.string(),
+  platform: z.literal('android'),
+  name: z.string(),
+  enabled: z.boolean(),
+  class: z.enum(['phone', 'book-foldable', 'clamshell', 'tri-fold', 'tablet', 'desktop']),
+  displays: z.record(z.string(), androidDisplay),
+  source: sourceRef,
+  estimated: z.boolean(),
+});
+
+// ---------------------------------------------------------------------------------------------
 // Layout rules, keyed by either platform's size-class vocabulary.
 
 const gridRule = z.strictObject({ perRow: z.number().int().positive(), minItemWidth: pos.optional(), maxItemWidth: pos.optional() });
@@ -248,7 +295,7 @@ export const configSchema = z
     sources: z.record(z.string(), z.string()),
     platforms: z.strictObject({ ios: iosProfile, android: androidProfile }),
     components: z.record(z.string(), componentSpec),
-    devices: z.array(iosDevice).min(1),
+    devices: z.array(z.discriminatedUnion('platform', [iosDevice, androidDevice])).min(1),
     layoutRules: z.array(layoutRule).min(1),
     tabBar: z.strictObject({ component: z.string(), items: z.array(tabItem).min(1) }),
     screens: z.array(screen).min(1),
@@ -297,6 +344,22 @@ export const configSchema = z
     }
 
     cfg.devices.forEach((d, di) => {
+      if (d.platform === 'android') {
+        checkSource(d.source, ['devices', di, 'source']);
+        for (const [displayId, disp] of Object.entries(d.displays)) {
+          const path = ['devices', di, 'displays', displayId];
+          checkSource(disp.source, [...path, 'source']);
+          checkSource(disp.insets.source, [...path, 'insets', 'source']);
+          if (disp.pixels) {
+            for (const axis of ['width', 'height'] as const) {
+              const derived = disp.pixels[axis] / disp.density;
+              if (Math.abs(derived - disp.size[axis]) > 1.5 && !disp.estimated)
+                issue([...path, 'size', axis], `${disp.size[axis]} dp does not match ${disp.pixels[axis]} px / ${disp.density} = ${derived.toFixed(1)} dp; mark it estimated or fix it`);
+            }
+          }
+        }
+        return;
+      }
       for (const [displayId, disp] of Object.entries(d.displays)) {
         for (const [o, spec] of Object.entries(disp.orientations)) {
           if (spec) checkSource(spec.safeArea.source, ['devices', di, 'displays', displayId, 'orientations', o, 'safeArea', 'source']);

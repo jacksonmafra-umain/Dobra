@@ -103,6 +103,7 @@ export function resolveIosDevice(config: SimulatorConfig, spec: DeviceSpec, sel:
     reservedRegions,
     cameraActive,
     liveActivity,
+    android: null,
   };
 }
 
