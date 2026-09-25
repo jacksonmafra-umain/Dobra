@@ -1,7 +1,9 @@
-import type { GridComponentId, ScreenSpec, SimulatorConfig } from '../config/types';
-import { capitalize, formatSizeClass, type Environment } from '../engine/environment';
+import type { GridRule, ScreenSpec, SimulatorConfig } from '../config/types';
+import { capitalize, type Environment } from '../engine/environment';
+import { foldThickness } from '../engine/folds';
 import type { Layout } from '../engine/layout';
 import { placeModal, type ModalKind } from '../engine/modal';
+import { formatSizeClass } from '../engine/sizeClass';
 import type { Collision } from '../sample/collisions';
 
 interface InspectorProps {
@@ -14,45 +16,62 @@ interface InspectorProps {
   rtl: boolean;
 }
 
+const NAVIGATION_LABEL: Record<Layout['navigation']['pattern'], string> = {
+  'tab-bar': 'tab bar · bottom',
+  'ios-rail': 'vertical · trailing edge',
+  bar: 'navigation bar · bottom',
+  rail: 'navigation rail · leading edge',
+  drawer: 'navigation drawer · leading edge',
+};
+
 export function Inspector({ config, env, layout, screen, collisions, modal, rtl }: InspectorProps) {
+  const u = env.unit;
   const safe = env.safeArea;
-  const est = env.sizeClass.estimated ? ' (estimated)' : '';
+  const android = config.platforms.android;
+  const sc = env.sizeClass;
   const rows: [string, string][] = [
-    ['Size', `${env.width} × ${env.height} pt`],
+    ['Platform', `${config.platforms[env.platform].label} · layout in ${env.unit}, type in ${env.typeUnit}`],
+    ['Size', `${env.width} × ${env.height} ${u}`],
     ['Orientation', env.orientation],
     ['Pose', env.pose ? `${env.pose.label}${env.pose.estimated ? ' (estimated)' : ''}` : '— (foldable devices only)'],
     [
       'Available space',
-      env.fold
-        ? `2 regions of ${Math.round(env.fold.regions[0].width)}×${Math.round(env.fold.regions[0].height)} pt, ${env.fold.axis} fold ${env.fold.rect[env.fold.axis === 'vertical' ? 'width' : 'height']} pt`
-        : `${env.width} × ${env.height} pt, one region`,
-    ],
-    ['Horizontal size class', env.sizeClass.horizontal + est],
-    ['Vertical size class', env.sizeClass.vertical + est],
-    [
-      'Bar layout',
-      env.barAxis === 'vertical' ? `vertical · trailing edge · rail ${layout.railWidth} pt` : 'horizontal · top and bottom',
-    ],
-    [
-      'Screen tag',
-      screen.experience === 'navigation' ? 'Navigation-focused (keeps tab bar)' : 'Task-oriented (keeps toolbar)',
-    ],
-    ['Compression', describeCompression(layout)],
-    ['Safe area', `T${safe.top} R${safe.right} B${safe.bottom} L${safe.left} · ${safe.source}`],
-    [
-      'Page margins',
-      `${layout.margin.left} / ${layout.margin.right} (${layout.rule.pageMargin.mode}(${layout.rule.pageMargin.base}, safe area))`,
-    ],
-    [
-      'Grid',
-      `${layout.rule.grid.columns} col · ${layout.rule.grid.gutter} gutter${layout.rule.grid.proposed ? ' (proposed)' : ''}`,
+      env.regions.length > 1
+        ? `${env.regions.length} regions of ${env.regions.map((r) => `${Math.round(r.width)}×${Math.round(r.height)}`).join(', ')} ${u}`
+        : `${env.width} × ${env.height} ${u}, one region`,
     ],
   ];
+  if (sc.system === 'uikit') {
+    const est = sc.estimated ? ' (estimated)' : '';
+    rows.push(['Horizontal size class', sc.horizontal + est], ['Vertical size class', sc.vertical + est]);
+  } else {
+    const label = (list: typeof android.sizeClasses.width, id: string) => list.find((b) => b.id === id)?.label ?? id;
+    rows.push(
+      ['Width size class', `${label(android.sizeClasses.width, sc.width)} (WindowSizeClass)`],
+      ['Height size class', `${label(android.sizeClasses.height, sc.height)} (WindowSizeClass)`],
+    );
+  }
+  rows.push(
+    [
+      'Navigation',
+      `${NAVIGATION_LABEL[layout.navigation.pattern]}${layout.navigation.size ? ` · ${layout.navigation.size} ${u}` : ''}${layout.navigation.floating ? ' · floating' : ''}`,
+    ],
+    ['Screen tag', screen.experience === 'navigation' ? 'Navigation-focused (keeps tab bar)' : 'Task-oriented (keeps toolbar)'],
+  );
+  if (layout.bars) rows.push(['Compression', describeCompression(layout)]);
+  rows.push(
+    [env.platform === 'ios' ? 'Safe area' : 'Insets', `T${safe.top} R${safe.right} B${safe.bottom} L${safe.left} · ${safe.source}`],
+    [
+      'Page margins',
+      `${layout.margin.left} / ${layout.margin.right} (${layout.rule.pageMargin.mode}(${layout.rule.pageMargin.base}, inset)${layout.leadingNav ? ` + ${layout.navigation.pattern}` : ''})`,
+    ],
+    ['Grid', `${layout.rule.grid.columns} col · ${layout.rule.grid.gutter} gutter${layout.rule.grid.proposed ? ' (proposed)' : ''}`],
+  );
   return (
     <section className="panel">
       <h2 className="panel__title">Indicators</h2>
       <div className="rule-chip">
-        <span className="rule-chip__sc">{formatSizeClass(env.sizeClass)}</span>
+        <span className="rule-chip__sc">{formatSizeClass(sc, android)}</span>
         <span>{layout.rule.label}</span>
         <code>{layout.rule.id}</code>
       </div>
@@ -69,27 +88,25 @@ export function Inspector({ config, env, layout, screen, collisions, modal, rtl 
         {screen.components.map((id) => (
           <div key={id}>
             <dt>{id}</dt>
-            <dd>
-              {id === 'news_story_hero'
-                ? `${layout.hero.variant} · ${layout.hero.bleed}`
-                : describePerRow(layout, id as GridComponentId)}
-            </dd>
+            <dd>{id === 'news_story_hero' ? `${layout.hero.variant} · ${layout.hero.bleed}` : describePerRow(layout, id)}</dd>
           </div>
         ))}
-        <div>
-          <dt>tab_bar_26</dt>
-          <dd>items {layout.tabItem}</dd>
-        </div>
+        {layout.navigation.edge === 'bottom' && (
+          <div>
+            <dt>tab_bar_26</dt>
+            <dd>items {layout.tabItem}</dd>
+          </div>
+        )}
         <div>
           <dt>panes</dt>
           <dd>
             {layout.panes}
-            {layout.panes > 1 ? ' (split views arrive in step 5)' : ''}
+            {layout.panes > 1 ? ` · ${layout.paneRects.map((p) => Math.round(p.width)).join(' + ')} ${u}` : ''}
           </dd>
         </div>
       </dl>
-      <BarsPanel layout={layout} />
-      {(env.poses.length > 0 || env.reservedRegions.length > 0) && (
+      {layout.bars && <BarsPanel layout={layout} unit={u} />}
+      {(env.poses.length > 0 || env.reservedRegions.length > 0 || env.folds.length > 0) && (
         <ReservedPanel env={env} layout={layout} collisions={collisions} modal={modal} rtl={rtl} />
       )}
       <h3 className="panel__sub">Design source</h3>
@@ -99,22 +116,22 @@ export function Inspector({ config, env, layout, screen, collisions, modal, rtl 
 }
 
 function describeCompression(layout: Layout): string {
-  const bars = layout.bars;
+  const bars = layout.bars!;
   if (bars.axis === 'horizontal') return 'none (horizontal bars fit)';
   if (bars.compression === 'none') return 'none: toolbar and tab bar both fit';
   if (bars.compression === 'toolbar-overflow') return 'active: toolbar items → overflow menu';
   return 'active: tab bar minimised';
 }
 
-function describePerRow(layout: Layout, id: GridComponentId): string {
-  const wanted = layout.rule.components[id]?.perRow;
+function describePerRow(layout: Layout, id: string): string {
+  const wanted = (layout.rule.components[id] as GridRule | undefined)?.perRow;
   const got = layout.perRow[id];
-  if (wanted === undefined) return '—';
+  if (wanted === undefined || got === undefined) return '—';
   return got < wanted ? `${got} per row (rule says ${wanted}; min width doesn't fit)` : `${got} per row`;
 }
 
-function BarsPanel({ layout }: { layout: Layout }) {
-  const bars = layout.bars;
+function BarsPanel({ layout, unit }: { layout: Layout; unit: string }) {
+  const bars = layout.bars!;
   const titles = (items: { title: string }[]) => items.map((i) => i.title).join(', ') || '—';
   return (
     <>
@@ -142,7 +159,7 @@ function BarsPanel({ layout }: { layout: Layout }) {
               <div>
                 <dt>rail space</dt>
                 <dd>
-                  {bars.budget.toolbar} + {bars.budget.tabBar} of {bars.budget.available} pt
+                  {bars.budget.toolbar} + {bars.budget.tabBar} of {bars.budget.available} {unit}
                 </dd>
               </div>
             )}
@@ -180,31 +197,37 @@ function ReservedPanel({
   modal: ModalKind | null;
   rtl: boolean;
 }) {
+  const u = env.unit;
   return (
     <>
-      <h3 className="panel__sub">Reserved regions &amp; fold</h3>
+      <h3 className="panel__sub">Reserved regions &amp; folds</h3>
       <dl className="kv kv--dense">
         <div>
           <dt>reserved</dt>
           <dd>
-            {env.reservedRegions
-              .map((r) => `${r.label} (${Math.round(r.rect.width)}×${Math.round(r.rect.height)})`)
-              .join(', ') || 'none'}
+            {env.reservedRegions.map((r) => `${r.label} (${Math.round(r.rect.width)}×${Math.round(r.rect.height)})`).join(', ') ||
+              'none'}
           </dd>
         </div>
-        <div>
-          <dt>inner camera</dt>
-          <dd>{env.cameraActive ? 'active: region reserved, UI moves aside' : 'inactive: hidden behind the display'}</dd>
-        </div>
-        <div>
-          <dt>fold</dt>
-          <dd>
-            {env.fold
-              ? `${env.fold.axis}, ${env.fold.rect[env.fold.axis === 'vertical' ? 'width' : 'height']} pt${env.fold.estimated ? ' (est.)' : ''}`
-              : 'none'}
-          </dd>
-        </div>
-        {env.fold && (
+        {env.platform === 'ios' && (
+          <div>
+            <dt>inner camera</dt>
+            <dd>{env.cameraActive ? 'active: region reserved, UI moves aside' : 'inactive: hidden behind the display'}</dd>
+          </div>
+        )}
+        {(env.folds.length ? env.folds : [null]).map((fold, i) => (
+          <div key={i}>
+            <dt>{env.folds.length > 1 ? `fold ${i + 1}` : 'fold'}</dt>
+            <dd>
+              {fold
+                ? fold.android
+                  ? `${fold.android.orientation} · ${fold.android.state} · isSeparating ${fold.android.isSeparating} · occlusion ${fold.android.occlusionType} · ${foldThickness(fold)} ${u}${fold.estimated ? ' (est.)' : ''}`
+                  : `${fold.axis}, ${foldThickness(fold)} ${u}${fold.estimated ? ' (est.)' : ''}`
+                : 'none'}
+            </dd>
+          </div>
+        ))}
+        {layout.fold && env.platform === 'ios' && (
           <div>
             <dt>margins</dt>
             <dd>
@@ -214,10 +237,16 @@ function ReservedPanel({
             </dd>
           </div>
         )}
-        {env.fold && (
+        {layout.fold && env.platform === 'ios' && (
           <div>
             <dt>grids</dt>
             <dd>{layout.foldGutter ? 'even grids put their middle gutter over the fold' : '—'}</dd>
+          </div>
+        )}
+        {layout.fold && env.platform === 'android' && (
+          <div>
+            <dt>panes</dt>
+            <dd>split at the hinge bounds ({layout.posture})</dd>
           </div>
         )}
         {modal && (
@@ -263,8 +292,7 @@ function DesignSource({ config, env, screen }: { config: SimulatorConfig; env: E
   const other = screen.figma.portrait ?? screen.figma.landscape;
   return (
     <p className="source source--warn">
-      No {env.orientation} variant in Figma: the rules expand the {other === screen.figma.portrait ? 'portrait' : 'landscape'}{' '}
-      design
+      No {env.orientation} variant in Figma: the rules expand the {other === screen.figma.portrait ? 'portrait' : 'landscape'} design
       {other && (
         <>
           {' ('}

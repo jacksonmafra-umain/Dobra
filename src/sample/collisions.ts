@@ -50,8 +50,10 @@ export function useCollisions(
     const host = root.current;
     if (!host) return;
     const zones: Zone[] = [];
-    if (env.fold) {
-      zones.push({ label: 'Folding region', rect: env.fold.rect, scrollAxis: env.fold.axis === 'vertical' ? 'x' : 'none' });
+    // Only a fold that separates or hides content is a problem; a flat crease on a flexible display is not.
+    for (const fold of env.folds) {
+      if (!fold.separating && !fold.occludes) continue;
+      zones.push({ label: 'Folding region', rect: fold.rect, scrollAxis: fold.axis === 'vertical' ? 'x' : 'none' });
     }
     for (const region of env.reservedRegions) zones.push({ label: region.label, rect: region.rect, scrollAxis: 'none' });
 

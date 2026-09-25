@@ -1,6 +1,5 @@
 // Sample design system components, named after their Figma components (data-name).
 import { Children, useState, type CSSProperties, type ReactNode } from 'react';
-import type { GridComponentId } from '../config/types';
 import type { Layout } from '../engine/layout';
 import { asset } from './assets';
 import type { NewsStory, OrderLine, Restaurant, Reward } from './content';
@@ -339,7 +338,7 @@ export function RuleGrid({
   className = '',
 }: {
   layout: Layout;
-  component: GridComponentId;
+  component: string;
   children: ReactNode;
   className?: string;
 }) {

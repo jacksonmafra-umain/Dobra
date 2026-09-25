@@ -87,7 +87,7 @@ export function DeviceFrame({ env, zoom, children, overlay, onResize }: DeviceFr
         {env.deviceName}
         {!env.isFree && env.pose && ` · ${env.pose.label}`}
         {!env.isFree && !env.pose && env.displayLabel !== 'Display' && ` · ${env.displayLabel}`}
-        {` · ${env.width}×${env.height} pt`}
+        {` · ${env.width}×${env.height} ${env.unit}`}
         {env.estimated && <span className="tag tag--warn">estimated</span>}
         <span className="device-caption__scale">{Math.round(scale * 100)}%</span>
       </div>

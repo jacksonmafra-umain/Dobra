@@ -9,21 +9,23 @@ export interface ModalPlacement {
   note: string;
 }
 
-/** Where an alert or sheet goes; on a folded display it moves clear of the fold (HIG). */
+/** Where an alert or sheet goes; on a folded display it moves clear of the fold. */
 export function placeModal(kind: ModalKind, env: Environment, layout: Layout, rtl: boolean): ModalPlacement {
   const content: Rect = { x: 0, y: 0, width: env.width - layout.railWidth, height: env.height };
-  const fold = env.fold;
-  if (!fold) {
+  const fold = layout.fold;
+  const regions = env.regions;
+  if (!fold || regions.length < 2) {
     return {
       area: content,
       note: kind === 'alert' ? 'Centred on the screen.' : 'Anchored to the bottom, full width of the content area.',
     };
   }
   if (fold.axis === 'vertical') {
-    const area = intersectRect(rtl ? fold.regions[1] : fold.regions[0], content);
-    return { area, note: `Moved clear of the fold into the leading half (${Math.round(area.width)} pt wide).` };
+    const area = intersectRect(rtl ? regions[regions.length - 1] : regions[0], content);
+    return { area, note: `Moved clear of the fold into the leading area (${Math.round(area.width)} ${env.unit} wide).` };
   }
-  const [top, bottom] = fold.regions;
+  const top = regions[0];
+  const bottom = regions[regions.length - 1];
   return kind === 'alert'
     ? { area: intersectRect(top, content), note: 'Moved clear of the fold into the top half.' }
     : { area: intersectRect(bottom, content), note: 'Sheet kept below the fold, in the bottom half.' };

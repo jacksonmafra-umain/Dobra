@@ -26,10 +26,11 @@ export interface BarLayout {
 const GROUP_ORDER: ToolbarGroup[] = ['navigation', 'prominent', 'secondary'];
 
 /** Decides where toolbar items and the tab bar go (HIG bar compression on iPhone Duo). */
-export function resolveBars(config: SimulatorConfig, env: Environment, screen: ScreenSpec, unit = 'pt'): BarLayout {
+export function resolveBars(config: SimulatorConfig, env: Environment, screen: ScreenSpec): BarLayout {
+  const unit = env.unit;
   const items = screen.toolbar.items;
   const experience = screen.experience;
-  if (env.barAxis === 'horizontal') {
+  if (env.barAxis !== 'vertical') {
     return {
       axis: 'horizontal',
       horizontal: items,
@@ -43,7 +44,7 @@ export function resolveBars(config: SimulatorConfig, env: Environment, screen: S
     };
   }
 
-  const spec = config.verticalBars;
+  const spec = config.platforms.ios.verticalBars;
   const notes: BarNote[] = [];
   const textItems = items.filter((i) => i.label !== 'symbol' || !i.symbol);
   for (const item of textItems) {

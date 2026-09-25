@@ -1,46 +1,261 @@
 {
-  "$comment": "Size-Class Simulator config. Everything the simulator shows is driven from this file. All sizes are iOS points. See README.md > Editing the config.",
-  "version": "0.4.0",
+  "$comment": "Size-Class Simulator config. Everything the simulator shows is driven from this file. Sizes are in the unit of the device's platform: points (pt) on iOS, density-independent pixels (dp) on Android. See README.md > Editing the config.",
+  "version": "0.5.0",
   "figmaFile": "SAMPLE_FILE_KEY",
   "sources": {
     "figma-ui": "01. UI – Sample design system · 📱 Screens & related components (SAMPLE_FILE_KEY, node 0:0)",
     "figma-tokens": "01. Styles + Tokens · Device & Orientation collection (hSafeAreaInset 24/62, bottomSafeAreaInset 21)",
     "apple-device": "Apple device spec (not in our Figma: Figma frames are 375×812 portrait / 812 landscape)",
-    "estimated": "Estimated: not confirmed. Verify in Xcode 27.1 Device Hub."
+    "estimated": "Estimated: not confirmed. Verify in Xcode 27.1 Device Hub.",
+    "androidx-window": "androidx.window documentation (WindowSizeClass, FoldingFeature, WindowInsets): developer.android.com/develop/ui/compose/layouts/adaptive",
+    "material3": "Material 3 adaptive guidance and component specs: m3.material.io/foundations/layout/applying-layout",
+    "android-docs": "Android platform documentation (developer.android.com)",
+    "device-spec": "Manufacturer device specification (pixels and default density); dp derived as px / density",
+    "observed": "Observed on hardware or an emulator while testing an Android app"
   },
-  "freeResize": {
-    "$comment": "Free resize has no device, so size classes come from these thresholds (points). Real devices use the explicit table under each display.",
-    "regularWidthMin": 600,
-    "regularHeightMin": 500,
-    "barAxis": "horizontal"
+  "platforms": {
+    "ios": {
+      "label": "iOS",
+      "unit": "pt",
+      "typeUnit": "pt",
+      "guidance": {
+        "name": "Apple Human Interface Guidelines",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/layout"
+      },
+      "sizeClasses": {
+        "system": "uikit",
+        "$comment": "Real devices use the explicit table under each display. Free resize has no device, so it uses these thresholds.",
+        "free": {
+          "regularWidthMin": 600,
+          "regularHeightMin": 500
+        }
+      },
+      "freeResize": {
+        "barAxis": "horizontal"
+      },
+      "verticalBars": {
+        "$comment": "Geometry of the trailing-edge rail on iPhone Duo (HIG: Dynamic Island, status bar, toolbar, tab bar from top to bottom). All estimated until confirmed in Xcode 27.1 Device Hub.",
+        "estimated": true,
+        "railWidth": 64,
+        "statusRegion": 72,
+        "toolbarItem": 44,
+        "groupGap": 16,
+        "overflowButton": 44,
+        "tabItem": 52,
+        "tabItemGap": 4,
+        "tabBarMinimized": 52,
+        "minGapBetweenBars": 16
+      },
+      "fold": {
+        "$comment": "How layouts adapt when a display is partially folded (HIG › Adapt your layout when the device folds).",
+        "balanceMargins": true,
+        "$balanceMargins": "Match the display symmetry: equal leading/trailing margins so content centres on the fold.",
+        "evenGridGutterAtFold": true,
+        "$evenGridGutterAtFold": "Grids with an even number of columns put their middle gutter over the fold (fold width + gap).",
+        "modalPlacement": {
+          "vertical": "leading-half",
+          "horizontal": "alert-top-half, sheet-bottom-half"
+        }
+      }
+    },
+    "android": {
+      "label": "Android",
+      "unit": "dp",
+      "typeUnit": "sp",
+      "guidance": {
+        "name": "Material 3 adaptive",
+        "url": "https://developer.android.com/develop/ui/compose/layouts/adaptive"
+      },
+      "sizeClasses": {
+        "system": "window",
+        "$comment": "androidx.window.core.layout.WindowSizeClass breakpoints, computed from the window size in dp, never from the orientation.",
+        "width": [
+          {
+            "id": "compact",
+            "label": "Compact",
+            "min": 0
+          },
+          {
+            "id": "medium",
+            "label": "Medium",
+            "min": 600
+          },
+          {
+            "id": "expanded",
+            "label": "Expanded",
+            "min": 840
+          },
+          {
+            "id": "large",
+            "label": "Large",
+            "min": 1200
+          },
+          {
+            "id": "extraLarge",
+            "label": "Extra-large",
+            "min": 1600
+          }
+        ],
+        "height": [
+          {
+            "id": "compact",
+            "label": "Compact",
+            "min": 0
+          },
+          {
+            "id": "medium",
+            "label": "Medium",
+            "min": 480
+          },
+          {
+            "id": "expanded",
+            "label": "Expanded",
+            "min": 900
+          }
+        ],
+        "source": "androidx-window",
+        "$note": "Large (1200) and Extra-large (1600) come from androidx.window 1.5 (BREAKPOINTS_V2). The brief names 1200 as the desktop-class breakpoint; both are modelled."
+      },
+      "navigation": {
+        "$comment": "Which navigation pattern a window gets, first match wins. Mirrors NavigationSuiteScaffold, plus the drawer on large windows as the sample app's decision.",
+        "rules": [
+          {
+            "when": {
+              "posture": "tabletop"
+            },
+            "pattern": "bar",
+            "source": "androidx-window",
+            "$note": "NavigationSuiteScaffold keeps a bottom bar in tabletop posture."
+          },
+          {
+            "when": {
+              "width": [
+                "compact"
+              ]
+            },
+            "pattern": "bar",
+            "source": "material3"
+          },
+          {
+            "when": {
+              "height": [
+                "compact"
+              ]
+            },
+            "pattern": "rail",
+            "source": "material3",
+            "$note": "A short window keeps its height for content: bars move to the leading edge."
+          },
+          {
+            "when": {
+              "width": [
+                "medium",
+                "expanded"
+              ]
+            },
+            "pattern": "rail",
+            "source": "material3"
+          },
+          {
+            "when": {
+              "width": [
+                "large",
+                "extraLarge"
+              ]
+            },
+            "pattern": "drawer",
+            "source": "estimated",
+            "$note": "NavigationSuiteScaffold does not pick a drawer by default; the sample app uses a permanent drawer on desktop-class windows. Confirm with design."
+          }
+        ],
+        "bar": {
+          "height": 80,
+          "floating": true,
+          "inset": 12,
+          "source": "estimated",
+          "$note": "The sample app draws its tab bar as a floating pill over the content. M3 NavigationBar is 80 dp and docked."
+        },
+        "rail": {
+          "width": 80,
+          "source": "material3"
+        },
+        "drawer": {
+          "width": 360,
+          "source": "material3"
+        }
+      },
+      "fold": {
+        "$comment": "How layouts adapt to a FoldingFeature (Material 3 › Foldables; androidx.window). Split only when isSeparating is true, and split at the hinge bounds, not at 50%.",
+        "splitAtHinge": true,
+        "avoidOcclusion": true,
+        "$avoidOcclusion": "When occlusionType is FULL the hinge hides content: nothing interactive may sit in its bounds.",
+        "tabletop": {
+          "topPane": "content",
+          "bottomPane": "controls",
+          "source": "material3"
+        },
+        "source": "androidx-window"
+      }
+    }
   },
-  "verticalBars": {
-    "$comment": "Geometry of the trailing-edge rail on iPhone Duo (HIG: Dynamic Island, status bar, toolbar, tab bar from top to bottom). All estimated until confirmed in Xcode 27.1 Device Hub.",
-    "estimated": true,
-    "railWidth": 64,
-    "statusRegion": 72,
-    "toolbarItem": 44,
-    "groupGap": 16,
-    "overflowButton": 44,
-    "tabItem": 52,
-    "tabItemGap": 4,
-    "tabBarMinimized": 52,
-    "minGapBetweenBars": 16
-  },
-  "fold": {
-    "$comment": "How layouts adapt when a display is partially folded (HIG › Adapt your layout when the device folds).",
-    "balanceMargins": true,
-    "$balanceMargins": "Match the display symmetry: equal leading/trailing margins so content centres on the fold.",
-    "evenGridGutterAtFold": true,
-    "$evenGridGutterAtFold": "Grids with an even number of columns put their middle gutter over the fold (fold width + gap).",
-    "modalPlacement": {
-      "vertical": "leading-half",
-      "horizontal": "alert-top-half, sheet-bottom-half"
+  "components": {
+    "$comment": "Every component the rules can lay out. kind says which rule settings it takes; gap is the space between items; minLegibleWidth is the narrowest box its text still reads in (checked by the width-loss check).",
+    "news_story_hero": {
+      "kind": "hero",
+      "split": {
+        "imageFraction": 0.5,
+        "textPadding": 48
+      },
+      "minLegibleWidth": 200,
+      "source": "figma-ui"
+    },
+    "action_card": {
+      "kind": "grid",
+      "gap": 12,
+      "minLegibleWidth": 240,
+      "source": "figma-ui"
+    },
+    "shortcut_card_item": {
+      "kind": "grid",
+      "gap": 12,
+      "minLegibleWidth": 82,
+      "source": "figma-ui"
+    },
+    "news_story_card": {
+      "kind": "grid",
+      "gap": 24,
+      "minLegibleWidth": 200,
+      "source": "figma-ui"
+    },
+    "reward_card": {
+      "kind": "grid",
+      "gap": 16,
+      "minLegibleWidth": 120,
+      "source": "figma-ui"
+    },
+    "deal_card": {
+      "kind": "grid",
+      "gap": 24,
+      "minLegibleWidth": 200,
+      "source": "figma-ui"
+    },
+    "bonus_campaign_banner": {
+      "kind": "grid",
+      "gap": 12,
+      "minLegibleWidth": 240,
+      "source": "figma-ui"
+    },
+    "restaurant-card-small": {
+      "kind": "carousel"
+    },
+    "tab_bar_26": {
+      "kind": "tab-bar"
     }
   },
   "devices": [
     {
       "id": "iphone-se",
+      "platform": "ios",
       "name": "iPhone SE",
       "enabled": true,
       "displays": {
@@ -94,6 +309,7 @@
     },
     {
       "id": "iphone-17",
+      "platform": "ios",
       "name": "iPhone 17",
       "enabled": true,
       "displays": {
@@ -151,6 +367,7 @@
     },
     {
       "id": "iphone-17-pro-max",
+      "platform": "ios",
       "name": "iPhone 17 Pro Max",
       "enabled": true,
       "displays": {
@@ -208,6 +425,7 @@
     },
     {
       "id": "iphone-duo",
+      "platform": "ios",
       "name": "iPhone Duo",
       "enabled": true,
       "displays": {
@@ -426,6 +644,7 @@
     {
       "id": "phone-portrait",
       "label": "Compact width · Regular height",
+      "platform": "ios",
       "match": {
         "horizontal": "compact",
         "vertical": "regular"
@@ -482,6 +701,7 @@
     {
       "id": "phone-landscape",
       "label": "Any width · Compact height",
+      "platform": "ios",
       "match": {
         "vertical": "compact"
       },
@@ -537,6 +757,7 @@
     {
       "id": "regular-regular",
       "label": "Regular width · Regular height",
+      "platform": "ios",
       "match": {
         "horizontal": "regular",
         "vertical": "regular"
@@ -592,6 +813,7 @@
     {
       "id": "fallback",
       "label": "Fallback (no other rule matched)",
+      "platform": "ios",
       "match": {},
       "pageMargin": {
         "base": 24,
@@ -640,6 +862,357 @@
           "minItemWidth": 280
         }
       }
+    },
+    {
+      "id": "android-compact-short",
+      "label": "Compact width · Compact height",
+      "platform": "android",
+      "match": {
+        "width": [
+          "compact"
+        ],
+        "height": [
+          "compact"
+        ]
+      },
+      "pageMargin": {
+        "base": 16,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        }
+      },
+      "source": "estimated",
+      "$comment": "Clamshell cover displays and split-screen halves: short AND narrow. Never side-by-side here, whatever the orientation says."
+    },
+    {
+      "id": "android-compact",
+      "label": "Compact width",
+      "platform": "android",
+      "match": {
+        "width": [
+          "compact"
+        ]
+      },
+      "pageMargin": {
+        "base": 16,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        }
+      },
+      "source": "estimated",
+      "$comment": "Margin 16 dp is the Material 3 compact margin; app value to confirm."
+    },
+    {
+      "id": "android-wide-short",
+      "label": "Medium+ width · Compact height",
+      "platform": "android",
+      "match": {
+        "width": [
+          "medium",
+          "expanded",
+          "large",
+          "extraLarge"
+        ],
+        "height": [
+          "compact"
+        ]
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "split",
+          "bleed": "inset"
+        },
+        "action_card": {
+          "perRow": 2
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "inline"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        }
+      },
+      "source": "estimated"
+    },
+    {
+      "id": "android-medium",
+      "label": "Medium width",
+      "platform": "android",
+      "match": {
+        "width": [
+          "medium"
+        ]
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 2
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        }
+      },
+      "source": "estimated"
+    },
+    {
+      "id": "android-expanded",
+      "label": "Expanded+ width",
+      "platform": "android",
+      "match": {
+        "width": [
+          "expanded",
+          "large",
+          "extraLarge"
+        ]
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 12,
+        "gutter": 24,
+        "proposed": true
+      },
+      "panes": 2,
+      "components": {
+        "news_story_hero": {
+          "variant": "split",
+          "bleed": "inset"
+        },
+        "action_card": {
+          "perRow": 2
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 6,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 3,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 3,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 3,
+          "minItemWidth": 280
+        }
+      },
+      "source": "estimated"
+    },
+    {
+      "id": "android-fallback",
+      "label": "Fallback (no other Android rule matched)",
+      "platform": "android",
+      "match": {},
+      "pageMargin": {
+        "base": 16,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        }
+      },
+      "source": "estimated"
     }
   ],
   "tabBar": {

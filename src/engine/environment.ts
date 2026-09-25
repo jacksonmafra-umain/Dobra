@@ -1,33 +1,22 @@
-import type {
-  BarAxis,
-  DeviceSpec,
-  DisplaySpec,
-  Orientation,
-  PoseSpec,
-  Rect,
-  ReservedRegionSpec,
-  SafeArea,
-  SimulatorConfig,
-  Size,
-  UIKitSizeClass,
-} from '../config/types';
+import type { BarAxis, DeviceSpec, Orientation, Platform, PoseSpec, Rect, SafeArea, SimulatorConfig, Size } from '../config/types';
+import { resolveIosDevice } from './ios';
+import type { FoldFeature } from './folds';
+import { windowSizeClass, type SizeClass } from './sizeClass';
+
+export type { FoldFeature } from './folds';
+export type { SizeClass } from './sizeClass';
 
 /** What the user picked in the controls. */
 export interface Selection {
   deviceId: string;
   displayId: string;
   orientation: Orientation;
+  /** Device-less window. Its platform decides the vocabulary. */
   free: Size | null;
+  freePlatform?: Platform;
   pose?: string;
   cameraActive?: boolean;
   liveActivity?: boolean;
-}
-
-export interface FoldRegion {
-  axis: 'vertical' | 'horizontal';
-  rect: Rect;
-  regions: [Rect, Rect];
-  estimated: boolean;
 }
 
 export interface ReservedRegion {
@@ -40,14 +29,20 @@ export interface ReservedRegion {
 
 /** The resolved space an app gets for one selection. */
 export interface Environment {
+  platform: Platform;
+  /** Layout unit: pt on iOS, dp on Android. */
+  unit: string;
+  /** Type unit: pt on iOS, sp on Android. */
+  typeUnit: string;
   deviceName: string;
   displayLabel: string;
   isFree: boolean;
   width: number;
   height: number;
   orientation: Orientation;
-  sizeClass: UIKitSizeClass;
-  barAxis: BarAxis;
+  sizeClass: SizeClass;
+  /** iOS bar placement (iPhone Duo moves bars to the trailing edge). Android navigation is resolved by the layout. */
+  barAxis: BarAxis | null;
   safeArea: SafeArea;
   statusBar: boolean;
   homeIndicator: boolean;
@@ -58,7 +53,9 @@ export interface Environment {
   supportedOrientations: Orientation[];
   pose: PoseSpec | null;
   poses: PoseSpec[];
-  fold: FoldRegion | null;
+  folds: FoldFeature[];
+  /** Logical areas of the window after separating folds split it. One area when nothing separates. */
+  regions: Rect[];
   reservedRegions: ReservedRegion[];
   cameraActive: boolean;
   liveActivity: boolean;
@@ -70,130 +67,41 @@ export function findDevice(config: SimulatorConfig, id: string): DeviceSpec {
   return device;
 }
 
-export function findDisplay(device: DeviceSpec, id: string): DisplaySpec {
-  const display = device.displays[id] ?? Object.values(device.displays)[0];
-  if (!display) throw new Error(`Device "${device.id}" has no displays`);
-  return display;
-}
-
 export function resolveEnvironment(config: SimulatorConfig, sel: Selection): Environment {
-  if (sel.free) return freeEnvironment(config, sel.free);
-
+  if (sel.free) {
+    const platform = sel.freePlatform ?? findDevice(config, sel.deviceId).platform;
+    return freeEnvironment(config, sel.free, platform);
+  }
   const device = findDevice(config, sel.deviceId);
-  const poses = device.poses ?? [];
-  const pose = poses.length
-    ? (poses.find((p) => p.id === sel.pose) ?? poses.find((p) => p.display === sel.displayId) ?? poses[0])
-    : null;
-  const display = findDisplay(device, pose ? pose.display : sel.displayId);
-  const available = Object.keys(display.orientations) as Orientation[];
-  const supported = pose ? available.filter((o) => pose.orientations.includes(o)) : available;
-  const orientation = supported.includes(sel.orientation) ? sel.orientation : supported[0];
-  const spec = display.orientations[orientation]!;
-  const { width: pw, height: ph } = display.portraitSize;
-  const width = orientation === 'portrait' ? pw : ph;
-  const height = orientation === 'portrait' ? ph : pw;
-
-  let dynamicIsland: Rect | null = null;
-  const island = display.hardware.dynamicIsland;
-  if (island) {
-    dynamicIsland =
-      orientation === 'portrait'
-        ? { x: (width - island.width) / 2, y: island.offset, width: island.width, height: island.height }
-        : { x: island.offset, y: (height - island.width) / 2, width: island.height, height: island.width };
-  }
-
-  let fold: FoldRegion | null = null;
-  const hinge = display.hardware.fold;
-  if (pose?.folded && hinge) {
-    const w = hinge.width;
-    fold =
-      orientation === 'landscape'
-        ? {
-            axis: 'vertical',
-            rect: { x: (width - w) / 2, y: 0, width: w, height },
-            regions: [
-              { x: 0, y: 0, width: (width - w) / 2, height },
-              { x: (width + w) / 2, y: 0, width: (width - w) / 2, height },
-            ],
-            estimated: !!hinge.estimated,
-          }
-        : {
-            axis: 'horizontal',
-            rect: { x: 0, y: (height - w) / 2, width, height: w },
-            regions: [
-              { x: 0, y: 0, width, height: (height - w) / 2 },
-              { x: 0, y: (height + w) / 2, width, height: (height - w) / 2 },
-            ],
-            estimated: !!hinge.estimated,
-          };
-  }
-
-  const cameraActive = !!sel.cameraActive;
-  const liveActivity = !!sel.liveActivity;
-  const reservedRegions: ReservedRegion[] = [];
-  for (const region of display.reservedRegions ?? []) {
-    if (region.when === 'camera-active' && !cameraActive) continue;
-    const anchor = anchorFor(region, orientation);
-    const live = region.liveActivity && liveActivity ? region.liveActivity : null;
-    const w = live ? live.width : region.width;
-    const h = live ? live.height : region.height;
-    const top = live ? live.offsetTop : region.offsetTop;
-    reservedRegions.push({
-      id: region.id,
-      label: live ? `${region.label} · Live Activity` : region.label,
-      rect: { x: anchor === 'top-right' ? width - w : 0, y: top, width: w, height: h },
-      kind: live ? 'live-activity' : 'camera',
-      estimated: !!region.estimated,
-    });
-  }
-
-  const trailingCamera = reservedRegions.some((r) => r.kind === 'camera' && r.rect.x > 0);
-  const cameraRegion =
-    spec.barAxis === 'vertical' && trailingCamera ? (display.hardware.camera?.region ?? 0) : 0;
-
-  return {
-    deviceName: device.name,
-    displayLabel: display.label,
-    isFree: false,
-    width,
-    height,
-    orientation,
-    sizeClass: spec.sizeClass,
-    barAxis: spec.barAxis,
-    safeArea: spec.safeArea,
-    statusBar: spec.statusBar,
-    homeIndicator: display.homeIndicator,
-    cornerRadius: display.cornerRadius,
-    dynamicIsland,
-    cameraRegion,
-    estimated: display.estimated || !!spec.sizeClass.estimated || spec.safeArea.source === 'estimated',
-    supportedOrientations: supported,
-    pose,
-    poses,
-    fold,
-    reservedRegions,
-    cameraActive,
-    liveActivity,
-  };
+  return resolveIosDevice(config, device, sel);
 }
 
-function anchorFor(region: ReservedRegionSpec, orientation: Orientation) {
-  return typeof region.anchor === 'string' ? region.anchor : (region.anchor[orientation] ?? 'top-right');
-}
-
-function freeEnvironment(config: SimulatorConfig, size: Size): Environment {
-  const { regularWidthMin, regularHeightMin, barAxis } = config.freeResize;
+function freeEnvironment(config: SimulatorConfig, size: Size, platform: Platform): Environment {
+  const profile = config.platforms[platform];
+  let sizeClass: SizeClass;
+  let barAxis: BarAxis | null = null;
+  if (platform === 'ios') {
+    const { regularWidthMin, regularHeightMin } = config.platforms.ios.sizeClasses.free;
+    sizeClass = {
+      system: 'uikit',
+      horizontal: size.width >= regularWidthMin ? 'regular' : 'compact',
+      vertical: size.height >= regularHeightMin ? 'regular' : 'compact',
+    };
+    barAxis = config.platforms.ios.freeResize.barAxis;
+  } else {
+    sizeClass = windowSizeClass(config.platforms.android, size.width, size.height);
+  }
   return {
-    deviceName: 'Free resize',
+    platform,
+    unit: profile.unit,
+    typeUnit: profile.typeUnit,
+    deviceName: `Free resize · ${profile.label}`,
     displayLabel: 'Custom size',
     isFree: true,
     width: size.width,
     height: size.height,
     orientation: size.width > size.height ? 'landscape' : 'portrait',
-    sizeClass: {
-      horizontal: size.width >= regularWidthMin ? 'regular' : 'compact',
-      vertical: size.height >= regularHeightMin ? 'regular' : 'compact',
-    },
+    sizeClass,
     barAxis,
     safeArea: { top: 0, right: 0, bottom: 0, left: 0, source: 'free-resize' },
     statusBar: false,
@@ -205,15 +113,12 @@ function freeEnvironment(config: SimulatorConfig, size: Size): Environment {
     supportedOrientations: ['portrait', 'landscape'],
     pose: null,
     poses: [],
-    fold: null,
+    folds: [],
+    regions: [{ x: 0, y: 0, width: size.width, height: size.height }],
     reservedRegions: [],
     cameraActive: false,
     liveActivity: false,
   };
-}
-
-export function formatSizeClass(sc: UIKitSizeClass): string {
-  return `w${capitalize(sc.horizontal)} · h${capitalize(sc.vertical)}`;
 }
 
 export function capitalize(s: string): string {

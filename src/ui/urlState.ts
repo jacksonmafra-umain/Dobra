@@ -52,6 +52,7 @@ export function readUrlState(search = location.search): UrlState {
       displayId: q.get('display') ?? 'main',
       orientation: (q.get('o') === 'landscape' ? 'landscape' : 'portrait') as Orientation,
       free: free ? clampFree(+free[1], +free[2]) : null,
+      freePlatform: q.get('fp') === 'android' ? 'android' : q.get('fp') === 'ios' ? 'ios' : undefined,
       pose: q.get('pose') ?? undefined,
       cameraActive: q.get('camera') === '1',
       liveActivity: q.get('live') === '1',
@@ -73,7 +74,10 @@ export function writeUrlState(state: UrlState, env: Environment): string {
   if (sel.cameraActive) q.set('camera', '1');
   if (sel.liveActivity) q.set('live', '1');
   q.set('o', env.orientation);
-  if (sel.free) q.set('free', `${sel.free.width}x${sel.free.height}`);
+  if (sel.free) {
+    q.set('free', `${sel.free.width}x${sel.free.height}`);
+    q.set('fp', env.platform);
+  }
   q.set('screen', state.screenId);
   q.set('theme', state.theme);
   q.set('zoom', state.zoom);

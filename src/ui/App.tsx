@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { SimulatorConfig } from '../config/types';
+import { PLATFORMS, type SimulatorConfig } from '../config/types';
 import { describeChanges, type Snapshot } from '../engine/diff';
 import { findDevice, resolveEnvironment, type Selection } from '../engine/environment';
 import { resolveLayout } from '../engine/layout';
@@ -34,17 +34,17 @@ export function App({ config }: { config: SimulatorConfig }) {
 
   const previous = useRef<Snapshot | null>(null);
   const label = env.isFree
-    ? `Free resize ${env.width}×${env.height}`
+    ? `Free resize ${env.width}×${env.height} ${env.unit}`
     : `${env.deviceName}${env.pose ? ` ${env.pose.label.toLowerCase()}` : ''} ${env.orientation}${env.cameraActive ? ' · camera on' : ''}${env.liveActivity ? ' · Live Activity' : ''}`;
   // While dragging a free-resize frame, only report when a rule outcome changes.
   const changeKey = env.isFree
-    ? JSON.stringify([env.sizeClass, layout.rule.id, layout.perRow, layout.margin, layout.tabItem, layout.bars.compression])
+    ? JSON.stringify([env.sizeClass, layout.rule.id, layout.perRow, layout.margin, layout.tabItem, layout.bars?.compression, layout.navigation.pattern])
     : label;
 
   useEffect(() => {
     const next: Snapshot = { label, env, layout };
     if (previous.current) {
-      setChange({ label: `${previous.current.label} → ${next.label}`, changes: describeChanges(previous.current, next, screen.components) });
+      setChange({ label: `${previous.current.label} → ${next.label}`, changes: describeChanges(config, previous.current, next, screen.components) });
     }
     previous.current = next;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,7 +191,7 @@ export function App({ config }: { config: SimulatorConfig }) {
                 <>
                   <input
                     type="number"
-                    aria-label="Width in points"
+                    aria-label={`Width in ${env.unit}`}
                     value={sel.free.width}
                     min={FREE_MIN.width}
                     max={FREE_MAX.width}
@@ -200,13 +200,24 @@ export function App({ config }: { config: SimulatorConfig }) {
                   <span>×</span>
                   <input
                     type="number"
-                    aria-label="Height in points"
+                    aria-label={`Height in ${env.unit}`}
                     value={sel.free.height}
                     min={FREE_MIN.height}
                     max={FREE_MAX.height}
                     onChange={(e) => resizeFree(sel.free!.width, +e.target.value)}
                   />
-                  <span className="muted">pt</span>
+                  <span className="muted">{env.unit}</span>
+                  <div className="seg" title="Size-class vocabulary for the device-less window">
+                    {PLATFORMS.map((p) => (
+                      <button
+                        aria-pressed={env.platform === p}
+                        onClick={() => setSel((s) => ({ ...s, freePlatform: p }))}
+                        key={p}
+                      >
+                        {config.platforms[p].label}
+                      </button>
+                    ))}
+                  </div>
                 </>
               )}
             </div>

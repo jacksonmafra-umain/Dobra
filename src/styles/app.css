@@ -541,3 +541,7 @@ body {
   margin: 0;
   padding-left: 18px;
 }
+.ov-fold--flat {
+  background: none;
+  outline-style: dashed;
+}

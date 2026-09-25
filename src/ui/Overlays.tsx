@@ -1,4 +1,5 @@
 import type { Environment } from '../engine/environment';
+import { foldThickness } from '../engine/folds';
 import type { Layout } from '../engine/layout';
 
 export interface OverlayToggles {
@@ -38,29 +39,33 @@ export function Overlays({ env, layout, show }: { env: Environment; layout: Layo
             </em>
           </div>
         ))}
-      {show.fold && env.fold && (
+      {show.fold && env.folds.length > 0 && (
         <>
-          {env.fold.regions.map((r, i) => (
-            <div className="ov-fold-region" style={{ left: r.x, top: r.y, width: r.width, height: r.height }} key={i}>
+          {env.regions.length > 1 &&
+            env.regions.map((r, i) => (
+              <div className="ov-fold-region" style={{ left: r.x, top: r.y, width: r.width, height: r.height }} key={i}>
+                <em>
+                  {Math.round(r.width)}×{Math.round(r.height)}
+                </em>
+              </div>
+            ))}
+          {env.folds.map((fold, i) => (
+            <div
+              className={`ov-fold ov-fold--${fold.axis}${fold.separating ? '' : ' ov-fold--flat'}`}
+              style={{
+                left: fold.rect.x,
+                top: fold.rect.y,
+                width: Math.max(fold.rect.width, fold.axis === 'vertical' ? 2 : 0),
+                height: Math.max(fold.rect.height, fold.axis === 'horizontal' ? 2 : 0),
+              }}
+              key={i}
+            >
               <em>
-                {Math.round(r.width)}×{Math.round(r.height)}
+                {fold.android ? fold.android.state.toLowerCase().replace('_', '-') : 'fold'} {foldThickness(fold)}
+                {fold.estimated ? ' · est.' : ''}
               </em>
             </div>
           ))}
-          <div
-            className={`ov-fold ov-fold--${env.fold.axis}`}
-            style={{
-              left: env.fold.rect.x,
-              top: env.fold.rect.y,
-              width: env.fold.rect.width,
-              height: env.fold.rect.height,
-            }}
-          >
-            <em>
-              fold {env.fold.rect[env.fold.axis === 'vertical' ? 'width' : 'height']}
-              {env.fold.estimated ? ' · est.' : ''}
-            </em>
-          </div>
         </>
       )}
       {show.safeArea && (

@@ -1,4 +1,4 @@
-// The simulated app screen: toolbar, scrolling content, bars, system chrome and modals.
+// The simulated app screen: toolbar, scrolling content, navigation, system chrome and modals.
 import { useRef, type ComponentType, type CSSProperties } from 'react';
 import type { ScreenSpec, SimulatorConfig } from '../config/types';
 import type { Environment } from '../engine/environment';
@@ -7,6 +7,7 @@ import { placeModal, type ModalKind } from '../engine/modal';
 import { DynamicIsland, HomeIndicator, LiveActivityIsland, StatusBar } from './chrome';
 import { useCollisions, type Collision } from './collisions';
 import { Modal } from './modal';
+import { FloatingTabBar, NavigationDrawer, NavigationRail } from './navigation';
 import { BagScreen } from './screens/BagScreen';
 import { CheckoutScreen } from './screens/CheckoutScreen';
 import { DealsScreen } from './screens/DealsScreen';
@@ -24,7 +25,7 @@ const SCREEN_CONTENT: Record<string, ComponentType<{ layout: Layout }>> = {
   checkout: CheckoutScreen,
 };
 
-/** Toolbar content never sits closer than this to the screen edge (points). */
+/** Toolbar content never sits closer than this to the window edge. */
 const TOOLBAR_MIN_INSET = 16;
 
 interface ScreenProps {
@@ -44,33 +45,47 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
 
   const safe = env.safeArea;
   const bars = layout.bars;
-  const vertical = bars.axis === 'vertical';
-  const right = vertical ? 0 : safe.right;
-  const style = {
+  const nav = layout.navigation;
+  const iosRail = nav.pattern === 'ios-rail';
+  const floatingBar = nav.pattern === 'bar' && nav.floating;
+  // Space the leading rail or drawer takes, including the inset it sits in.
+  const leading = layout.leadingNav ? safe.left + layout.leadingNav : 0;
+  const right = iosRail ? 0 : safe.right;
+
+  // Physical LTR margins inside the content column; RTL mirrors them.
+  const marginStart = layout.margin.left - leading;
+  const marginEnd = layout.margin.right - layout.railWidth;
+  const style: Record<string, string> = {
     '--sa-top': `${safe.top}px`,
     '--sa-right': `${right}px`,
     '--sa-bottom': `${safe.bottom}px`,
-    '--sa-left': `${safe.left}px`,
-    '--margin-left': `${layout.margin.left}px`,
-    '--margin-right': `${layout.margin.right - layout.railWidth}px`,
-    '--toolbar-inset-left': `${Math.max(TOOLBAR_MIN_INSET, safe.left)}px`,
+    '--sa-left': `${leading ? 0 : safe.left}px`,
+    '--margin-left': `${rtl ? marginEnd : marginStart}px`,
+    '--margin-right': `${rtl ? marginStart : marginEnd}px`,
+    '--toolbar-inset-left': `${leading ? TOOLBAR_MIN_INSET : Math.max(TOOLBAR_MIN_INSET, safe.left)}px`,
     '--toolbar-inset-right': `${Math.max(TOOLBAR_MIN_INSET, right)}px`,
     '--camera-left': `${env.reservedRegions.find((r) => r.kind === 'camera' && r.rect.x === 0)?.rect.width ?? 0}px`,
-  } as Record<string, string>;
-  if (rtl) {
-    style['--margin-left'] = `${layout.margin.right - layout.railWidth}px`;
-    style['--margin-right'] = `${layout.margin.left}px`;
-  }
+    '--floating-bar-clearance': floatingBar ? `${nav.size + nav.inset}px` : '0px',
+  };
 
-  const flagged = bars.notes.filter((n) => n.kind === 'text-in-vertical').map((n) => n.itemId!);
-  const horizontalItems = bars.horizontal;
+  const flagged = bars ? bars.notes.filter((n) => n.kind === 'text-in-vertical').map((n) => n.itemId!) : [];
+  const horizontalItems = bars ? bars.horizontal : screen.toolbar.items;
   const showToolbar =
-    !vertical || horizontalItems.length > 0 || screen.toolbar.component === 'app_toolbar' || !!screen.toolbar.title;
+    !iosRail || horizontalItems.length > 0 || screen.toolbar.component === 'app_toolbar' || !!screen.toolbar.title;
   const Content = SCREEN_CONTENT[screen.id];
+  const columnStyle: CSSProperties = rtl
+    ? { marginLeft: layout.railWidth, marginRight: leading }
+    : { marginRight: layout.railWidth, marginLeft: leading };
 
   return (
-    <div ref={root} className={`screen${vertical ? ' screen--vertical' : ''}`} style={style as CSSProperties} data-screen={screen.id}>
-      <div className="screen__column" style={{ marginRight: layout.railWidth }} dir={rtl ? 'rtl' : 'ltr'}>
+    <div
+      ref={root}
+      className={`screen screen--${env.platform}${iosRail ? ' screen--vertical' : ''}`}
+      style={style as CSSProperties}
+      data-screen={screen.id}
+      data-platform={env.platform}
+    >
+      <div className="screen__column" style={columnStyle} dir={rtl ? 'rtl' : 'ltr'}>
         <div className="screen__status-spacer" />
         {showToolbar &&
           (screen.toolbar.component === 'app_toolbar' ? (
@@ -79,13 +94,26 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
             <Toolbar spec={screen.toolbar} items={horizontalItems} flagged={flagged} />
           ))}
         <main className="screen__scroll">{Content && <Content layout={layout} />}</main>
-        {!vertical && <TabBar items={config.tabBar.items} selected={screen.tab} item={layout.tabItem} />}
+        {nav.pattern === 'tab-bar' && <TabBar items={config.tabBar.items} selected={screen.tab} item={layout.tabItem} />}
+        {nav.pattern === 'bar' && (
+          <FloatingTabBar navigation={nav} items={config.tabBar.items} selected={screen.tab} bottomInset={safe.bottom} />
+        )}
       </div>
-      {vertical && (
+      {nav.pattern === 'rail' && (
+        <div dir={rtl ? 'rtl' : 'ltr'}>
+          <NavigationRail navigation={nav} items={config.tabBar.items} selected={screen.tab} top={safe.top} width={leading} />
+        </div>
+      )}
+      {nav.pattern === 'drawer' && (
+        <div dir={rtl ? 'rtl' : 'ltr'}>
+          <NavigationDrawer navigation={nav} items={config.tabBar.items} selected={screen.tab} top={safe.top} width={leading} />
+        </div>
+      )}
+      {iosRail && bars && (
         <VerticalRail
           env={env}
           bars={bars}
-          spec={config.verticalBars}
+          spec={config.platforms.ios.verticalBars}
           width={layout.railWidth}
           tabs={config.tabBar.items}
           selectedTab={screen.tab}
