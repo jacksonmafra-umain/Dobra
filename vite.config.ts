@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 
 // Default build: assets split into hashed files and loaded on demand.
-// `--mode single`: one self-contained HTML file (fonts and images inlined).
+// `--mode single`: one self-contained HTML file (images inlined).
 export default defineConfig(({ mode }) => {
   const single = mode === 'single';
   return {
