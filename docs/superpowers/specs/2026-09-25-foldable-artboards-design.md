@@ -2,6 +2,8 @@
 
 Date: 2026-09-25
 Status: approved in conversation, pending written-spec review
+Working name: **Hinge** (plugin, CLI and plugin-data namespace `hinge`); rename freely before the
+first release.
 
 ## 1. Goal
 
@@ -24,8 +26,8 @@ duoresponsive.com/devices.
 
 - A designer can generate every required foldable artboard from the plugin in one action, and
   each frame carries a correct hinge overlay and grid.
-- The checker flags the five failures seeded in `docs/android-extension-brief.md` §5 when they
-  are reproduced as Figma frames or web pages.
+- The checker flags the five observed foldable failures (§8.2) when they are reproduced as Figma
+  frames or web pages.
 - The coverage matrix states, per category, which required cells are present, missing or only
   matched by size.
 - Every number in the catalog has a `source`; guesses are marked `estimated`.
@@ -64,14 +66,14 @@ apps/simulator/         the existing simulator, plus the web report (track C)
 `core` is plain TypeScript and zod: no React, no DOM, no `figma` global. It ships as TypeScript
 source (`"exports": {"./*": "./src/*.ts"}`); Vite and esbuild consume it directly.
 
-### 3.1 Generic catalog vs Sample profile
+### 3.1 Generic catalog vs app profile
 
 Because the plugin will go to the Community, the catalog splits in two:
 
 - **Generic (core, public):** devices, displays, categories, postures, fold geometry, insets,
   reserved regions, generic rules, default requirements, preset specs.
-- **Sample profile (simulator only):** `screens`, `layoutRules`, `tabBar`, components, fonts,
-  assets, Sample coverage requirements.
+- **App profile (optional, per team):** `screens`, `layoutRules`, `tabBar`, components and
+  coverage requirements for one product. The repo ships a neutral sample profile only.
 
 The plugin bundles only the generic catalog. A profile (layout rules and requirements) can be
 imported into the plugin as JSON and is stored in the document's shared plugin data.
@@ -162,9 +164,9 @@ Each source turns what it reads into `Subject`s; the same `check()` and `coverag
 
 - `figma.createFrame()` sized to the resolved environment. Name for humans:
   `Screen / Galaxy Z Fold 7 · inner · book · landscape`.
-- Identity: `setSharedPluginData('sample', 'target', targetKey)` and `'catalogVersion'`. Shared data
+- Identity: `setSharedPluginData('hinge', 'target', targetKey)` and `'catalogVersion'`. Shared data
   lets REST, the web app and the CLI read it.
-- Overlay: a locked child frame `⎔ sample-overlay` (ignores auto layout, stretch constraints) with
+- Overlay: a locked child frame `⎔ hinge-overlay` (ignores auto layout, stretch constraints) with
   the hinge (hatched, 20% opacity), safe areas, insets and reserved regions. Toggling sets
   `visible`. The checker and exporters skip it.
 - `layoutGrids`: columns from the matched layout rule, and a two-pane grid whose gutter equals the
@@ -195,7 +197,7 @@ through the checker and the flags are listed.
 ### 5.5 Checker
 
 - Scope: selection, current page, or all pages (`figma.loadAllPagesAsync()`, opt-in).
-- Discovery: `findAllWithCriteria({ sharedPluginData: { namespace: 'sample', keys: ['target'] } })`,
+- Discovery: `findAllWithCriteria({ sharedPluginData: { namespace: 'hinge', keys: ['target'] } })`,
   then name, then size. `figma.skipInvisibleInstanceChildren = true`.
 - Yields every ~500 nodes, reports progress, caches per frame.
 - Results grouped by frame and rule; clicking selects the node and calls
@@ -220,7 +222,7 @@ Exportable as JSON for the web app and CLI.
 
 ## 7. CLI (website checks)
 
-`sample-check site <url> --targets …` with Playwright and Chromium:
+`hinge check site <url> --targets …` with Playwright and Chromium:
 
 1. For each target, set the viewport, `deviceScaleFactor` and a platform user agent.
 2. For folded or spanned targets, emulate the fold through the CDP display-feature override so
@@ -239,14 +241,26 @@ Output: `Subject[]` JSON, imported by the web app.
 |---|---|---|
 | `hinge-content` | Text or interactive node intersects a hinge that separates or occludes; a scrolling container only counts its cross-axis span | androidx.window `FoldingFeature`; existing collision checker |
 | `pane-split` | A two-pane split is not aligned to the hinge bounds | Material 3 adaptive, foldables; config `fold` block |
-| `landscape-not-wide` | Side-by-side layout below 600dp width | WindowSizeClass breakpoints; seed §5.1 |
-| `min-legible-width` | Text block or component narrower than the threshold | seeds §5.2 and §5.5; threshold **estimated** |
-| `chrome-overlap` | Floating chrome overlaps content in windows shorter than 480dp | seed §5.3; threshold **estimated** |
+| `landscape-not-wide` | Side-by-side layout below 600dp width | WindowSizeClass breakpoints; §8.2 #1 |
+| `min-legible-width` | Text block or component narrower than the threshold | §8.2 #2 and #5; threshold **estimated** |
+| `chrome-overlap` | Floating chrome overlaps content in windows shorter than 480dp | §8.2 #3; threshold **estimated** |
 | `touch-target` | Interactive node smaller than 48dp (Android) / 44pt (iOS) | Material 3 accessibility; Apple HIG |
 | `overflow-x` | Content wider than the window | bluetext |
 | `tabletop-controls` | In tabletop posture, primary controls sit in the top half | Material 3 tabletop guidance; severity **estimated** |
 | `frame-size-mismatch` | Frame size differs from its tagged target | this design |
 | `resize-vs-reload` | Web layout differs after a live resize versus a reload (CLI only) | bluetext |
+
+### 8.2 Observed failures used as fixtures
+
+Found on a physical Galaxy Z Flip 7 and a Pixel 9 Pro Fold emulator:
+
+1. Side-by-side layout chosen from `orientation == landscape` renders a 176dp column on the 352dp
+   Flip cover.
+2. Stacked landscape branches (margins, a header split, a card variant) leave a card at 141dp in a
+   352dp window.
+3. A floating tab bar covers content in a 339dp-tall window.
+4. A density change recreates the activity (documented, not checkable in Figma).
+5. Text that fits at full width breaks at 40% pane width.
 
 `pane-split` and `tabletop-controls` infer panes from auto-layout children in Figma and are
 reported as heuristics.
@@ -298,10 +312,13 @@ Each slice gets its own GitHub issue (labels `enhancement` or `documentation` pl
 label), its own branch, its own implementation plan and a PR that closes the issue. Commits are
 microcommits; nothing is merged directly to `main`.
 
+0. **Remove brand references** — replace the brand-specific screens, components, assets, fonts,
+   Figma node ids, config names and docs in the existing simulator with a neutral sample app, so
+   the repo and every package are brand-free before anything is published. (`area:core`)
 1. **Extract core** — workspaces; move the app to `apps/simulator`; move `src/engine/*` and
    `src/config/*` to `packages/core` with re-export shims; split `collisions.ts`; remove shims.
    (`area:core`)
-2. **Catalog** — generic/Sample split, `category` and `requirements`, gap devices, Fold size check.
+2. **Catalog** — generic catalog / app profile split, `category` and `requirements`, gap devices, Fold size check.
    (`area:catalog`)
 3. **Plugin presets, Tag frames and coverage** (`area:plugin`)
 4. **Plugin checker and Adapt & flag** (`area:plugin`)
