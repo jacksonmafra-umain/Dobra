@@ -1,0 +1,852 @@
+{
+  "$comment": "Size-Class Simulator config. Everything the simulator shows is driven from this file. All sizes are iOS points. See README.md > Editing the config.",
+  "version": "0.4.0",
+  "figmaFile": "SAMPLE_FILE_KEY",
+  "sources": {
+    "figma-ui": "01. UI – Sample design system · 📱 Screens & related components (SAMPLE_FILE_KEY, node 0:0)",
+    "figma-tokens": "01. Styles + Tokens · Device & Orientation collection (hSafeAreaInset 24/62, bottomSafeAreaInset 21)",
+    "apple-device": "Apple device spec (not in our Figma: Figma frames are 375×812 portrait / 812 landscape)",
+    "estimated": "Estimated: not confirmed. Verify in Xcode 27.1 Device Hub."
+  },
+  "freeResize": {
+    "$comment": "Free resize has no device, so size classes come from these thresholds (points). Real devices use the explicit table under each display.",
+    "regularWidthMin": 600,
+    "regularHeightMin": 500,
+    "barAxis": "horizontal"
+  },
+  "verticalBars": {
+    "$comment": "Geometry of the trailing-edge rail on iPhone Duo (HIG: Dynamic Island, status bar, toolbar, tab bar from top to bottom). All estimated until confirmed in Xcode 27.1 Device Hub.",
+    "estimated": true,
+    "railWidth": 64,
+    "statusRegion": 72,
+    "toolbarItem": 44,
+    "groupGap": 16,
+    "overflowButton": 44,
+    "tabItem": 52,
+    "tabItemGap": 4,
+    "tabBarMinimized": 52,
+    "minGapBetweenBars": 16
+  },
+  "fold": {
+    "$comment": "How layouts adapt when a display is partially folded (HIG › Adapt your layout when the device folds).",
+    "balanceMargins": true,
+    "$balanceMargins": "Match the display symmetry: equal leading/trailing margins so content centres on the fold.",
+    "evenGridGutterAtFold": true,
+    "$evenGridGutterAtFold": "Grids with an even number of columns put their middle gutter over the fold (fold width + gap).",
+    "modalPlacement": {
+      "vertical": "leading-half",
+      "horizontal": "alert-top-half, sheet-bottom-half"
+    }
+  },
+  "devices": [
+    {
+      "id": "iphone-se",
+      "name": "iPhone SE",
+      "enabled": true,
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 375,
+            "height": 667
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 0,
+          "homeIndicator": false,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 20,
+                "right": 0,
+                "bottom": 0,
+                "left": 0,
+                "source": "apple-device"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0,
+                "source": "apple-device"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          }
+        }
+      }
+    },
+    {
+      "id": "iphone-17",
+      "name": "iPhone 17",
+      "enabled": true,
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 402,
+            "height": 874
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 62,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "apple-device"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 62,
+                "bottom": 21,
+                "left": 62,
+                "source": "figma-tokens"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": {
+              "width": 125,
+              "height": 37,
+              "offset": 11
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "iphone-17-pro-max",
+      "name": "iPhone 17 Pro Max",
+      "enabled": true,
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 440,
+            "height": 956
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 62,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "apple-device"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 62,
+                "bottom": 21,
+                "left": 62,
+                "source": "figma-tokens"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": {
+              "width": 125,
+              "height": 37,
+              "offset": 11
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "iphone-duo",
+      "name": "iPhone Duo",
+      "enabled": true,
+      "displays": {
+        "outer": {
+          "label": "Outer display (closed)",
+          "portraitSize": {
+            "width": 466,
+            "height": 678
+          },
+          "pixels": {
+            "width": 1398,
+            "height": 2034
+          },
+          "scale": 3,
+          "estimated": true,
+          "cornerRadius": 48,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular",
+                "estimated": true
+              },
+              "barAxis": "vertical",
+              "safeArea": {
+                "top": 16,
+                "right": 48,
+                "bottom": 16,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "$comment": "HIG shows the outer display in landscape in its bar-compression diagrams. Not in the brief: confirm with Sandy.",
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "compact",
+                "estimated": true
+              },
+              "barAxis": "vertical",
+              "safeArea": {
+                "top": 16,
+                "right": 48,
+                "bottom": 16,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null,
+            "camera": {
+              "$comment": "Outer front camera, always present, top trailing corner, aligned with the vertical controls (HIG). Position estimated.",
+              "diameter": 12,
+              "region": 44
+            }
+          },
+          "reservedRegions": [
+            {
+              "id": "outer-camera",
+              "label": "Outer front camera",
+              "when": "always",
+              "anchor": "top-right",
+              "width": 64,
+              "height": 44,
+              "offsetTop": 16,
+              "liveActivity": {
+                "width": 210,
+                "height": 40,
+                "offsetTop": 14,
+                "$comment": "Expands into the Dynamic Island for Live Activities (HIG)."
+              },
+              "estimated": true
+            }
+          ]
+        },
+        "inner": {
+          "label": "Inner display (open)",
+          "portraitSize": {
+            "width": 626,
+            "height": 890
+          },
+          "pixels": {
+            "width": 1878,
+            "height": 2670
+          },
+          "scale": 3,
+          "estimated": true,
+          "cornerRadius": 40,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular",
+                "estimated": true
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 44,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular",
+                "estimated": true
+              },
+              "barAxis": "vertical",
+              "safeArea": {
+                "top": 16,
+                "right": 48,
+                "bottom": 16,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null,
+            "camera": {
+              "$comment": "Rail height reserved when the inner camera is active and bars are vertical.",
+              "diameter": 12,
+              "region": 44
+            },
+            "fold": {
+              "width": 32,
+              "estimated": true,
+              "$comment": "Centre strip excluded while partially folded. Vertical in landscape, horizontal in portrait."
+            }
+          },
+          "reservedRegions": [
+            {
+              "id": "inner-camera",
+              "label": "Inner front camera",
+              "when": "camera-active",
+              "anchor": {
+                "landscape": "top-right",
+                "portrait": "top-left"
+              },
+              "width": 44,
+              "height": 44,
+              "offsetTop": 0,
+              "$comment": "Behind the display; only reserved while the camera is active, then the UI moves aside (HIG). Same hardware corner in both orientations.",
+              "estimated": true
+            }
+          ]
+        }
+      },
+      "poses": [
+        {
+          "id": "closed",
+          "label": "Closed",
+          "display": "outer",
+          "folded": false,
+          "orientations": [
+            "portrait",
+            "landscape"
+          ]
+        },
+        {
+          "id": "open",
+          "label": "Fully open",
+          "display": "inner",
+          "folded": false,
+          "orientations": [
+            "portrait",
+            "landscape"
+          ]
+        },
+        {
+          "id": "book",
+          "label": "Folded like a book",
+          "display": "inner",
+          "folded": true,
+          "orientations": [
+            "landscape"
+          ],
+          "$comment": "Held like a book: the hinge runs top to bottom through the middle."
+        },
+        {
+          "id": "flat",
+          "label": "Laid flat",
+          "display": "inner",
+          "folded": false,
+          "orientations": [
+            "portrait",
+            "landscape"
+          ],
+          "$comment": "Same space as fully open. HIG: poses change the available space, not the layout."
+        },
+        {
+          "id": "stand",
+          "label": "Standing on its edge",
+          "display": "inner",
+          "folded": true,
+          "orientations": [
+            "portrait"
+          ],
+          "estimated": true,
+          "$comment": "Interpretation to confirm: partially open and standing, so the hinge runs across the middle."
+        }
+      ]
+    }
+  ],
+  "layoutRules": [
+    {
+      "id": "phone-portrait",
+      "label": "Compact width · Regular height",
+      "match": {
+        "horizontal": "compact",
+        "vertical": "regular"
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max",
+        "$comment": "max = max(base, safe area). Reproduces hSafeAreaInset: 24 portrait."
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 190
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 375
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        }
+      }
+    },
+    {
+      "id": "phone-landscape",
+      "label": "Any width · Compact height",
+      "match": {
+        "vertical": "compact"
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max",
+        "$comment": "Safe area is 62 in landscape, so this reproduces hSafeAreaInset: 62."
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "split",
+          "bleed": "inset"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "inline",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        }
+      }
+    },
+    {
+      "id": "regular-regular",
+      "label": "Regular width · Regular height",
+      "match": {
+        "horizontal": "regular",
+        "vertical": "regular"
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 2,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 190
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 375
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        }
+      }
+    },
+    {
+      "id": "fallback",
+      "label": "Fallback (no other rule matched)",
+      "match": {},
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 190
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 375
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        }
+      }
+    }
+  ],
+  "tabBar": {
+    "component": "tab_bar_26",
+    "items": [
+      {
+        "id": "home",
+        "title": "Home",
+        "icon": "ic_logo_filled_32"
+      },
+      {
+        "id": "deals",
+        "title": "Deals",
+        "icon": "ic_deals_32",
+        "iconSelected": "ic_deals_32"
+      },
+      {
+        "id": "order",
+        "title": "Order",
+        "icon": "ic_order_32"
+      },
+      {
+        "id": "food",
+        "title": "Food",
+        "icon": "ic_food_32"
+      },
+      {
+        "id": "more",
+        "title": "More",
+        "icon": "ic_more_32"
+      }
+    ]
+  },
+  "screens": [
+    {
+      "id": "home",
+      "name": "Home",
+      "experience": "navigation",
+      "tab": "home",
+      "enabled": true,
+      "figma": {
+        "portrait": "0:0",
+        "landscape": "0:0"
+      },
+      "components": [
+        "news_story_hero",
+        "action_card",
+        "shortcut_card_item",
+        "news_story_card"
+      ],
+      "toolbar": {
+        "component": "app_toolbar",
+        "logo": "im_sample_logo",
+        "items": [
+          {
+            "id": "qr",
+            "title": "Scan code",
+            "symbol": "ic_qr_code_default_32",
+            "label": "symbol",
+            "group": "prominent",
+            "priority": 2
+          },
+          {
+            "id": "points",
+            "title": "320 points",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "deals",
+      "name": "Deals",
+      "experience": "navigation",
+      "tab": "deals",
+      "enabled": true,
+      "figma": {
+        "portrait": "0:0",
+        "landscape": "0:0",
+        "$comment": "LoyaltyDashboard, State=Default"
+      },
+      "components": [
+        "action_card",
+        "bonus_campaign_banner",
+        "deal_card"
+      ],
+      "toolbar": {
+        "component": "app_toolbar",
+        "logo": "member_logo_light_default",
+        "items": [
+          {
+            "id": "qr",
+            "title": "Scan code",
+            "symbol": "ic_qr_code_default_32",
+            "label": "symbol",
+            "group": "prominent",
+            "priority": 2
+          },
+          {
+            "id": "points",
+            "title": "320 points",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "rewards",
+      "name": "Rewards",
+      "experience": "navigation",
+      "tab": "deals",
+      "enabled": true,
+      "figma": {
+        "portrait": "0:0",
+        "landscape": "0:0",
+        "$comment": "RewardsList, State=Default"
+      },
+      "components": [
+        "reward_card"
+      ],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "All rewards",
+        "items": [
+          {
+            "id": "back",
+            "title": "Back",
+            "symbol": "ic_chevron_left_default_32",
+            "label": "symbol",
+            "group": "navigation",
+            "priority": 3
+          },
+          {
+            "id": "points",
+            "title": "321 pts",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "bag",
+      "name": "Bag",
+      "experience": "task",
+      "tab": "order",
+      "enabled": true,
+      "figma": null,
+      "source": "built from Sample design system components — not in Figma yet",
+      "components": [],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "Your bag",
+        "items": [
+          {
+            "id": "back",
+            "title": "Back",
+            "symbol": "ic_chevron_left_default_32",
+            "label": "symbol",
+            "group": "navigation",
+            "priority": 3
+          },
+          {
+            "id": "edit",
+            "title": "Edit",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "checkout",
+      "name": "Checkout",
+      "experience": "task",
+      "tab": "order",
+      "enabled": true,
+      "figma": null,
+      "source": "built from Sample design system components — not in Figma yet",
+      "components": [],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "Checkout",
+        "items": [
+          {
+            "id": "close",
+            "title": "Close",
+            "symbol": "ic_close_default_32",
+            "label": "symbol",
+            "group": "navigation",
+            "priority": 3
+          }
+        ]
+      }
+    }
+  ]
+}
