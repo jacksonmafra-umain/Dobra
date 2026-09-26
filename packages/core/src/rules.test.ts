@@ -70,3 +70,37 @@ describe('spatial rules', () => {
     expect(tagged.some((f) => f.ruleId === 'hinge-content')).toBe(false);
   });
 });
+
+describe('size rules', () => {
+  const FLIP_COVER: Target = { deviceId: 'galaxy-z-flip-7', displayId: 'cover', pose: 'closed', orientation: 'landscape' };
+  const IPHONE: Target = { deviceId: 'iphone-17', displayId: 'main', orientation: 'portrait' };
+  const flip = (root: GeoNode[]) => subject(root, [FLIP_COVER], { width: 352, height: 339 });
+
+  it('flags touch targets under 48 dp on Android and 44 pt on iOS', () => {
+    const small = node('x', 'interactive', { x: 10, y: 10, width: 46, height: 46 });
+    expect(ids(flip([small]), 'touch-target')).toEqual(['x']);
+    expect(ids(subject([small], [IPHONE], { width: 402, height: 874 }), 'touch-target')).toEqual([]);
+  });
+
+  it('flags long text narrower than the legible width, as an estimate', () => {
+    const narrow = node('body', 'text', { x: 0, y: 0, width: 141, height: 200 }, { chars: 80 });
+    const label = node('ok', 'text', { x: 0, y: 300, width: 40, height: 20 }, { chars: 2 });
+    const f = check(flip([narrow, label]), config).filter((x) => x.ruleId === 'min-legible-width');
+    expect(f.map((x) => x.nodeId)).toEqual(['body']);
+    expect(f[0].estimated).toBe(true);
+  });
+
+  it('flags side-by-side panes below 600 wide even in a landscape window (observed failure #1)', () => {
+    const row = node('hero', 'container', { x: 0, y: 0, width: 352, height: 200 }, {
+      layout: 'horizontal',
+      children: [node('image', 'media', { x: 0, y: 0, width: 176, height: 200 }), node('copy', 'container', { x: 176, y: 0, width: 176, height: 200 })],
+    });
+    expect(ids(flip([row]), 'landscape-not-wide')).toEqual(['hero']);
+  });
+
+  it('flags floating chrome over content in a short window (observed failure #3)', () => {
+    const bar = node('Tab bar', 'chrome', { x: 16, y: 270, width: 320, height: 60 });
+    const card = node('card', 'interactive', { x: 16, y: 200, width: 320, height: 100 });
+    expect(ids(flip([card, bar]), 'chrome-overlap')).toEqual(['Tab bar']);
+  });
+});

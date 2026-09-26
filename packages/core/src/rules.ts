@@ -1,12 +1,23 @@
 // The v1 rules (spec §8) over a Subject's geometry tree. One engine for Figma frames, web pages
 // and the simulator. Findings use the shared Finding shape and rule ids.
 import type { Rect } from './config/types';
-import { collisionZones, findCollisions } from './collisions';
+import { collisionZones, findCollisions, rectsOverlap } from './collisions';
 import { kindOf } from './coverage';
 import type { Finding, RuleId } from './engine/checks';
 import type { EnvConfig, Environment } from './engine/environment';
 import { outermost, walk, type GeoNode, type Placed, type Subject } from './geo';
 import { resolveTarget, type Target } from './targets';
+
+/** WindowSizeClass medium: side-by-side layouts start here. */
+export const SIDE_BY_SIDE_MIN = 600;
+/** Short windows where floating chrome eats the content (observed failure #3). Estimated. */
+export const SHORT_WINDOW = 480;
+/** Text narrower than this reads badly (observed failures #2 and #5). Estimated. */
+export const MIN_LEGIBLE_WIDTH = 200;
+/** Shorter text (labels, buttons) is exempt from the legible-width rule. */
+export const MIN_TEXT_CHARS = 20;
+/** Material 3 and Apple HIG minimum touch targets. */
+export const TOUCH_TARGET = { android: 48, ios: 44 } as const;
 
 const IMPORTANT = (n: GeoNode) => n.role === 'interactive' || n.role === 'text';
 const SIZE_TOLERANCE = 1;
@@ -122,12 +133,86 @@ function overflowX({ subject, placed, add }: Ctx) {
   }
 }
 
+function touchTarget({ env, placed, add }: Ctx) {
+  const min = TOUCH_TARGET[env.platform];
+  for (const p of outermost(placed, (n) => n.role === 'interactive')) {
+    const r = p.node.rect;
+    if (r.width < min || r.height < min) {
+      add({
+        ruleId: 'touch-target',
+        severity: 'warn',
+        nodeId: p.node.id,
+        rect: r,
+        message: `${p.node.name} is ${Math.round(r.width)}×${Math.round(r.height)}; touch targets need ${min} ${env.unit}.`,
+        source: env.platform === 'android' ? 'material3' : 'apple-device',
+        estimated: false,
+      });
+    }
+  }
+}
+
+function minLegibleWidth({ env, placed, add }: Ctx) {
+  for (const { node: n } of placed) {
+    if (n.role === 'text' && (n.chars ?? 0) >= MIN_TEXT_CHARS && n.rect.width < MIN_LEGIBLE_WIDTH) {
+      add({
+        ruleId: 'min-legible-width',
+        severity: 'warn',
+        nodeId: n.id,
+        rect: n.rect,
+        message: `${n.name} is ${Math.round(n.rect.width)} ${env.unit} wide for ${n.chars} characters; text reads from about ${MIN_LEGIBLE_WIDTH} ${env.unit}.`,
+        source: 'estimated',
+        estimated: true,
+      });
+    }
+  }
+}
+
+function landscapeNotWide({ subject, env, placed, add }: Ctx) {
+  if (env.width >= SIDE_BY_SIDE_MIN) return;
+  for (const p of placed) {
+    const panes = (p.node.children ?? []).filter((c) => c.role !== 'text');
+    if (p.node.layout === 'horizontal' && panes.length >= 2 && panes.every((c) => c.rect.width >= subject.width * 0.3)) {
+      add({
+        ruleId: 'landscape-not-wide',
+        severity: 'error',
+        nodeId: p.node.id,
+        rect: p.node.rect,
+        message: `${p.node.name} puts ${panes.length} panes side by side in a ${env.width} ${env.unit} window (${env.orientation}); side by side needs ${SIDE_BY_SIDE_MIN} ${env.unit}.`,
+        source: 'androidx-window',
+        estimated: true,
+      });
+    }
+  }
+}
+
+function chromeOverlap({ env, placed, add }: Ctx) {
+  if (env.height >= SHORT_WINDOW) return;
+  const content = placed.filter((p) => p.node.role !== 'chrome' && p.node.role !== 'container');
+  for (const bar of placed.filter((p) => p.node.role === 'chrome')) {
+    if (content.some((c) => rectsOverlap(c.node.rect, bar.node.rect))) {
+      add({
+        ruleId: 'chrome-overlap',
+        severity: 'warn',
+        nodeId: bar.node.id,
+        rect: bar.node.rect,
+        message: `${bar.node.name} covers content in a ${env.height} ${env.unit} tall window.`,
+        source: 'estimated',
+        estimated: true,
+      });
+    }
+  }
+}
+
 const RULES: Partial<Record<RuleId, (ctx: Ctx) => void>> = {
   'hinge-content': hingeContent,
   'pane-split': paneSplit,
   'tabletop-controls': tabletopControls,
   'frame-size-mismatch': frameSize,
   'overflow-x': overflowX,
+  'touch-target': touchTarget,
+  'min-legible-width': minLegibleWidth,
+  'landscape-not-wide': landscapeNotWide,
+  'chrome-overlap': chromeOverlap,
 };
 
 /** Runs the rules against every candidate target of a subject; findings carry their target. */
