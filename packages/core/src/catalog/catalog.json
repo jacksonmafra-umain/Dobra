@@ -1522,7 +1522,8 @@
             "$note": "The observed 352×339 dp app window already excludes the cover screen system areas."
           },
           "coverScreen": {
-            "userGranted": true,
+            "policy": "user-granted",
+            "continuity": false,
             "note": "Samsung only runs an app on the cover screen when the user allows it (Settings › Advanced features › Labs › Apps allowed on cover screen, or Good Lock MultiStar). No manifest flag puts an app there."
           },
           "source": "observed",

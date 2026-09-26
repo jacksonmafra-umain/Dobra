@@ -46,7 +46,7 @@ describe('androidx.window postures', () => {
     const env = resolveEnvironment(config, sel('galaxy-z-flip-7', 'closed'));
     expect(env).toMatchObject({ width: 352, height: 339, orientation: 'landscape' });
     expect(env.sizeClass).toEqual({ system: 'window', width: 'compact', height: 'compact' });
-    expect(env.android?.coverScreen?.userGranted).toBe(true);
+    expect(env.android?.coverScreen).toMatchObject({ policy: 'user-granted', continuity: false });
     expect(env.android?.rotationLocked).toBe(true);
   });
 

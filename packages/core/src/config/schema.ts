@@ -239,7 +239,10 @@ const androidDisplay = z.strictObject({
   insets: androidInsets,
   hinges: z.array(hinge).optional(),
   /** Outer displays apps do not get by default. */
-  coverScreen: z.strictObject({ userGranted: z.boolean(), note: z.string() }).optional(),
+  /** Who decides whether an app runs on this outer display, and whether it stays there when the device closes. */
+  coverScreen: z
+    .strictObject({ policy: z.enum(['user-granted', 'any-app', 'allow-list']), continuity: z.boolean(), note: z.string() })
+    .optional(),
   source: sourceRef,
   estimated: z.boolean(),
 });
