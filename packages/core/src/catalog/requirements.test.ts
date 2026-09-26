@@ -28,4 +28,18 @@ describe('coverage requirements', () => {
     raw.requirements.push({ ...raw.requirements[0] });
     expect(() => loadCatalog(raw)).toThrow(/Duplicate requirement/);
   });
+
+  it('checks orientation too: the Flip cover is landscape and cannot rotate', () => {
+    const cat = loadCatalog();
+    expect(cat.requirements).toContainEqual(expect.objectContaining({ category: 'foldable-flip', kind: 'cover', orientation: 'landscape' }));
+    const raw = clone();
+    raw.requirements.push({ category: 'foldable-flip', kind: 'cover', orientation: 'portrait', level: 'required' });
+    expect(() => loadCatalog(raw)).toThrow(/foldable-flip cover portrait cannot be met/);
+  });
+
+  it('rejects a required desktop portrait cell: desktop windows are landscape', () => {
+    const raw = clone();
+    raw.requirements.push({ category: 'desktop', kind: 'flat', orientation: 'portrait', level: 'required' });
+    expect(() => loadCatalog(raw)).toThrow(/desktop flat portrait cannot be met/);
+  });
 });

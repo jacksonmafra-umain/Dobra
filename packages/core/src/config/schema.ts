@@ -542,18 +542,33 @@ function checkCatalog(cfg: CatalogShape, issue: Issue) {
 
   // Coverage: a required cell must be something at least one enabled device can show.
   const offered = new Set<string>();
+  const offer = (d: { category: string }, kind: string, orientations: string[]) =>
+    orientations.forEach((o) => offered.add(`${d.category}/${kind}/${o}`));
   for (const d of cfg.devices) {
     if (!d.enabled) continue;
-    const list = d.platform === 'ios' ? (d.poses ?? []) : (d.postures ?? []);
-    for (const kind of list.length ? list.map((p) => p.kind) : ['flat']) offered.add(`${d.category}/${kind}`);
+    if (d.platform === 'ios') {
+      if (d.poses?.length) d.poses.forEach((p) => offer(d, p.kind, p.orientations));
+      else for (const disp of Object.values(d.displays)) offer(d, 'flat', Object.keys(disp.orientations));
+      continue;
+    }
+    // An Android display rotates when it can; otherwise it keeps its natural shape, turned by the posture.
+    const shapes = (displayId: string, rotation?: 0 | 90) => {
+      const disp = d.displays[displayId];
+      if (!disp) return [];
+      if (disp.rotation.supported) return ['portrait', 'landscape'];
+      const natural = disp.size.width > disp.size.height ? 'landscape' : 'portrait';
+      return [rotation === 90 ? (natural === 'landscape' ? 'portrait' : 'landscape') : natural];
+    };
+    if (d.postures?.length) d.postures.forEach((p) => offer(d, p.kind, shapes(p.display, p.rotation)));
+    else for (const id of Object.keys(d.displays)) offer(d, 'flat', shapes(id));
   }
   const seen = new Set<string>();
   cfg.requirements.forEach((r, ri) => {
     const key = `${r.category}/${r.kind}/${r.orientation}`;
     if (seen.has(key)) issue(['requirements', ri], `Duplicate requirement ${key}`);
     seen.add(key);
-    if (r.level === 'required' && !offered.has(`${r.category}/${r.kind}`))
-      issue(['requirements', ri], `Required ${r.category} ${r.kind} cannot be met: no enabled ${r.category} device has a ${r.kind} posture`);
+    if (r.level === 'required' && !offered.has(key))
+      issue(['requirements', ri], `Required ${r.category} ${r.kind} ${r.orientation} cannot be met: no enabled ${r.category} device offers a ${r.kind} posture in ${r.orientation}`);
   });
 }
 

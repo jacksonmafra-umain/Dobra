@@ -2230,7 +2230,7 @@
     {
       "category": "foldable-flip",
       "kind": "cover",
-      "orientation": "portrait",
+      "orientation": "landscape",
       "level": "required",
       "note": "The Flip cover is wider than tall yet compact width; landscape is not wide."
     },
