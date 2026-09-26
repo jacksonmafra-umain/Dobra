@@ -62,9 +62,10 @@ function hingeContent({ env, placed, add }: Ctx) {
 function paneSplit({ env, placed, add }: Ctx) {
   const folds = env.folds.filter((f) => f.separating);
   for (const p of placed) {
-    const parentLayout = p.parent?.layout;
-    if (p.node.role !== 'container' || !parentLayout || parentLayout === 'none') continue;
+    if (p.node.role !== 'container') continue;
     for (const f of folds) {
+      // Panes sit side by side across the hinge: a horizontal layout for a vertical hinge, and the reverse.
+      if (p.parent?.layout !== (f.axis === 'vertical' ? 'horizontal' : 'vertical')) continue;
       const r = p.node.rect;
       const [at, thickness] = f.axis === 'vertical' ? [f.rect.x, f.rect.width] : [f.rect.y, f.rect.height];
       const [start, end] = f.axis === 'vertical' ? [r.x, r.x + r.width] : [r.y, r.y + r.height];
@@ -120,7 +121,8 @@ function frameSize({ subject, env, add }: Ctx) {
 function overflowX({ subject, placed, add }: Ctx) {
   const past = (n: GeoNode) => n.rect.x < -SIZE_TOLERANCE || n.rect.x + n.rect.width > subject.width + SIZE_TOLERANCE;
   // Report the outermost overflowing node once; its children overflow because it does.
-  for (const p of outermost(placed.filter((q) => q.scrolls !== 'x'), past)) {
+  // Content cropped by a clipping ancestor, or scrolling sideways, does not overflow the frame.
+  for (const p of outermost(placed.filter((q) => q.scrolls !== 'x' && !q.clipped), past)) {
     add({
       ruleId: 'overflow-x',
       severity: 'warn',
@@ -170,7 +172,8 @@ function minLegibleWidth({ env, placed, add }: Ctx) {
 function landscapeNotWide({ subject, env, placed, add }: Ctx) {
   if (env.width >= SIDE_BY_SIDE_MIN) return;
   for (const p of placed) {
-    const panes = (p.node.children ?? []).filter((c) => c.role !== 'text');
+    // Panes are blocks of content that fill most of the row's height, not tabs or buttons.
+    const panes = (p.node.children ?? []).filter((c) => (c.role === 'container' || c.role === 'media') && c.rect.height >= p.node.rect.height * 0.5);
     if (p.node.layout === 'horizontal' && panes.length >= 2 && panes.every((c) => c.rect.width >= subject.width * 0.3)) {
       add({
         ruleId: 'landscape-not-wide',
@@ -189,7 +192,8 @@ function chromeOverlap({ env, placed, add }: Ctx) {
   if (env.height >= SHORT_WINDOW) return;
   const content = placed.filter((p) => p.node.role !== 'chrome' && p.node.role !== 'container');
   for (const bar of placed.filter((p) => p.node.role === 'chrome')) {
-    if (content.some((c) => rectsOverlap(c.node.rect, bar.node.rect))) {
+    const own = new Set(walk(bar.node.children ?? []).map((q) => q.node));
+    if (content.some((c) => !own.has(c.node) && rectsOverlap(c.node.rect, bar.node.rect))) {
       add({
         ruleId: 'chrome-overlap',
         severity: 'warn',

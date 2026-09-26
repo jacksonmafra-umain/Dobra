@@ -17,6 +17,8 @@ export interface GeoNode {
   /** This node scrolls its children along this axis. */
   scrollAxis?: 'x' | 'y' | 'none';
   layout?: 'horizontal' | 'vertical' | 'none';
+  /** This node crops its children (Figma clipsContent, CSS overflow hidden). */
+  clips?: boolean;
   children?: GeoNode[];
 }
 
@@ -36,19 +38,21 @@ export interface Placed {
   depth: number;
   /** Axis of the nearest scrolling ancestor. */
   scrolls: 'x' | 'y' | 'none';
+  /** Inside an ancestor that crops its children. */
+  clipped: boolean;
   parent: GeoNode | null;
 }
 
 export function walk(root: GeoNode[]): Placed[] {
   const out: Placed[] = [];
-  const visit = (nodes: GeoNode[], depth: number, scrolls: Placed['scrolls'], parent: GeoNode | null) => {
+  const visit = (nodes: GeoNode[], depth: number, scrolls: Placed['scrolls'], clipped: boolean, parent: GeoNode | null) => {
     for (const node of nodes) {
-      out.push({ node, depth, scrolls, parent });
+      out.push({ node, depth, scrolls, clipped, parent });
       const inner = node.scrollAxis && node.scrollAxis !== 'none' ? node.scrollAxis : scrolls;
-      visit(node.children ?? [], depth + 1, inner, node);
+      visit(node.children ?? [], depth + 1, inner, clipped || !!node.clips, node);
     }
   };
-  visit(root, 0, 'none', null);
+  visit(root, 0, 'none', false, null);
   return out;
 }
 

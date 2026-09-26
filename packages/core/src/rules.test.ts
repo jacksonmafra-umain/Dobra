@@ -104,3 +104,44 @@ describe('size rules', () => {
     expect(ids(flip([card, bar]), 'chrome-overlap')).toEqual(['Tab bar']);
   });
 });
+
+describe('no false positives in ordinary layouts', () => {
+  const PIXEL: Target = { deviceId: 'pixel-9', displayId: 'main', orientation: 'portrait' };
+  const SE_LAND: Target = { deviceId: 'iphone-se', displayId: 'main', orientation: 'landscape' };
+  const FOLD_OPEN: Target = { deviceId: 'galaxy-z-fold-7', displayId: 'inner', pose: 'open', orientation: 'portrait' };
+
+  it('pane-split ignores rows of a vertical list crossing a vertical hinge', () => {
+    const list = node('list', 'container', { x: 0, y: 0, width: 750, height: 832 }, {
+      layout: 'vertical',
+      children: [0, 1, 2, 3].map((i) => node(`row${i}`, 'container', { x: 0, y: i * 100, width: 750, height: 100 })),
+    });
+    expect(ids(subject([list], [FOLD_OPEN], { confidence: 'size', width: 750, height: 832 }), 'pane-split')).toEqual([]);
+  });
+
+  it('landscape-not-wide ignores tab bars and button rows', () => {
+    const tabs = node('tabs', 'container', { x: 0, y: 840, width: 411, height: 80 }, {
+      layout: 'horizontal',
+      children: [0, 1, 2].map((i) => node(`tab${i}`, 'interactive', { x: i * 137, y: 840, width: 137, height: 80 })),
+    });
+    const buttons = node('actions', 'container', { x: 0, y: 700, width: 411, height: 48 }, {
+      layout: 'horizontal',
+      children: [node('Cancel', 'interactive', { x: 0, y: 700, width: 200, height: 48 }), node('OK', 'interactive', { x: 211, y: 700, width: 200, height: 48 })],
+    });
+    expect(ids(subject([tabs, buttons], [PIXEL], { width: 411, height: 923 }), 'landscape-not-wide')).toEqual([]);
+  });
+
+  it("chrome-overlap ignores the bar's own children", () => {
+    const header = node('Header', 'chrome', { x: 0, y: 0, width: 667, height: 60 }, {
+      children: [node('Title', 'text', { x: 16, y: 16, width: 200, height: 24 }, { chars: 10 })],
+    });
+    expect(ids(subject([header], [SE_LAND], { width: 667, height: 375 }), 'chrome-overlap')).toEqual([]);
+  });
+
+  it('overflow-x ignores content cropped by a clipping container', () => {
+    const crop = node('Hero', 'container', { x: 0, y: 0, width: 411, height: 200 }, {
+      clips: true,
+      children: [node('Photo', 'media', { x: -50, y: 0, width: 600, height: 200 })],
+    });
+    expect(ids(subject([crop], [PIXEL], { width: 411, height: 923 }), 'overflow-x')).toEqual([]);
+  });
+});
