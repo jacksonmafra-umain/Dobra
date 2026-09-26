@@ -1,5 +1,2 @@
-import raw from './simulator.config.json';
-import { parseConfig } from './schema';
-
-/** The validated config. Throws a ConfigError (with paths) when simulator.config.json is invalid. */
-export const loadConfig = () => parseConfig(raw);
+// Moved to @hinge/core. This re-export keeps old imports working until they are rewritten.
+export * from '@hinge/core/config/load';
