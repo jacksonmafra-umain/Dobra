@@ -72,6 +72,8 @@ export function decorate(api: FigmaApi, frame: FrameNode, p: PresetFrame, catalo
   overlay.fills = [];
   overlay.clipsContent = false;
   frame.appendChild(overlay);
+  // In an auto-layout frame the overlay must not join the flow, or it lands below the content.
+  if (frame.layoutMode !== 'NONE') overlay.layoutPositioning = 'ABSOLUTE';
   overlay.x = 0;
   overlay.y = 0;
   overlay.constraints = { horizontal: 'STRETCH', vertical: 'STRETCH' };

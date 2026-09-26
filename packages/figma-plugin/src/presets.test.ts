@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadCatalog } from '@hinge/core/catalog/load';
 import { presetSpec } from '@hinge/core/presets';
 import { envConfigOf } from '@hinge/core/targets';
-import { applyPreset, NAMESPACE, OVERLAY_NAME } from './presets';
+import { applyPreset, decorate, NAMESPACE, OVERLAY_NAME } from './presets';
 import { createFakeFigma } from './test/fakeFigma';
 
 const catalog = loadCatalog();
@@ -54,5 +54,13 @@ describe('applyPreset', () => {
     expect(frame.layoutGrids).toContainEqual(
       expect.objectContaining({ pattern: 'COLUMNS', alignment: 'MIN', count: 1, offset: 0, sectionSize: left.paneEdges[0].at }),
     );
+  });
+
+  it('keeps the overlay out of the flow of an auto-layout frame', () => {
+    const api = createFakeFigma();
+    const frame = api.createFrame();
+    (frame as unknown as { layoutMode: string }).layoutMode = 'VERTICAL';
+    decorate(api, frame, duo, catalog.version);
+    expect((overlayOf(frame) as unknown as { layoutPositioning: string }).layoutPositioning).toBe('ABSOLUTE');
   });
 });
