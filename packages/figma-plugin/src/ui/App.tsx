@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CoverageMatrix } from '@hinge/core/coverage';
-import type { Command, FrameFindings, TagCandidate, ToMain, ToUi } from '../messages';
+import type { AdaptResult, Command, FrameFindings, TagCandidate, ToMain, ToUi } from '../messages';
 import './app.css';
 
 type Tab = Command;
@@ -23,6 +23,8 @@ export function App() {
   const [matrix, setMatrix] = useState<CoverageMatrix | null>(null);
   const [findings, setFindings] = useState<FrameFindings[] | null>(null);
   const [visited, setVisited] = useState(0);
+  const [selected, setSelected] = useState<{ id: string; name: string }[]>([]);
+  const [adapted, setAdapted] = useState<AdaptResult[] | null>(null);
   const [notice, setNotice] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
 
   useEffect(() => {
@@ -38,6 +40,8 @@ export function App() {
         setVisited(0);
       }
       if (msg.type === 'progress') setVisited(msg.visited);
+      if (msg.type === 'selection') setSelected(msg.frames);
+      if (msg.type === 'adapted') setAdapted(msg.results);
       if (msg.type === 'error') setNotice({ kind: 'error', text: msg.message });
       if (msg.type === 'created') {
         setNotice({ kind: 'info', text: msg.frameIds.length ? `Created ${msg.frameIds.length} artboard(s).` : 'Nothing missing: no artboards created.' });
@@ -70,11 +74,13 @@ export function App() {
       {tab === 'tag' && <TagFrames candidates={candidates} />}
       {tab === 'coverage' && <Coverage matrix={matrix} />}
       {tab === 'check' && <Check frames={findings} visited={visited} />}
+      {tab === 'adapt' && <Adapt targets={targets} selected={selected} results={adapted} />}
     </main>
   );
 }
 
-function Presets({ targets }: { targets: Target[] }) {
+/** Targets grouped by category, each with a checkbox. */
+function useTargetPicker(targets: Target[]) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const byCategory = useMemo(() => {
     const groups = new Map<string, Target[]>();
@@ -88,24 +94,70 @@ function Presets({ targets }: { targets: Target[] }) {
       else next.add(key);
       return next;
     });
+  const list = byCategory.map(([category, items]) => (
+    <details key={category} open={category !== 'phone'}>
+      <summary>
+        {category} <span className="muted">({items.length})</span>
+      </summary>
+      {items.map((t) => (
+        <label key={t.key} className="row">
+          <input type="checkbox" checked={checked.has(t.key)} onChange={() => toggle(t.key)} />
+          <span>{t.name.replace(/^Screen \/ /, '')}</span>
+        </label>
+      ))}
+    </details>
+  ));
+  return { checked, list };
+}
+
+function Presets({ targets }: { targets: Target[] }) {
+  const { checked, list } = useTargetPicker(targets);
   return (
     <section>
       <button className="primary" disabled={!checked.size} onClick={() => post({ type: 'create-presets', keys: [...checked] })}>
         Create {checked.size || ''} artboard{checked.size === 1 ? '' : 's'}
       </button>
-      {byCategory.map(([category, items]) => (
-        <details key={category} open={category !== 'phone'}>
-          <summary>
-            {category} <span className="muted">({items.length})</span>
-          </summary>
-          {items.map((t) => (
-            <label key={t.key} className="row">
-              <input type="checkbox" checked={checked.has(t.key)} onChange={() => toggle(t.key)} />
-              <span>{t.name.replace(/^Screen \/ /, '')}</span>
-            </label>
+      {list}
+    </section>
+  );
+}
+
+function Adapt({ targets, selected, results }: { targets: Target[]; selected: { id: string; name: string }[]; results: AdaptResult[] | null }) {
+  const { checked, list } = useTargetPicker(targets);
+  const [split, setSplit] = useState(true);
+  const source = selected.length === 1 ? selected[0] : null;
+  return (
+    <section>
+      <p>{source ? <>Adapting <strong>{source.name}</strong></> : <span className="muted">Select one frame to adapt.</span>}</p>
+      <label className="row">
+        <input type="checkbox" checked={split} onChange={() => setSplit(!split)} />
+        <span>Split into panes at the hinge (when it separates the window)</span>
+      </label>
+      <button
+        className="primary"
+        disabled={!source || !checked.size}
+        onClick={() => source && post({ type: 'adapt', frameId: source.id, keys: [...checked], split })}
+      >
+        Adapt to {checked.size || ''} target{checked.size === 1 ? '' : 's'}
+      </button>
+      {results && (
+        <div className="results">
+          {results.map((r) => (
+            <div key={r.frameId} className="card">
+              <button className="finding" onClick={() => post({ type: 'select-node', nodeId: r.frameId })}>
+                <strong>{r.name}</strong> <span className="muted">({r.findings.length} findings)</span>
+              </button>
+              {r.plan.splitNote && <span className="muted">{r.plan.splitNote}</span>}
+              {r.plan.flags.map((f, i) => (
+                <button key={i} className="finding" disabled={!f.nodeId} onClick={() => post({ type: 'select-node', nodeId: f.nodeId })}>
+                  🚩 {f.message}
+                </button>
+              ))}
+            </div>
           ))}
-        </details>
-      ))}
+        </div>
+      )}
+      {list}
     </section>
   );
 }
