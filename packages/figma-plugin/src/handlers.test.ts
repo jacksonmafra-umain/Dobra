@@ -136,4 +136,14 @@ describe('plugin handlers', () => {
     expect(reply).toMatchObject({ type: 'error' });
     expect(api.currentPage.children).toHaveLength(1);
   });
+
+  it('switches page before selecting a node found on another page', async () => {
+    const api = createFakeFigma();
+    const other = api.addPage();
+    const f = api.createFrame();
+    other.appendChild(f as never);
+    await handle(api, { type: 'select-node', nodeId: f.id });
+    expect(api.currentPage).toBe(other);
+    expect(api.currentPage.selection).toEqual([f]);
+  });
 });

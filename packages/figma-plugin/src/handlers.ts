@@ -98,6 +98,10 @@ export async function handle(api: FigmaApi, msg: ToMain, onProgress?: (visited: 
       case 'select-node': {
         const node = await api.getNodeByIdAsync(msg.nodeId);
         if (!node || !('visible' in node)) throw new Error(`Layer ${msg.nodeId} not found`);
+        // A finding from another page (all-pages check) needs its page shown before it can be selected.
+        let page: BaseNode | null = node;
+        while (page && page.type !== 'PAGE') page = page.parent;
+        if (page && page !== api.currentPage) await api.setCurrentPageAsync(page as PageNode);
         api.currentPage.selection = [node as SceneNode];
         api.viewport.scrollAndZoomIntoView([node as SceneNode]);
         return null;
