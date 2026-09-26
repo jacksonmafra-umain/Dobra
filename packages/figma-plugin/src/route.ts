@@ -8,15 +8,16 @@ const OPENING: Record<Command, ToMain> = {
   presets: { type: 'list-targets' },
   tag: { type: 'scan-tags' },
   coverage: { type: 'coverage' },
+  check: { type: 'check', scope: 'selection' },
 };
 
 export function commandOf(command: string): Command {
-  return command === 'tag' || command === 'coverage' ? command : 'presets';
+  return command === 'tag' || command === 'coverage' || command === 'check' ? command : 'presets';
 }
 
-export async function route(api: FigmaApi, command: string, msg: ToMain): Promise<ToUi | null> {
-  if (msg.type !== 'ready') return handle(api, msg);
+export async function route(api: FigmaApi, command: string, msg: ToMain, onProgress?: (visited: number) => void): Promise<ToUi | null> {
+  if (msg.type !== 'ready') return handle(api, msg, onProgress);
   const opening = commandOf(command);
-  const reply = await handle(api, OPENING[opening]);
+  const reply = await handle(api, OPENING[opening], onProgress);
   return reply && { ...reply, command: opening };
 }

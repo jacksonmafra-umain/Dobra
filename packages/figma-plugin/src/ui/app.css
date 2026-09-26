@@ -71,3 +71,9 @@ th {
 .summary {
   padding-left: 16px;
 }
+.finding {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 4px 0;
+}

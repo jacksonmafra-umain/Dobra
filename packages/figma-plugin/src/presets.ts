@@ -38,6 +38,7 @@ export function applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: strin
   frame.clipsContent = true;
   frame.setSharedPluginData(NAMESPACE, 'target', p.key);
   frame.setSharedPluginData(NAMESPACE, 'catalogVersion', catalogVersion);
+  frame.setRelaunchData({ check: '' });
   const grids: LayoutGrid[] = [
     { pattern: 'COLUMNS', alignment: 'STRETCH', count: p.grid.columns, gutterSize: p.grid.gutter, offset: p.grid.margin, visible: true, color: { ...BLUE, a: 0.08 } },
   ];

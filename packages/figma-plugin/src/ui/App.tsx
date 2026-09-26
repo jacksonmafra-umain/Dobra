@@ -1,20 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CoverageMatrix } from '@hinge/core/coverage';
-import type { Command, TagCandidate, ToMain, ToUi } from '../messages';
+import type { Command, FrameFindings, TagCandidate, ToMain, ToUi } from '../messages';
 import './app.css';
 
 type Tab = Command;
 type Target = { key: string; name: string; category: string };
 
 const post = (msg: ToMain) => parent.postMessage({ pluginMessage: msg }, '*');
-const OPEN: Record<Tab, ToMain> = { presets: { type: 'list-targets' }, tag: { type: 'scan-tags' }, coverage: { type: 'coverage' } };
-const TAB_LABEL: Record<Tab, string> = { presets: 'Artboards', tag: 'Tag frames', coverage: 'Coverage' };
+const OPEN: Record<Tab, ToMain> = {
+  presets: { type: 'list-targets' },
+  tag: { type: 'scan-tags' },
+  coverage: { type: 'coverage' },
+  check: { type: 'check', scope: 'selection' },
+};
+const TAB_LABEL: Record<Tab, string> = { presets: 'Artboards', tag: 'Tag frames', coverage: 'Coverage', check: 'Check' };
 
 export function App() {
   const [tab, setTab] = useState<Tab>('presets');
   const [targets, setTargets] = useState<Target[]>([]);
   const [candidates, setCandidates] = useState<TagCandidate[]>([]);
   const [matrix, setMatrix] = useState<CoverageMatrix | null>(null);
+  const [findings, setFindings] = useState<FrameFindings[] | null>(null);
+  const [visited, setVisited] = useState(0);
   const [notice, setNotice] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
 
   useEffect(() => {
@@ -25,6 +32,11 @@ export function App() {
       if (msg.type === 'targets') setTargets(msg.items);
       if (msg.type === 'tag-candidates') setCandidates(msg.frames);
       if (msg.type === 'coverage') setMatrix(msg.matrix);
+      if (msg.type === 'findings') {
+        setFindings(msg.frames);
+        setVisited(0);
+      }
+      if (msg.type === 'progress') setVisited(msg.visited);
       if (msg.type === 'error') setNotice({ kind: 'error', text: msg.message });
       if (msg.type === 'created') {
         setNotice({ kind: 'info', text: msg.frameIds.length ? `Created ${msg.frameIds.length} artboard(s).` : 'Nothing missing: no artboards created.' });
@@ -56,6 +68,7 @@ export function App() {
       {tab === 'presets' && <Presets targets={targets} />}
       {tab === 'tag' && <TagFrames candidates={candidates} />}
       {tab === 'coverage' && <Coverage matrix={matrix} />}
+      {tab === 'check' && <Check frames={findings} visited={visited} />}
     </main>
   );
 }
@@ -160,6 +173,49 @@ function Coverage({ matrix }: { matrix: CoverageMatrix | null }) {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+const SEVERITY = { error: '⛔', warn: '⚠️', info: 'ℹ️' } as const;
+const SCOPES = [
+  ['selection', 'Selection'],
+  ['page', 'Page'],
+  ['all-pages', 'All pages'],
+] as const;
+
+function Check({ frames, visited }: { frames: FrameFindings[] | null; visited: number }) {
+  return (
+    <section>
+      <div className="row">
+        {SCOPES.map(([scope, label]) => (
+          <button key={scope} onClick={() => post({ type: 'check', scope })} title={scope === 'all-pages' ? 'Loads every page first' : undefined}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {visited > 0 && <p className="muted">Checked {visited} layers…</p>}
+      {!frames ? (
+        <p className="muted">Pick what to check.</p>
+      ) : frames.length === 0 ? (
+        <p className="muted">No artboards to check here.</p>
+      ) : (
+        frames.map((f) => (
+          <details key={f.frameId} open={f.findings.length > 0}>
+            <summary>
+              {f.name} <span className="muted">({f.findings.length}{f.confidence === 'size' ? ', matched by size' : ''})</span>
+            </summary>
+            {f.findings.length === 0 && <p className="muted">No problems found.</p>}
+            {f.findings.map((x, i) => (
+              <button key={i} className="finding" onClick={() => post({ type: 'select-node', nodeId: x.nodeId })}>
+                {SEVERITY[x.severity]} <strong>{x.ruleId}</strong> {x.estimated && <span className="muted">(estimated)</span>}
+                <br />
+                {x.message}
+              </button>
+            ))}
+          </details>
+        ))
+      )}
     </section>
   );
 }
