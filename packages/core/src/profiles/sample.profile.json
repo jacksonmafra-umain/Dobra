@@ -1,5 +1,8 @@
 {
   "$comment": "Sample app profile: components, pane scenes, typography, the app manifest, layout rules, tab bar and screens for the neutral sample app.",
+  "sources": {
+    "figma-ui": "Sample design system: screens and components"
+  },
   "components": {
     "$comment": "Every component the rules can lay out. kind says which rule settings it takes; gap is the space between items; minLegibleWidth is the narrowest box its text still reads in (checked by the width-loss check).",
     "news_story_hero": {

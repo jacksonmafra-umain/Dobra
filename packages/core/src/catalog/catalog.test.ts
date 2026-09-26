@@ -32,4 +32,12 @@ describe('catalog and profile', () => {
       expect(() => composeConfig(catalogJson, profile)).toThrow(new RegExp(`profile.*${key}`));
     }
   });
+
+  it('lets a profile bring its own sources, without redefining the catalog ones', () => {
+    expect(Object.keys(catalogJson.sources)).not.toContain('figma-ui');
+    expect(profileJson.sources).toHaveProperty('figma-ui');
+    expect(loadConfig().sources).toHaveProperty('figma-ui');
+    const clash = { ...profileJson, sources: { ...profileJson.sources, estimated: 'mine' } };
+    expect(() => composeConfig(catalogJson, clash)).toThrow(/profile\.sources\.estimated/);
+  });
 });
