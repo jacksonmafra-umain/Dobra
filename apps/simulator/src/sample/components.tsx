@@ -1,5 +1,6 @@
 // Sample design system components, named after their Figma components (data-name).
 import { Children, useState, type CSSProperties, type ReactNode } from 'react';
+import type { FlexFormRule } from '../config/types';
 import type { Layout } from '../engine/layout';
 import { asset } from './assets';
 import type { NewsStory, OrderLine, Restaurant, Reward } from './content';
@@ -342,6 +343,36 @@ export function RuleGrid({
   children: ReactNode;
   className?: string;
 }) {
+  const r = layout.resolved[component];
+  if (r?.form === 'grid') {
+    return (
+      <div
+        className={`rule-grid ${className}`}
+        style={{ gridTemplateColumns: r.columnWidths.map((w) => `${w}px`).join(' '), gap: `${r.gap}px` }}
+        data-component={component}
+        data-form="grid"
+      >
+        {children}
+      </div>
+    );
+  }
+  if (r?.form === 'flex') {
+    const entry = layout.rule.components[component] as FlexFormRule;
+    return (
+      <div
+        className={`rule-flex ${className}`}
+        style={{ gap: `${r.gap}px`, flexWrap: entry.flex.wrap ? 'wrap' : 'nowrap', justifyContent: entry.flex.justify ?? 'start' }}
+        data-component={component}
+        data-form="flex"
+      >
+        {Children.toArray(children).map((child, i) => (
+          <div style={{ flex: `${entry.flex.grow} ${entry.flex.shrink} ${entry.flex.basis}px`, minWidth: 0 }} key={i}>
+            {child}
+          </div>
+        ))}
+      </div>
+    );
+  }
   const max = layout.maxItemWidth[component];
   const perRow = layout.perRow[component];
   const gap = layout.gap[component];
