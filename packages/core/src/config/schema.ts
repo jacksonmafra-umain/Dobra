@@ -2,6 +2,7 @@
 // The config is the product: it is validated on load, and any problem is reported with the path of
 // the offending value.
 import { z } from 'zod';
+import { offeredOrientations } from './orientations';
 
 const num = z.number();
 const pos = z.number().positive();
@@ -548,19 +549,11 @@ function checkCatalog(cfg: CatalogShape, issue: Issue) {
     if (!d.enabled) continue;
     if (d.platform === 'ios') {
       if (d.poses?.length) d.poses.forEach((p) => offer(d, p.kind, p.orientations));
-      else for (const disp of Object.values(d.displays)) offer(d, 'flat', Object.keys(disp.orientations));
+      else for (const id of Object.keys(d.displays)) offer(d, 'flat', offeredOrientations(d, id));
       continue;
     }
-    // An Android display rotates when it can; otherwise it keeps its natural shape, turned by the posture.
-    const shapes = (displayId: string, rotation?: 0 | 90) => {
-      const disp = d.displays[displayId];
-      if (!disp) return [];
-      if (disp.rotation.supported) return ['portrait', 'landscape'];
-      const natural = disp.size.width > disp.size.height ? 'landscape' : 'portrait';
-      return [rotation === 90 ? (natural === 'landscape' ? 'portrait' : 'landscape') : natural];
-    };
-    if (d.postures?.length) d.postures.forEach((p) => offer(d, p.kind, shapes(p.display, p.rotation)));
-    else for (const id of Object.keys(d.displays)) offer(d, 'flat', shapes(id));
+    if (d.postures?.length) d.postures.forEach((p) => offer(d, p.kind, offeredOrientations(d, p.display, p.rotation)));
+    else for (const id of Object.keys(d.displays)) offer(d, 'flat', offeredOrientations(d, id));
   }
   const seen = new Set<string>();
   cfg.requirements.forEach((r, ri) => {
