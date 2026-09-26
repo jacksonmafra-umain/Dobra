@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import raw from './simulator.config.json';
+import { rawConfig as raw } from './load';
 import { ConfigError, parseConfig } from './schema';
 
 const clone = () => JSON.parse(JSON.stringify(raw));

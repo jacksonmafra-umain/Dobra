@@ -142,7 +142,7 @@ export interface Environment {
 
 export function findDevice(config: SimulatorConfig, id: string): DeviceSpec {
   const device = config.devices.find((d) => d.id === id);
-  if (!device) throw new Error(`Unknown device "${id}" in simulator.config.json`);
+  if (!device) throw new Error(`Unknown device "${id}" in the catalog`);
   return device;
 }
 

@@ -3,7 +3,7 @@ import profileJson from '../profiles/sample.profile.json';
 import { parseConfig, type SimulatorConfig } from './schema';
 
 /** Catalog and profile merged into one raw object, for tests that mutate a copy. */
-export const rawConfig: Record<string, unknown> = { ...catalogJson, ...profileJson };
+export const rawConfig = { ...catalogJson, ...profileJson };
 
 /** Validates a catalog and an app profile together. */
 export function composeConfig(catalog: unknown, profile: unknown): SimulatorConfig {

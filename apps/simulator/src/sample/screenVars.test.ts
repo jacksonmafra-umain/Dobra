@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import raw from '@hinge/core/config/simulator.config.json';
+import { rawConfig as raw } from '@hinge/core/config/load';
 import { parseConfig } from '@hinge/core/config/schema';
 import { resolveEnvironment } from '@hinge/core/engine/environment';
 import { resolveLayout } from '@hinge/core/engine/layout';

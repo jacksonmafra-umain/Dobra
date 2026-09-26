@@ -1,10 +1,10 @@
 import type { ConfigError } from '@hinge/core/config/schema';
 
-/** Shown instead of the simulator when simulator.config.json does not validate. */
+/** Shown instead of the simulator when the catalog or app profile does not validate. */
 export function ConfigErrorPage({ error }: { error: ConfigError }) {
   return (
     <div className="app config-error">
-      <h1>simulator.config.json is invalid</h1>
+      <h1>The config is invalid</h1>
       <p className="muted">Fix these values and reload. Each line starts with the path of the offending value.</p>
       <ul>
         {error.issues.map((issue) => (

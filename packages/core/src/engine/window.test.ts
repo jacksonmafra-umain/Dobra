@@ -1,6 +1,6 @@
 // src/engine/window.test.ts
 import { describe, expect, it } from 'vitest';
-import raw from '../config/simulator.config.json';
+import { rawConfig as raw } from '../config/load';
 import { parseConfig } from '../config/schema';
 import type { InsetPart } from './environment';
 import type { FoldFeature } from './folds';

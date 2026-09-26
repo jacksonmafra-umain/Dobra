@@ -1,6 +1,6 @@
 // src/engine/checks.test.ts
 import { describe, expect, it } from 'vitest';
-import raw from '../config/simulator.config.json';
+import { rawConfig as raw } from '../config/load';
 import { parseConfig } from '../config/schema';
 import { runLayoutChecks, targetOf } from './checks';
 import { resolveEnvironment, type Selection } from './environment';

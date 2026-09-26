@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import catalogJson from './catalog.json';
 import profileJson from '../profiles/sample.profile.json';
-import old from '../config/simulator.config.json';
 import { loadCatalog } from './load';
 import { composeConfig, loadConfig } from '../config/load';
-import { ConfigError, parseConfig } from '../config/schema';
+import { ConfigError } from '../config/schema';
 
 const PROFILE_KEYS = ['components', 'scenes', 'typography', 'app', 'layoutRules', 'tabBar', 'screens', 'figmaFile'];
 
@@ -23,8 +22,7 @@ describe('catalog and profile', () => {
     expect('devices' in profileJson).toBe(false);
   });
 
-  it('composes to the same config as before the split', () => {
-    expect(loadConfig()).toEqual(parseConfig(old));
+  it('composes the bundled catalog and sample profile', () => {
     expect(composeConfig(catalogJson, profileJson)).toEqual(loadConfig());
   });
 });
