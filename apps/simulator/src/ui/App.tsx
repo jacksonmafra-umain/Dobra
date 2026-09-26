@@ -1,16 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PLATFORMS, type SimulatorConfig } from '../config/types';
+import { runLayoutChecks, targetOf } from '@hinge/core/engine/checks';
 import { describeChanges, type Snapshot } from '../engine/diff';
 import { findDevice, resolveEnvironment, type Selection } from '../engine/environment';
 import { resolveLayout } from '../engine/layout';
 import type { ModalKind } from '../engine/modal';
+import type { TextSettings } from '@hinge/core/engine/typography';
+import { collisionsToFindings } from '@hinge/core/collisions';
 import type { Collision } from '../sample/collisions';
+import { AndroidChrome } from '../sample/androidChrome';
 import { Screen } from '../sample/Screen';
 import { DeviceFrame, type Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
 import { Overlays, type OverlayToggles } from './Overlays';
 import { clampFree, FREE_MAX, FREE_MIN, readUrlState, writeUrlState, type Theme } from './urlState';
 import { WhatChanged, type ChangeEntry } from './WhatChanged';
+
+const WINDOW_LABEL = { fullscreen: 'Full screen', split: 'Split', freeform: 'Desktop', popup: 'Pop-up', pip: 'PiP' } as const;
 
 export function App({ config }: { config: SimulatorConfig }) {
   const initial = useMemo(() => readUrlState(), []);
@@ -22,6 +28,7 @@ export function App({ config }: { config: SimulatorConfig }) {
   const [zoom, setZoom] = useState<Zoom>(initial.zoom);
   const [rtl, setRtl] = useState(initial.rtl);
   const [overlays, setOverlays] = useState<OverlayToggles>(initial.overlays);
+  const [text, setText] = useState<TextSettings>(initial.text);
   const [change, setChange] = useState<ChangeEntry | null>(null);
 
   const devices = config.devices.filter((d) => d.enabled);
@@ -31,6 +38,8 @@ export function App({ config }: { config: SimulatorConfig }) {
   const displayIds = Object.keys(device.displays);
   const env = resolveEnvironment(config, sel);
   const layout = resolveLayout(config, env, screen);
+  const target = targetOf(sel, env);
+  const findings = [...runLayoutChecks(config, env, layout, screen, target), ...collisionsToFindings(collisions, target, env)];
 
   const previous = useRef<Snapshot | null>(null);
   const label = env.isFree
@@ -52,12 +61,12 @@ export function App({ config }: { config: SimulatorConfig }) {
 
   useEffect(() => {
     try {
-      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays }, env));
+      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text }, env));
     } catch {
       // Sandboxed previews can refuse history access.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays]);
+  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text]);
 
   const toggleOverlay = (key: keyof OverlayToggles) => setOverlays((o) => ({ ...o, [key]: !o[key] }));
   const resizeFree = (w: number, h: number) => setSel((s) => ({ ...s, free: clampFree(w, h) }));
@@ -200,6 +209,63 @@ export function App({ config }: { config: SimulatorConfig }) {
                   </button>
                 </div>
               </div>
+              <div className="control">
+                <span>Window</span>
+                <div className="seg">
+                  {(['fullscreen', 'split', 'freeform', 'popup', 'pip'] as const).map((m) => (
+                    <button
+                      aria-pressed={env.window.mode === m}
+                      disabled={device.platform !== 'android' || !device.windowModes.includes(m)}
+                      onClick={() => setSel((s) => ({ ...s, windowMode: m }))}
+                      key={m}
+                    >
+                      {WINDOW_LABEL[m]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {env.window.mode === 'split' && (
+                <div className="control">
+                  <span>Split</span>
+                  <div className="seg">
+                    {config.platforms.android.windowModes.split.ratios.map((r) => (
+                      <button aria-pressed={(sel.splitRatio ?? 0.5) === r} onClick={() => setSel((s) => ({ ...s, splitRatio: r }))} key={r}>
+                        {Math.round(r * 100)}%
+                      </button>
+                    ))}
+                    <button onClick={() => setSel((s) => ({ ...s, splitSide: s.splitSide === 'secondary' ? 'primary' : 'secondary' }))}>
+                      {sel.splitSide === 'secondary' ? 'Other half' : 'This half'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              <label className="control">
+                <span>Display size</span>
+                <select value={sel.displayScale ?? 'default'} onChange={(e) => setSel((s) => ({ ...s, displayScale: e.target.value }))}>
+                  {config.platforms.android.displaySize.steps.map((st) => (
+                    <option value={st.id} key={st.id}>
+                      {st.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="control">
+                <span>App</span>
+                <div className="seg">
+                  <button aria-pressed={!!sel.rotationLock} onClick={() => setSel((s) => ({ ...s, rotationLock: !s.rotationLock }))}>
+                    Rotation lock
+                  </button>
+                  <button aria-pressed={!!sel.appPortrait} onClick={() => setSel((s) => ({ ...s, appPortrait: !s.appPortrait }))}>
+                    Portrait only
+                  </button>
+                  <button
+                    aria-pressed={(sel.targetSdk ?? config.app.android.targetSdk) >= 36}
+                    onClick={() => setSel((s) => ({ ...s, targetSdk: (s.targetSdk ?? config.app.android.targetSdk) >= 36 ? 35 : 36 }))}
+                  >
+                    targetSdk {(sel.targetSdk ?? config.app.android.targetSdk) >= 36 ? 36 : 35}
+                  </button>
+                </div>
+              </div>
             </>
           )}
           <div className="control" hidden={env.platform === 'android' && !sel.free}>
@@ -295,6 +361,41 @@ export function App({ config }: { config: SimulatorConfig }) {
             </div>
           </div>
           <div className="control">
+            <span>Text size · {env.typeUnit}</span>
+            <div className="free-resize">
+              <input
+                type="range"
+                min={config.platforms[env.platform].fontScale?.min ?? 1}
+                max={config.platforms[env.platform].fontScale?.max ?? 2}
+                step={config.platforms[env.platform].fontScale?.step ?? 0.05}
+                value={text.fontScale}
+                onChange={(e) => setText((t) => ({ ...t, fontScale: Number(e.target.value) }))}
+                aria-label="Font scale"
+              />
+              <span className="tnum">{text.fontScale.toFixed(2)}×</span>
+              <button className="seg-single" onClick={() => setText((t) => ({ ...t, fontScale: config.platforms[env.platform].fontScale?.max ?? 2 }))}>
+                Large text
+              </button>
+            </div>
+          </div>
+          <div className="control">
+            <span>Accessibility</span>
+            <div className="seg">
+              <button aria-pressed={text.bold} onClick={() => setText((t) => ({ ...t, bold: !t.bold }))}>
+                Bold text
+              </button>
+              <button aria-pressed={text.reducedMotion} onClick={() => setText((t) => ({ ...t, reducedMotion: !t.reducedMotion }))}>
+                Reduced motion
+              </button>
+            </div>
+          </div>
+          <div className="control">
+            <span>Keyboard</span>
+            <button className="seg-single" aria-pressed={!!sel.ime} onClick={() => setSel((s) => ({ ...s, ime: !s.ime }))}>
+              {sel.ime ? 'Shown' : 'Hidden'}
+            </button>
+          </div>
+          <div className="control">
             <span>Present</span>
             <div className="seg">
               <button aria-pressed={modal === 'alert'} onClick={() => setModal((m) => (m === 'alert' ? null : 'alert'))}>
@@ -346,6 +447,12 @@ export function App({ config }: { config: SimulatorConfig }) {
             env={env}
             zoom={zoom}
             onResize={sel.free ? resizeFree : undefined}
+            onResizeWindow={
+              env.window.mode === 'freeform'
+                ? (w, h) => setSel((s) => ({ ...s, windowSize: { width: Math.round(w), height: Math.round(h) } }))
+                : undefined
+            }
+            displayChrome={<AndroidChrome env={env} />}
             overlay={<Overlays env={env} layout={layout} show={overlays} />}
           >
             <div className="sample" data-theme={theme} style={{ position: 'absolute', inset: 0 }}>
@@ -358,12 +465,22 @@ export function App({ config }: { config: SimulatorConfig }) {
                 modal={modal}
                 onCloseModal={() => setModal(null)}
                 onCollisions={setCollisions}
+                text={text}
               />
             </div>
           </DeviceFrame>
         </main>
         <aside className="sidebar">
-          <Inspector config={config} env={env} layout={layout} screen={screen} collisions={collisions} modal={modal} rtl={rtl} />
+          <Inspector
+            config={config}
+            env={env}
+            layout={layout}
+            screen={screen}
+            collisions={collisions}
+            findings={findings}
+            modal={modal}
+            rtl={rtl}
+          />
           <WhatChanged entry={change} />
         </aside>
       </div>

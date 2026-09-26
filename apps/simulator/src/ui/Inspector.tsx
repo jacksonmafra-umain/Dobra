@@ -4,6 +4,7 @@ import { foldThickness } from '../engine/folds';
 import type { Layout } from '../engine/layout';
 import { placeModal, type ModalKind } from '../engine/modal';
 import { formatSizeClass } from '../engine/sizeClass';
+import type { Finding } from '@hinge/core/engine/checks';
 import type { Collision } from '../sample/collisions';
 
 interface InspectorProps {
@@ -12,6 +13,7 @@ interface InspectorProps {
   layout: Layout;
   screen: ScreenSpec;
   collisions: Collision[];
+  findings: Finding[];
   modal: ModalKind | null;
   rtl: boolean;
 }
@@ -24,7 +26,7 @@ const NAVIGATION_LABEL: Record<Layout['navigation']['pattern'], string> = {
   drawer: 'navigation drawer · leading edge',
 };
 
-export function Inspector({ config, env, layout, screen, collisions, modal, rtl }: InspectorProps) {
+export function Inspector({ config, env, layout, screen, collisions, findings, modal, rtl }: InspectorProps) {
   const u = env.unit;
   const safe = env.safeArea;
   const android = config.platforms.android;
@@ -32,6 +34,12 @@ export function Inspector({ config, env, layout, screen, collisions, modal, rtl 
   const rows: [string, string][] = [
     ['Platform', `${config.platforms[env.platform].label} · layout in ${env.unit}, type in ${env.typeUnit}`],
     ['Size', `${env.width} × ${env.height} ${u}`],
+    ...(env.window.mode !== 'fullscreen' || env.display.width !== env.width || env.display.height !== env.height
+      ? [['Window', `${env.window.mode} · ${env.width}×${env.height} ${u} on a ${env.display.width}×${env.display.height} ${u} display`] as [string, string]]
+      : []),
+    ...(env.ime
+      ? [['Keyboard', `${env.ime} ${u}: ${env.height - env.safeArea.top - env.ime} ${u} left for content; the window size class does not change`] as [string, string]]
+      : []),
     ['Orientation', env.orientation],
     ['Pose', env.pose ? `${env.pose.label}${env.pose.estimated ? ' (estimated)' : ''}` : '— (foldable devices only)'],
     [
@@ -83,6 +91,29 @@ export function Inspector({ config, env, layout, screen, collisions, modal, rtl 
           </div>
         ))}
       </dl>
+      <h3 className="panel__sub">Checks · {findings.length ? `${findings.length} finding${findings.length > 1 ? 's' : ''}` : 'none'}</h3>
+      {findings.length > 0 && (
+        <ul className="bar-notes">
+          {findings.map((f, i) => (
+            <li data-kind={f.severity === 'error' ? 'overfull' : 'text-in-vertical'} key={i}>
+              <code>{f.ruleId}</code> {f.message}{' '}
+              <span className="muted">
+                ({f.source}
+                {f.estimated && f.source !== 'estimated' ? ', estimated' : ''})
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {env.notes.length > 0 && (
+        <ul className="bar-notes">
+          {env.notes.map((n) => (
+            <li data-kind="compression" key={n.id}>
+              {n.text} <span className="muted">({n.source})</span>
+            </li>
+          ))}
+        </ul>
+      )}
       <h3 className="panel__sub">Active Sample layout rule · {screen.name}</h3>
       <dl className="kv kv--dense">
         {screen.components.map((id) => (

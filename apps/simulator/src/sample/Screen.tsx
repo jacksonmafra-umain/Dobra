@@ -3,16 +3,19 @@ import { useRef, type ComponentType, type CSSProperties } from 'react';
 import type { ScreenSpec, SimulatorConfig } from '../config/types';
 import type { Environment } from '../engine/environment';
 import type { Layout } from '../engine/layout';
+import { typeScaleVars, type TextSettings } from '@hinge/core/engine/typography';
 import { placeModal, type ModalKind } from '../engine/modal';
-import { AndroidChrome } from './androidChrome';
 import { DynamicIsland, HomeIndicator, LiveActivityIsland, StatusBar } from './chrome';
 import { useCollisions, type Collision } from './collisions';
+import { screenVars } from './screenVars';
 import { Modal } from './modal';
 import { FloatingTabBar, NavigationDrawer, NavigationRail } from './navigation';
 import { BagScreen } from './screens/BagScreen';
 import { CheckoutScreen } from './screens/CheckoutScreen';
 import { DealsScreen } from './screens/DealsScreen';
 import { HomeScreen } from './screens/HomeScreen';
+import { LocationsScreen } from './screens/LocationsScreen';
+import { ProductsScreen } from './screens/ProductsScreen';
 import { RewardsScreen } from './screens/RewardsScreen';
 import { TabBar } from './tabBar';
 import { AppToolbar, Toolbar } from './toolbars';
@@ -24,10 +27,10 @@ const SCREEN_CONTENT: Record<string, ComponentType<{ layout: Layout }>> = {
   rewards: RewardsScreen,
   bag: BagScreen,
   checkout: CheckoutScreen,
+  locations: LocationsScreen,
+  products: ProductsScreen,
 };
 
-/** Toolbar content never sits closer than this to the window edge. */
-const TOOLBAR_MIN_INSET = 16;
 
 interface ScreenProps {
   config: SimulatorConfig;
@@ -38,9 +41,10 @@ interface ScreenProps {
   modal: ModalKind | null;
   onCloseModal: () => void;
   onCollisions: (collisions: Collision[]) => void;
+  text: TextSettings;
 }
 
-export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, onCollisions }: ScreenProps) {
+export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, onCollisions, text }: ScreenProps) {
   const root = useRef<HTMLDivElement>(null);
   useCollisions(root, env, [env, layout, screen.id, rtl, modal], onCollisions);
 
@@ -48,25 +52,11 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
   const bars = layout.bars;
   const nav = layout.navigation;
   const iosRail = nav.pattern === 'ios-rail';
-  const floatingBar = nav.pattern === 'bar' && nav.floating;
   // Space the leading rail or drawer takes, including the inset it sits in.
   const leading = layout.leadingNav ? safe.left + layout.leadingNav : 0;
-  const right = iosRail ? 0 : safe.right;
-
-  // Physical LTR margins inside the content column; RTL mirrors them.
-  const marginStart = layout.margin.left - leading;
-  const marginEnd = layout.margin.right - layout.railWidth;
   const style: Record<string, string> = {
-    '--sa-top': `${safe.top}px`,
-    '--sa-right': `${right}px`,
-    '--sa-bottom': `${safe.bottom}px`,
-    '--sa-left': `${leading ? 0 : safe.left}px`,
-    '--margin-left': `${rtl ? marginEnd : marginStart}px`,
-    '--margin-right': `${rtl ? marginStart : marginEnd}px`,
-    '--toolbar-inset-left': `${leading ? TOOLBAR_MIN_INSET : Math.max(TOOLBAR_MIN_INSET, safe.left)}px`,
-    '--toolbar-inset-right': `${Math.max(TOOLBAR_MIN_INSET, right)}px`,
-    '--camera-left': `${env.reservedRegions.find((r) => r.kind === 'camera' && r.rect.x === 0)?.rect.width ?? 0}px`,
-    '--floating-bar-clearance': floatingBar ? `${nav.size + nav.inset}px` : '0px',
+    ...screenVars(env, layout, rtl),
+    ...typeScaleVars(config, env.platform, text.fontScale),
   };
 
   const flagged = bars ? bars.notes.filter((n) => n.kind === 'text-in-vertical').map((n) => n.itemId!) : [];
@@ -75,8 +65,8 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
     !iosRail || horizontalItems.length > 0 || screen.toolbar.component === 'app_toolbar' || !!screen.toolbar.title;
   const Content = SCREEN_CONTENT[screen.id];
   const columnStyle: CSSProperties = rtl
-    ? { marginLeft: layout.railWidth, marginRight: leading }
-    : { marginRight: layout.railWidth, marginLeft: leading };
+    ? { marginLeft: layout.railWidth, marginRight: leading, bottom: env.ime }
+    : { marginRight: layout.railWidth, marginLeft: leading, bottom: env.ime };
 
   return (
     <div
@@ -85,6 +75,8 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
       style={style as CSSProperties}
       data-screen={screen.id}
       data-platform={env.platform}
+      data-bold={text.bold || undefined}
+      data-reduced-motion={text.reducedMotion || undefined}
     >
       <div className="screen__column" style={columnStyle} dir={rtl ? 'rtl' : 'ltr'}>
         <div className="screen__status-spacer" />
@@ -96,7 +88,7 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
           ))}
         <main className="screen__scroll">{Content && <Content layout={layout} />}</main>
         {nav.pattern === 'tab-bar' && <TabBar items={config.tabBar.items} selected={screen.tab} item={layout.tabItem} />}
-        {nav.pattern === 'bar' && (
+        {nav.pattern === 'bar' && env.ime === 0 && (
           <FloatingTabBar navigation={nav} items={config.tabBar.items} selected={screen.tab} bottomInset={safe.bottom} />
         )}
       </div>
@@ -120,7 +112,7 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
           selectedTab={screen.tab}
         />
       )}
-      {env.platform === 'ios' ? <StatusBar env={env} /> : <AndroidChrome env={env} />}
+      {env.platform === 'ios' && <StatusBar env={env} />}
       <DynamicIsland env={env} />
       {env.reservedRegions
         .filter((r) => r.kind === 'live-activity')
@@ -128,6 +120,17 @@ export function Screen({ config, env, layout, screen, rtl, modal, onCloseModal, 
           <LiveActivityIsland rect={r.rect} key={r.id} />
         ))}
       {modal && <Modal kind={modal} placement={placeModal(modal, env, layout, rtl)} onClose={onCloseModal} />}
+      {env.ime > 0 && (
+        <div className="keyboard" style={{ height: env.ime }} data-name="keyboard" aria-hidden>
+          {['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((row) => (
+            <div className="keyboard__row" key={row}>
+              {row.split('').map((k) => (
+                <span key={k}>{k}</span>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
       <HomeIndicator env={env} />
     </div>
   );
