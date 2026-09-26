@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { FoldFeature } from './engine/folds';
-import { collisionZones, findCollisions, rectsOverlap, spansOverlap } from './collisions';
+import raw from './config/simulator.config.json';
+import { parseConfig } from './config/schema';
+import { resolveEnvironment } from './engine/environment';
+import { collisionsToFindings, collisionZones, findCollisions, rectsOverlap, spansOverlap } from './collisions';
 
 const fold = (axis: 'vertical' | 'horizontal', separating: boolean, occludes = false): FoldFeature => ({
   axis,
@@ -45,5 +48,24 @@ describe('collision geometry', () => {
       { id: 'scrolls-across-vertical', zone: 'Folding region' },
       { id: 'fixed-over-horizontal', zone: 'Folding region' },
     ]);
+  });
+});
+
+const config = parseConfig(raw);
+
+describe('collisionsToFindings', () => {
+  it('reports each collision as a hinge-content error on the fold', () => {
+    const env = resolveEnvironment(config, { deviceId: 'pixel-9-pro-fold', displayId: '', orientation: 'portrait', free: null, pose: 'book' });
+    const target = { deviceId: 'pixel-9-pro-fold', displayId: 'inner', pose: 'book', orientation: env.orientation, rotation: 0 as const };
+    const [f] = collisionsToFindings([{ region: 'Folding region', element: 'action_card "Deals"' }], target, env);
+    expect(f).toMatchObject({ ruleId: 'hinge-content', severity: 'error', nodeId: 'action_card "Deals"', source: 'androidx-window' });
+    expect(f.rect).toEqual(env.folds[0].rect);
+  });
+
+  it('cites the device source, not androidx, for an iPhone fold', () => {
+    const env = resolveEnvironment(config, { deviceId: 'iphone-duo', displayId: 'inner', orientation: 'landscape', free: null, pose: 'book' });
+    const target = { deviceId: 'iphone-duo', displayId: 'inner', pose: 'book', orientation: env.orientation };
+    const [f] = collisionsToFindings([{ region: 'Folding region', element: 'h2 "Deals"' }], target, env);
+    expect(f.source).toBe('estimated');
   });
 });
