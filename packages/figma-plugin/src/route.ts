@@ -9,10 +9,11 @@ const OPENING: Record<Command, ToMain> = {
   tag: { type: 'scan-tags' },
   coverage: { type: 'coverage' },
   check: { type: 'check', scope: 'selection' },
+  adapt: { type: 'list-targets' },
 };
 
 export function commandOf(command: string): Command {
-  return command === 'tag' || command === 'coverage' || command === 'check' ? command : 'presets';
+  return command === 'tag' || command === 'coverage' || command === 'check' || command === 'adapt' ? command : 'presets';
 }
 
 export async function route(api: FigmaApi, command: string, msg: ToMain, onProgress?: (visited: number) => void): Promise<ToUi | null> {

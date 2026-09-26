@@ -5,10 +5,11 @@ import { matchFrame } from '@hinge/core/match';
 import { check } from '@hinge/core/rules';
 import { presetSpec } from '@hinge/core/presets';
 import { enumerateTargets, parseTargetKey, targetKey, type Target } from '@hinge/core/targets';
+import { adaptFrame } from './adapt';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';
 import { toGeo } from './geo';
-import type { FrameFindings, ToMain, ToUi } from './messages';
+import type { AdaptResult, FrameFindings, ToMain, ToUi } from './messages';
 import { applyPreset, NAMESPACE } from './presets';
 import { applyTag, tagCandidates, topLevelFrames } from './tagging';
 
@@ -100,6 +101,20 @@ export async function handle(api: FigmaApi, msg: ToMain, onProgress?: (visited: 
         api.currentPage.selection = [node as SceneNode];
         api.viewport.scrollAndZoomIntoView([node as SceneNode]);
         return null;
+      }
+      case 'adapt': {
+        const targets = msg.keys.map((key) => {
+          const t = parseTargetKey(key);
+          if (!t) throw new Error(`"${key}" is not a target key`);
+          presetSpec(config, t); // throws with the key when the target is unknown, before anything is copied
+          return t;
+        });
+        const results: AdaptResult[] = [];
+        for (const t of targets) {
+          const { frame, plan, findings } = await adaptFrame(api, msg.frameId, t, { split: msg.split });
+          results.push({ key: targetKey(t), frameId: frame.id, name: frame.name, plan, findings });
+        }
+        return { type: 'adapted', results };
       }
       case 'create-missing': {
         const matrix = coverage(catalog, presentFrames(api, config));

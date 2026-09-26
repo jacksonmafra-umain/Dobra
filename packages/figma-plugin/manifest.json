@@ -30,6 +30,10 @@
     {
       "name": "Check",
       "command": "check"
+    },
+    {
+      "name": "Adapt frame",
+      "command": "adapt"
     }
   ],
   "relaunchButtons": [

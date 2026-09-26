@@ -12,7 +12,7 @@ describe('manifest', () => {
       documentAccess: 'dynamic-page',
       networkAccess: { allowedDomains: ['none'] },
     });
-    expect(manifest.menu.map((m: { command: string }) => m.command)).toEqual(['presets', 'tag', 'coverage', 'check']);
+    expect(manifest.menu.map((m: { command: string }) => m.command)).toEqual(['presets', 'tag', 'coverage', 'check', 'adapt']);
     expect(manifest.relaunchButtons).toEqual([{ command: 'check', name: 'Re-check' }]);
   });
 });

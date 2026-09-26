@@ -117,4 +117,23 @@ describe('plugin handlers', () => {
     await handle(api, { type: 'create-presets', keys: ['pixel-9/main/-/portrait'] });
     expect((api.currentPage.children[0] as unknown as { relaunch: unknown }).relaunch).toEqual({ check: '' });
   });
+
+  it('adapts the chosen frame to each target', async () => {
+    const api = createFakeFigma();
+    const src = api.createFrame();
+    src.resize(411, 923);
+    const reply = await handle(api, { type: 'adapt', frameId: src.id, keys: ['surface-duo-2/spanned/spanned/landscape', 'pixel-tablet/main/-/landscape'], split: true });
+    if (reply?.type !== 'adapted') throw new Error('adapted expected');
+    expect(reply.results.map((r) => r.key)).toEqual(['surface-duo-2/spanned/spanned/landscape', 'pixel-tablet/main/-/landscape']);
+    expect(reply.results.every((r) => r.frameId !== src.id && r.plan)).toBe(true);
+    expect(reply.results[1].plan.splitNote).toMatch(/does not separate/);
+  });
+
+  it('refuses an unknown key before adapting anything', async () => {
+    const api = createFakeFigma();
+    const src = api.createFrame();
+    const reply = await handle(api, { type: 'adapt', frameId: src.id, keys: ['pixel-9/main/-/portrait', 'nope/x/-/portrait'], split: false });
+    expect(reply).toMatchObject({ type: 'error' });
+    expect(api.currentPage.children).toHaveLength(1);
+  });
 });
