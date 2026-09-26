@@ -6,8 +6,20 @@ import type { FigmaApi } from './api';
 import type { TagCandidate } from './messages';
 import { NAMESPACE } from './presets';
 
+/**
+ * Artboards on the page: frames at the top level or inside Sections and Groups, where designers
+ * organise them. Frames inside an artboard (its overlay, its content) are not artboards.
+ */
 export function topLevelFrames(api: FigmaApi): FrameNode[] {
-  return api.currentPage.children.filter((n): n is FrameNode => n.type === 'FRAME');
+  const out: FrameNode[] = [];
+  const walk = (nodes: readonly SceneNode[]) => {
+    for (const n of nodes) {
+      if (n.type === 'FRAME') out.push(n);
+      else if (n.type === 'SECTION' || n.type === 'GROUP') walk(n.children);
+    }
+  };
+  walk(api.currentPage.children);
+  return out;
 }
 
 /** Frames without a valid tag (untagged, or tagged for a device the catalog no longer has). */

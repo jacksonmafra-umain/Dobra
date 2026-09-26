@@ -2,7 +2,7 @@
 // Figma's: created on the current page, re-parented by appendChild, shared plugin data defaults to ''.
 import type { FigmaApi } from '../api';
 
-type NodeType = 'FRAME' | 'RECTANGLE';
+type NodeType = 'FRAME' | 'RECTANGLE' | 'SECTION' | 'GROUP';
 
 export interface FakeNode {
   id: string;
@@ -40,7 +40,7 @@ function detach(child: FakeNode) {
   if (parent) parent.children.splice(parent.children.indexOf(child), 1);
 }
 
-export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknown } {
+export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknown; container(type: 'SECTION' | 'GROUP'): FakeNode } {
   let next = 1;
   const page: FakePage = {
     type: 'PAGE',
@@ -71,7 +71,7 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
     const node: FakeNode = {
       id: `1:${next++}`,
       type,
-      name: type === 'FRAME' ? 'Frame' : 'Rectangle',
+      name: type === 'FRAME' ? 'Frame' : type === 'RECTANGLE' ? 'Rectangle' : type === 'SECTION' ? 'Section' : 'Group',
       x: 0,
       y: 0,
       width: 100,
@@ -120,6 +120,8 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
     currentPage: page,
     createFrame: () => make('FRAME'),
     createRectangle: () => make('RECTANGLE'),
+    /** Test-only: a Section or Group to move frames into. */
+    container: (type: 'SECTION' | 'GROUP') => make(type),
     viewport: {
       scrollAndZoomIntoView(nodes: unknown) {
         api.zoomedTo = nodes;
@@ -127,5 +129,5 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
     },
     getNodeByIdAsync: async (id: string) => find(id, page.children),
   };
-  return api as unknown as FigmaApi & { page: FakePage; zoomedTo: unknown };
+  return api as unknown as FigmaApi & { page: FakePage; zoomedTo: unknown; container(type: 'SECTION' | 'GROUP'): FakeNode };
 }

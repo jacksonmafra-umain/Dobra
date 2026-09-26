@@ -53,4 +53,18 @@ describe('plugin handlers', () => {
       frames: [],
     });
   });
+
+  it('sees artboards the designer moved into a Section or Group, but not frames inside an artboard', async () => {
+    const api = createFakeFigma();
+    await handle(api, { type: 'create-missing' });
+    const section = api.container('SECTION');
+    const group = api.container('GROUP');
+    section.appendChild(group);
+    for (const f of api.currentPage.children.filter((n) => n.type === 'FRAME')) group.appendChild(f as never);
+    const before = await handle(api, { type: 'coverage' });
+    if (before?.type !== 'coverage') throw new Error('coverage expected');
+    expect(before.matrix.cells.filter((c) => c.requirement.level === 'required').every((c) => c.status === 'present')).toBe(true);
+    expect(await handle(api, { type: 'create-missing' })).toMatchObject({ type: 'created', frameIds: [] });
+    expect(await handle(api, { type: 'scan-tags' })).toMatchObject({ type: 'tag-candidates', frames: [] });
+  });
 });
