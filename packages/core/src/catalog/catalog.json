@@ -380,6 +380,7 @@
       "platform": "ios",
       "name": "iPhone SE",
       "enabled": true,
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -439,6 +440,7 @@
       "platform": "ios",
       "name": "iPhone 17",
       "enabled": true,
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -502,6 +504,7 @@
       "platform": "ios",
       "name": "iPhone 17 Pro Max",
       "enabled": true,
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -565,6 +568,7 @@
       "platform": "ios",
       "name": "iPhone Duo",
       "enabled": true,
+      "category": "foldable-book",
       "displays": {
         "outer": {
           "label": "Outer display (closed)",
@@ -791,7 +795,7 @@
       "platform": "android",
       "name": "Compact Android phone (360×780)",
       "enabled": true,
-      "class": "phone",
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -850,7 +854,7 @@
       "platform": "android",
       "name": "Pixel 9",
       "enabled": true,
-      "class": "phone",
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -909,7 +913,7 @@
       "platform": "android",
       "name": "Pixel 9 Pro XL",
       "enabled": true,
-      "class": "phone",
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -968,7 +972,7 @@
       "platform": "android",
       "name": "Pixel Tablet",
       "enabled": true,
-      "class": "tablet",
+      "category": "tablet",
       "displays": {
         "main": {
           "label": "Display",
@@ -1021,7 +1025,7 @@
       "platform": "android",
       "name": "Generic 10\" tablet",
       "enabled": true,
-      "class": "tablet",
+      "category": "tablet",
       "displays": {
         "main": {
           "label": "Display",
@@ -1073,7 +1077,7 @@
       "platform": "android",
       "name": "Generic 12\" tablet",
       "enabled": true,
-      "class": "tablet",
+      "category": "tablet",
       "displays": {
         "main": {
           "label": "Display",
@@ -1125,7 +1129,7 @@
       "platform": "android",
       "name": "Pixel 9 Pro Fold",
       "enabled": true,
-      "class": "book-foldable",
+      "category": "foldable-book",
       "displays": {
         "outer": {
           "label": "Outer display",
@@ -1304,7 +1308,7 @@
       "platform": "android",
       "name": "Galaxy Z Fold 7",
       "enabled": true,
-      "class": "book-foldable",
+      "category": "foldable-book",
       "displays": {
         "cover": {
           "label": "Cover display",
@@ -1472,7 +1476,7 @@
       "platform": "android",
       "name": "Galaxy Z Flip 7",
       "enabled": true,
-      "class": "clamshell",
+      "category": "foldable-flip",
       "displays": {
         "cover": {
           "label": "Cover display (FlexWindow)",
@@ -1623,7 +1627,7 @@
       "platform": "android",
       "name": "Galaxy Z TriFold",
       "enabled": true,
-      "class": "tri-fold",
+      "category": "multi-fold",
       "displays": {
         "cover": {
           "label": "Cover display",
@@ -1792,7 +1796,7 @@
       "platform": "android",
       "name": "Huawei Mate XT",
       "enabled": true,
-      "class": "tri-fold",
+      "category": "multi-fold",
       "displays": {
         "single": {
           "label": "Single panel",
@@ -2005,7 +2009,7 @@
       "platform": "android",
       "name": "Chromebook (1366×768)",
       "enabled": true,
-      "class": "desktop",
+      "category": "desktop",
       "displays": {
         "main": {
           "label": "Display",
@@ -2055,7 +2059,7 @@
       "platform": "android",
       "name": "Samsung DeX (1080p monitor)",
       "enabled": true,
-      "class": "desktop",
+      "category": "desktop",
       "displays": {
         "main": {
           "label": "Display",
@@ -2105,7 +2109,7 @@
       "platform": "android",
       "name": "Android desktop windowing (1440p monitor)",
       "enabled": true,
-      "class": "desktop",
+      "category": "desktop",
       "displays": {
         "main": {
           "label": "Display",

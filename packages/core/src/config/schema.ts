@@ -173,11 +173,16 @@ const iosPose = z.strictObject({
   estimated: z.boolean().optional(),
 });
 
+/** Device categories (spec §3.2). Kept here, not imported from catalog/, so the schema has no dependencies. */
+const category = z.enum(['phone', 'foldable-book', 'foldable-flip', 'dual-screen', 'multi-fold', 'tablet', 'desktop']);
+export const DEVICE_CATEGORIES = category.options;
+
 const iosDevice = z.strictObject({
   id: z.string(),
   platform: z.literal('ios'),
   name: z.string(),
   enabled: z.boolean(),
+  category,
   displays: z.record(z.string(), iosDisplay),
   poses: z.array(iosPose).optional(),
 });
@@ -252,7 +257,7 @@ const androidDevice = z.strictObject({
   platform: z.literal('android'),
   name: z.string(),
   enabled: z.boolean(),
-  class: z.enum(['phone', 'book-foldable', 'clamshell', 'tri-fold', 'tablet', 'desktop']),
+  category,
   displays: z.record(z.string(), androidDisplay),
   postures: z.array(posture).optional(),
   /** Window states this device offers. The first is the default. */
