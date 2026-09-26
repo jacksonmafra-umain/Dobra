@@ -975,6 +975,186 @@
       "$comment": "Large phone. 1344×2992 px; the default density is assumed to be 480 dpi (3.0). Verify on device."
     },
     {
+      "id": "galaxy-s25",
+      "platform": "android",
+      "name": "Galaxy S25",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 360.0,
+            "height": 780.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2340
+          },
+          "density": 3.0,
+          "cornerRadius": 44,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 48,
+              "hole": {
+                "diameter": 26,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Samsung publishes native pixels (Samsung Developers emulator skins) but not the default resolution or density. 1080×2340 px at 3.0 is the common third-party value; confirm with adb shell wm size / wm density."
+        }
+      },
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Native panel pixels are confirmed; the default rendering resolution and density are not."
+    },
+    {
+      "id": "galaxy-s25-plus",
+      "platform": "android",
+      "name": "Galaxy S25+",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 384.0,
+            "height": 832.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2340
+          },
+          "density": 2.8125,
+          "cornerRadius": 44,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 48,
+              "hole": {
+                "diameter": 26,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Samsung publishes native pixels (Samsung Developers emulator skins) but not the default resolution or density. 1080×2340 px at 2.8125 is the common third-party value; confirm with adb shell wm size / wm density."
+        }
+      },
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Native panel pixels are confirmed; the default rendering resolution and density are not."
+    },
+    {
+      "id": "galaxy-s25-ultra",
+      "platform": "android",
+      "name": "Galaxy S25 Ultra",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 384.0,
+            "height": 832.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2340
+          },
+          "density": 2.8125,
+          "cornerRadius": 44,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 48,
+              "hole": {
+                "diameter": 26,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Samsung publishes native pixels (Samsung Developers emulator skins) but not the default resolution or density. 1080×2340 px at 2.8125 is the common third-party value; confirm with adb shell wm size / wm density."
+        }
+      },
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Native panel pixels are confirmed; the default rendering resolution and density are not."
+    },
+    {
       "id": "pixel-tablet",
       "platform": "android",
       "name": "Pixel Tablet",

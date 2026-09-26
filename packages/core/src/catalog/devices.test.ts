@@ -105,3 +105,15 @@ describe('flip foldables', () => {
     }
   });
 });
+
+describe('Galaxy S25 family', () => {
+  it.each([
+    ['galaxy-s25', { width: 360, height: 780 }],
+    ['galaxy-s25-plus', { width: 384, height: 832 }],
+    ['galaxy-s25-ultra', { width: 384, height: 832 }],
+  ])('%s is %o dp, estimated', (id, expected) => {
+    expect(byId(id).category).toBe('phone');
+    expect(size(id, 'main')).toEqual(expected);
+    expect(estimated(id)).toBe(true);
+  });
+});
