@@ -182,12 +182,25 @@ const iosPose = z.strictObject({
 const category = z.enum(['phone', 'foldable-book', 'foldable-flip', 'dual-screen', 'multi-fold', 'tablet', 'desktop']);
 export const DEVICE_CATEGORIES = category.options;
 
+/** Media-query facts that differ from the category default (see catalog/media.ts). */
+const media = z
+  .strictObject({
+    pointer: z.enum(['coarse', 'fine']).optional(),
+    keyboard: z.enum(['virtual', 'physical']).optional(),
+    viewingDistance: z.enum(['near', 'medium', 'far']).optional(),
+    hasCamera: z.boolean().optional(),
+    hasMicrophone: z.boolean().optional(),
+    source: sourceRef,
+  })
+  .optional();
+
 const iosDevice = z.strictObject({
   id: z.string(),
   platform: z.literal('ios'),
   name: z.string(),
   enabled: z.boolean(),
   category,
+  media,
   displays: z.record(z.string(), iosDisplay),
   poses: z.array(iosPose).optional(),
 });
@@ -267,6 +280,7 @@ const androidDevice = z.strictObject({
   name: z.string(),
   enabled: z.boolean(),
   category,
+  media,
   displays: z.record(z.string(), androidDisplay),
   postures: z.array(posture).optional(),
   /** Window states this device offers. The first is the default. */
@@ -469,6 +483,7 @@ function checkCatalog(cfg: CatalogShape, issue: Issue) {
   }
 
   cfg.devices.forEach((d, di) => {
+    checkSource(d.media?.source, ['devices', di, 'media', 'source']);
     if (d.platform === 'android') {
       checkSource(d.source, ['devices', di, 'source']);
       for (const [displayId, disp] of Object.entries(d.displays)) {
