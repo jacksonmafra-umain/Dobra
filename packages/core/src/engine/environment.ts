@@ -3,6 +3,7 @@ import { resolveAndroidDevice } from './android';
 import { resolveIosDevice } from './ios';
 import type { FoldFeature } from './folds';
 import { windowSizeClass, type SizeClass } from './sizeClass';
+import type { WindowMode, WindowPlacement } from './window';
 
 export type { FoldFeature } from './folds';
 export type { SizeClass } from './sizeClass';
@@ -22,9 +23,31 @@ export interface Selection {
   rotation?: 0 | 90;
   /** Android: system navigation mode. The bottom inset differs between the two. */
   navMode?: NavMode;
+  /** Android window state. Defaults to the device's first window mode. */
+  windowMode?: WindowMode;
+  splitRatio?: number;
+  splitSide?: 'primary' | 'secondary';
+  /** Freeform window size, dp. */
+  windowSize?: Size;
+  /** Settings › Display size step id. */
+  displayScale?: string;
+  /** System rotation lock: the display stays in its natural orientation. */
+  rotationLock?: boolean;
+  /** Software keyboard shown. */
+  ime?: boolean;
+  /** The app requests portrait (screenOrientation="portrait"). Defaults to the app manifest in the config. */
+  appPortrait?: boolean;
+  targetSdk?: number;
 }
 
 export type NavMode = 'gesture' | 'three-button';
+
+/** Why the window is not what the controls would suggest. */
+export interface EnvNote {
+  id: string;
+  text: string;
+  source: string;
+}
 
 /** A pose (iOS) or posture (Android) the device can be put in. */
 export interface PoseInfo {
@@ -88,6 +111,12 @@ export interface Environment {
   isFree: boolean;
   width: number;
   height: number;
+  /** Display area the window sits on. Equal to the window outside Android window modes. */
+  display: Size;
+  window: WindowPlacement;
+  /** Keyboard inset at the window bottom, 0 when hidden. */
+  ime: number;
+  notes: EnvNote[];
   orientation: Orientation;
   sizeClass: SizeClass;
   /** iOS bar placement (iPhone Duo moves bars to the trailing edge). Android navigation is resolved by the layout. */
@@ -150,6 +179,10 @@ function freeEnvironment(config: SimulatorConfig, size: Size, platform: Platform
     isFree: true,
     width: size.width,
     height: size.height,
+    display: { ...size },
+    window: { mode: 'fullscreen', rect: { x: 0, y: 0, ...size }, floating: false, captionBar: 0, other: null, divider: null },
+    ime: 0,
+    notes: [],
     orientation: size.width > size.height ? 'landscape' : 'portrait',
     sizeClass,
     barAxis,

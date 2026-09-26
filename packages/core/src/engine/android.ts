@@ -1,9 +1,10 @@
 // Android devices: size classes come from the window size in dp (WindowSizeClass), and insets
 // are resolved per WindowInsets type for the current rotation and navigation mode.
 import type { DeviceSpec, Rect, SimulatorConfig } from '../config/types';
-import type { Environment, InsetPart, Insets, Selection } from './environment';
+import type { AndroidDetails, EnvNote, Environment, InsetPart, Insets, Selection } from './environment';
 import { splitRegions, type FoldFeature } from './folds';
 import { windowSizeClass } from './sizeClass';
+import { clipParts, imeOverlap, placeWindow, translateFold } from './window';
 
 type AndroidDeviceSpec = Extract<DeviceSpec, { platform: 'android' }>;
 export type AndroidDisplaySpec = AndroidDeviceSpec['displays'][string];
@@ -36,53 +37,109 @@ export function unionInsets(parts: InsetPart[]): Insets {
 export function resolveAndroidDevice(config: SimulatorConfig, spec: DeviceSpec, sel: Selection): Environment {
   const device = spec as AndroidDeviceSpec;
   const profile = config.platforms.android;
+  const app = config.app.android;
+  const notes: EnvNote[] = [];
   const postures = device.postures ?? [];
   const posture = postures.length
     ? (postures.find((p) => p.id === sel.pose) ?? postures.find((p) => p.display === sel.displayId) ?? postures[0])
     : null;
   const [, display] = findAndroidDisplay(device, posture?.display ?? sel.displayId);
-  const rotationLocked = !display.rotation.supported || posture?.rotation !== undefined;
-  const rotation = !display.rotation.supported ? 0 : (posture?.rotation ?? sel.rotation ?? 0);
+
+  // Settings › Display size scales the density: the same panel reports fewer dp.
+  const step = profile.displaySize.steps.find((s) => s.id === sel.displayScale) ?? profile.displaySize.steps.find((s) => s.factor === 1)!;
+  const factor = step.factor;
+  const natural = { width: Math.round(display.size.width / factor), height: Math.round(display.size.height / factor) };
+  const density = display.density * factor;
+
+  const canRotate = display.rotation.supported && posture?.rotation === undefined;
+  let rotation: 0 | 90 = !display.rotation.supported ? 0 : (posture?.rotation ?? sel.rotation ?? 0);
+  if (canRotate && sel.rotationLock && rotation !== 0) {
+    rotation = 0;
+    notes.push({ id: 'rotation-locked', text: 'Rotation lock is on: the display stays in its natural orientation and a rotate button appears in the navigation bar.', source: 'android-docs' });
+  }
+
+  // Window state. Cover screens and devices without the mode fall back to full screen.
+  const offered = display.coverScreen ? ['fullscreen'] : device.windowModes;
+  let mode = sel.windowMode ?? device.windowModes[0];
+  if (!offered.includes(mode)) {
+    notes.push({ id: 'window-mode-unavailable', text: `${device.name} does not offer ${mode} here; showing full screen.`, source: device.source });
+    mode = 'fullscreen';
+  }
+
+  // screenOrientation="portrait": honoured on small screens, letterboxed on large ones before targetSdk 36.
+  // Multi-window modes ignore orientation requests.
+  const appPortrait = sel.appPortrait ?? app.screenOrientation === 'portrait';
+  const targetSdk = sel.targetSdk ?? app.targetSdk;
+  const sizeAt = (r: 0 | 90) => (r === 90 ? { width: natural.height, height: natural.width } : { ...natural });
+  let letterbox = false;
+  if (appPortrait && mode === 'fullscreen') {
+    const d = sizeAt(rotation);
+    const smallest = Math.min(d.width, d.height);
+    if (d.width > d.height) {
+      if (smallest >= 600 && targetSdk >= 36) {
+        notes.push({ id: 'target-sdk-36', text: profile.notes.find((n) => n.id === 'target-sdk-36')?.text ?? 'targetSdk 36 ignores the orientation request.', source: 'android-docs' });
+      } else if (smallest < 600 && canRotate) {
+        rotation = rotation === 90 ? 0 : 90;
+        notes.push({ id: 'portrait-request', text: 'The app requests portrait, so the system keeps the display in portrait for it.', source: 'android-docs' });
+      } else if (smallest >= 600) {
+        letterbox = true;
+        notes.push({ id: 'letterboxed', text: `The app requests portrait below targetSdk 36, so it is letterboxed in a portrait window.`, source: 'estimated' });
+      }
+    }
+  }
+
   const navMode = sel.navMode ?? 'gesture';
-  const natural = display.size;
-  const width = rotation === 90 ? natural.height : natural.width;
-  const height = rotation === 90 ? natural.width : natural.height;
+  const { width: W, height: H } = sizeAt(rotation);
+  const displaySize = { width: W, height: H };
   const place = (naturalEdge: Edge): Edge => (rotation === 90 ? ROTATED_EDGE[naturalEdge] : naturalEdge);
   const ins = display.insets;
   const source = ins.source;
 
-  const parts: InsetPart[] = [];
-  // The status bar is always along the top of the current orientation.
-  if (ins.statusBar) parts.push({ kind: 'statusBar', insets: edgeInsets('top', ins.statusBar), source });
-
+  const displayParts: InsetPart[] = [];
+  if (ins.statusBar) displayParts.push({ kind: 'statusBar', insets: edgeInsets('top', ins.statusBar), source });
   let cutout: Rect | null = null;
   if (ins.cutout) {
     const edge = place(ins.cutout.edge);
-    parts.push({ kind: 'displayCutout', insets: edgeInsets(edge, ins.cutout.size), source });
-    if (ins.cutout.hole) cutout = holeRect(ins.cutout.hole, ins.cutout.size, edge, width, height);
+    displayParts.push({ kind: 'displayCutout', insets: edgeInsets(edge, ins.cutout.size), source });
+    if (ins.cutout.hole) cutout = holeRect(ins.cutout.hole, ins.cutout.size, edge, W, H);
   }
-
   if (ins.waterfall) {
     const w = ins.waterfall;
-    parts.push({ kind: 'waterfall', insets: { ...NO_INSETS, [place('left')]: w, [place('right')]: w }, source });
+    displayParts.push({ kind: 'waterfall', insets: { ...NO_INSETS, [place('left')]: w, [place('right')]: w }, source });
   }
-
-  let navigationBar: { edge: 'bottom' | 'right' | 'left'; size: number } | null = null;
   const nav = ins.navigationBar;
-  if (navMode === 'gesture') {
-    navigationBar = { edge: 'bottom', size: nav.gesture };
-  } else {
-    const side = rotation === 90 && nav.threeButtonLandscape === 'side';
-    navigationBar = { edge: side ? 'right' : 'bottom', size: nav.threeButton };
+  const navigationBar: AndroidDetails['navigationBar'] =
+    navMode === 'gesture'
+      ? { edge: 'bottom', size: nav.gesture }
+      : { edge: rotation === 90 && nav.threeButtonLandscape === 'side' ? 'right' : 'bottom', size: nav.threeButton };
+  if (navigationBar.size) displayParts.push({ kind: 'navigationBar', insets: edgeInsets(navigationBar.edge, navigationBar.size), source });
+
+  const bottomReserved = navigationBar.edge === 'bottom' ? navigationBar.size : 0;
+  let placement = placeWindow(profile.windowModes, displaySize, bottomReserved, {
+    mode,
+    splitRatio: sel.splitRatio,
+    splitSide: sel.splitSide,
+    size: sel.windowSize,
+  });
+  if (letterbox && mode === 'fullscreen') {
+    const width = Math.round((H * H) / W);
+    placement = { ...placement, rect: { x: (W - width) / 2, y: 0, width, height: H } };
   }
-  if (navigationBar.size) parts.push({ kind: 'navigationBar', insets: edgeInsets(navigationBar.edge, navigationBar.size), source });
+  const rect = placement.rect;
+
+  const parts: InsetPart[] = placement.floating ? [] : clipParts(displayParts, displaySize, rect);
+  if (placement.captionBar) parts.push({ kind: 'captionBar', insets: edgeInsets('top', placement.captionBar), source: profile.windowModes.freeform.source });
+  const imeHeight = sel.ime && mode !== 'pip' ? ins.ime[W > H ? 'landscape' : 'portrait'] : 0;
+  const ime = imeOverlap(displaySize, rect, imeHeight);
+  if (ime) parts.push({ kind: 'ime', insets: edgeInsets('bottom', ime), source });
 
   const union = unionInsets(parts);
-  const statusBarHeight = Math.max(ins.statusBar, union.top);
-  const folds = (posture?.features ?? []).map((f) => {
-    const h = display.hinges!.find((x) => x.id === f.hinge)!;
-    return foldFeature(h, f.state, natural, rotation);
-  });
+  const width = rect.width;
+  const height = rect.height;
+  const folds = (posture?.features ?? [])
+    .map((f) => foldFeature(display.hinges!.find((x) => x.id === f.hinge)!, f.state, natural, rotation))
+    .map((f) => translateFold(f, rect))
+    .filter((f): f is NonNullable<typeof f> => !!f);
 
   return {
     platform: 'android',
@@ -93,6 +150,10 @@ export function resolveAndroidDevice(config: SimulatorConfig, spec: DeviceSpec, 
     isFree: false,
     width,
     height,
+    display: displaySize,
+    window: placement,
+    ime,
+    notes,
     orientation: width > height ? 'landscape' : 'portrait',
     sizeClass: windowSizeClass(profile, width, height),
     barAxis: null,
@@ -112,15 +173,15 @@ export function resolveAndroidDevice(config: SimulatorConfig, spec: DeviceSpec, 
     cameraActive: false,
     liveActivity: false,
     android: {
-      density: display.density,
+      density,
       rotation,
       navMode,
       parts,
-      statusBarHeight,
+      statusBarHeight: Math.max(ins.statusBar, unionInsets(displayParts).top),
       cutout,
       navigationBar,
       coverScreen: display.coverScreen ?? null,
-      rotationLocked,
+      rotationLocked: !canRotate,
     },
   };
 }
