@@ -36,7 +36,9 @@ describe('toGeo', () => {
     const btn = api.createFrame();
     btn.name = 'Primary CTA';
     expect(roleOf(btn as never)).toBe('interactive');
-    expect(roleOf(api.createInstance() as never)).toBe('interactive');
+    const inst = api.createInstance();
+    inst.resize(120, 48);
+    expect(roleOf(inst as never)).toBe('interactive');
   });
 
   it('reads scrolling and auto-layout direction', async () => {
@@ -60,5 +62,32 @@ describe('toGeo', () => {
     const geo = await toGeo(frame as never, () => progress++, 500);
     expect(geo.find((g) => g.id === hidden.id)).toBeUndefined();
     expect(progress).toBeGreaterThanOrEqual(4);
+  });
+
+  it('treats small or thin instances (icons, dividers) as decoration, and reads text inside instances', async () => {
+    const api = createFakeFigma();
+    const frame = api.createFrame();
+    const icon = api.createInstance();
+    icon.resize(24, 24);
+    const divider = api.createInstance();
+    divider.resize(411, 1);
+    const card = api.createInstance();
+    card.resize(141, 120);
+    const label = api.createText();
+    label.characters = 'A long description that wraps';
+    card.appendChild(label);
+    for (const n of [icon, divider, card]) frame.appendChild(n as never);
+    const geo = await toGeo(frame as never);
+    expect(geo.map((g) => g.role)).toEqual(['container', 'container', 'interactive']);
+    expect(geo[2].children?.[0]).toMatchObject({ role: 'text', chars: 29 });
+  });
+
+  it('records clipping frames', async () => {
+    const api = createFakeFigma();
+    const frame = api.createFrame();
+    const crop = api.createFrame();
+    crop.clipsContent = true;
+    frame.appendChild(crop);
+    expect((await toGeo(frame as never))[0].clips).toBe(true);
   });
 });

@@ -7,10 +7,14 @@ export const INTERACTIVE_NAME = /\b(button|btn|cta|link|chip|tab(?! ?bar)|toggle
 /** Layer names treated as system or app chrome. */
 export const CHROME_NAME = /\b(nav(igation)?|tab ?bar|tool ?bar|app ?bar|bottom ?bar|status ?bar|header|footer)\b/i;
 
+/** Instances smaller than this on either side are icons, dividers or badges, not controls. */
+const MIN_CONTROL_SIDE = 32;
+
 export function roleOf(node: SceneNode): GeoRole {
   if (node.type === 'TEXT') return 'text';
   if (CHROME_NAME.test(node.name)) return 'chrome';
-  if (node.type === 'INSTANCE' || INTERACTIVE_NAME.test(node.name)) return 'interactive';
+  if (INTERACTIVE_NAME.test(node.name)) return 'interactive';
+  if (node.type === 'INSTANCE' && Math.min(node.width, node.height) >= MIN_CONTROL_SIDE) return 'interactive';
   const fills = 'fills' in node && Array.isArray(node.fills) ? (node.fills as readonly Paint[]) : [];
   if (fills.some((f) => f.type === 'IMAGE' || f.type === 'VIDEO')) return 'media';
   return 'container';
@@ -47,13 +51,14 @@ export async function toGeo(frame: FrameNode, onProgress?: (visited: number) => 
         rect: { x: box.x - origin.x, y: box.y - origin.y, width: box.width, height: box.height },
         scrollAxis: scrollOf(n),
         layout: layoutOf(n),
+        ...('clipsContent' in n && n.clipsContent ? { clips: true } : {}),
       };
       if (n.type === 'TEXT') {
         g.chars = n.characters.length;
         if (typeof n.fontSize === 'number') g.fontSize = n.fontSize;
       }
-      // Instances are leaves: their inside belongs to the component.
-      if ('children' in n && n.type !== 'INSTANCE') g.children = await convert(n.children);
+      // Instances are walked too, so text inside a card component is checked for legibility.
+      if ('children' in n) g.children = await convert(n.children);
       out.push(g);
     }
     return out;
