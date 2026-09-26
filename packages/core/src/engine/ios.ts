@@ -6,9 +6,8 @@ import type {
   Orientation,
   Rect,
   ReservedRegionSpec,
-  SimulatorConfig,
 } from '../config/types';
-import type { Environment, ReservedRegion, Selection } from './environment';
+import type { Environment, ReservedRegion, Selection, EnvConfig } from './environment';
 import { splitRegions, type FoldFeature } from './folds';
 
 function findDisplay(device: IosDeviceSpec, id: string): DisplaySpec {
@@ -17,7 +16,7 @@ function findDisplay(device: IosDeviceSpec, id: string): DisplaySpec {
   return display;
 }
 
-export function resolveIosDevice(config: SimulatorConfig, spec: DeviceSpec, sel: Selection): Environment {
+export function resolveIosDevice(config: EnvConfig, spec: DeviceSpec, sel: Selection): Environment {
   const device = spec as IosDeviceSpec;
   const profile = config.platforms.ios;
   const poses = device.poses ?? [];

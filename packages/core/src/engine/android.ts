@@ -1,7 +1,7 @@
 // Android devices: size classes come from the window size in dp (WindowSizeClass), and insets
 // are resolved per WindowInsets type for the current rotation and navigation mode.
-import type { DeviceSpec, Rect, SimulatorConfig } from '../config/types';
-import type { AndroidDetails, EnvNote, Environment, InsetPart, Insets, Selection } from './environment';
+import type { DeviceSpec, Rect } from '../config/types';
+import type { AndroidDetails, EnvNote, Environment, InsetPart, Insets, Selection, EnvConfig } from './environment';
 import { splitRegions, type FoldFeature } from './folds';
 import { windowSizeClass } from './sizeClass';
 import { clipParts, imeOverlap, placeWindow, translateFold } from './window';
@@ -34,7 +34,7 @@ export function unionInsets(parts: InsetPart[]): Insets {
   return out;
 }
 
-export function resolveAndroidDevice(config: SimulatorConfig, spec: DeviceSpec, sel: Selection): Environment {
+export function resolveAndroidDevice(config: EnvConfig, spec: DeviceSpec, sel: Selection): Environment {
   const device = spec as AndroidDeviceSpec;
   const profile = config.platforms.android;
   const app = config.app.android;

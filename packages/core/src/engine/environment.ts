@@ -140,13 +140,16 @@ export interface Environment {
   android: AndroidDetails | null;
 }
 
-export function findDevice(config: SimulatorConfig, id: string): DeviceSpec {
+/** What resolving a window reads: platforms, devices and the app's manifest. The catalog plus DEFAULT_APP satisfies it. */
+export type EnvConfig = Pick<SimulatorConfig, 'platforms' | 'devices' | 'app'>;
+
+export function findDevice(config: EnvConfig, id: string): DeviceSpec {
   const device = config.devices.find((d) => d.id === id);
   if (!device) throw new Error(`Unknown device "${id}" in the catalog`);
   return device;
 }
 
-export function resolveEnvironment(config: SimulatorConfig, sel: Selection): Environment {
+export function resolveEnvironment(config: EnvConfig, sel: Selection): Environment {
   if (sel.free) {
     const platform = sel.freePlatform ?? findDevice(config, sel.deviceId).platform;
     return freeEnvironment(config, sel.free, platform);
@@ -155,7 +158,7 @@ export function resolveEnvironment(config: SimulatorConfig, sel: Selection): Env
   return device.platform === 'ios' ? resolveIosDevice(config, device, sel) : resolveAndroidDevice(config, device, sel);
 }
 
-function freeEnvironment(config: SimulatorConfig, size: Size, platform: Platform): Environment {
+function freeEnvironment(config: EnvConfig, size: Size, platform: Platform): Environment {
   const profile = config.platforms[platform];
   let sizeClass: SizeClass;
   let barAxis: BarAxis | null = null;
