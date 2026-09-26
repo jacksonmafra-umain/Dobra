@@ -1,4 +1,4 @@
-import type { Layout } from '../../engine/layout';
+import type { Layout } from '@hinge/core/engine/layout';
 import { Pills, RewardCard, RuleGrid, SectionHeader } from '../components';
 import { REDEEMABLE_REWARDS, UNUSED_REWARDS } from '../content';
 

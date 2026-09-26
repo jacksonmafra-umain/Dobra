@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import raw from '@hinge/core/config/simulator.config.json';
 import { parseConfig } from '@hinge/core/config/schema';
-import { resolveEnvironment } from '../engine/environment';
-import { resolveLayout } from '../engine/layout';
+import { resolveEnvironment } from '@hinge/core/engine/environment';
+import { resolveLayout } from '@hinge/core/engine/layout';
 import { screenVars } from './screenVars';
 
 const config = parseConfig(raw);

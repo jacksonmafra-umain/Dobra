@@ -1,6 +1,6 @@
 // The whole simulator state lives in the URL so a specific cell can be linked in a ticket.
-import type { Orientation, Size } from '../config/types';
-import type { Environment, Selection } from '../engine/environment';
+import type { Orientation, Size } from '@hinge/core/config/types';
+import type { Environment, Selection } from '@hinge/core/engine/environment';
 import type { TextSettings } from '@hinge/core/engine/typography';
 import type { Zoom } from './DeviceFrame';
 import type { OverlayToggles } from './Overlays';

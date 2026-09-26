@@ -1,6 +1,6 @@
-import type { Environment } from '../engine/environment';
-import { foldThickness } from '../engine/folds';
-import type { Layout } from '../engine/layout';
+import type { Environment } from '@hinge/core/engine/environment';
+import { foldThickness } from '@hinge/core/engine/folds';
+import type { Layout } from '@hinge/core/engine/layout';
 
 export interface OverlayToggles {
   safeArea: boolean;

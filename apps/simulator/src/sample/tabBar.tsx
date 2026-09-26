@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { TabItemSpec } from '../config/types';
+import type { TabItemSpec } from '@hinge/core/config/types';
 import { asset } from './assets';
 
 type IconStyle = CSSProperties & { '--icon'?: string };

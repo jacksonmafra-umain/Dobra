@@ -1,10 +1,10 @@
 // The simulated app screen: toolbar, scrolling content, navigation, system chrome and modals.
 import { useRef, type ComponentType, type CSSProperties } from 'react';
-import type { ScreenSpec, SimulatorConfig } from '../config/types';
-import type { Environment } from '../engine/environment';
-import type { Layout } from '../engine/layout';
+import type { ScreenSpec, SimulatorConfig } from '@hinge/core/config/types';
+import type { Environment } from '@hinge/core/engine/environment';
+import type { Layout } from '@hinge/core/engine/layout';
 import { typeScaleVars, type TextSettings } from '@hinge/core/engine/typography';
-import { placeModal, type ModalKind } from '../engine/modal';
+import { placeModal, type ModalKind } from '@hinge/core/engine/modal';
 import { DynamicIsland, HomeIndicator, LiveActivityIsland, StatusBar } from './chrome';
 import { useCollisions, type Collision } from './collisions';
 import { screenVars } from './screenVars';

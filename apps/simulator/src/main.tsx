@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { loadConfig } from './config/load';
-import { ConfigError } from './config/schema';
+import { loadConfig } from '@hinge/core/config/load';
+import { ConfigError } from '@hinge/core/config/schema';
 import './styles/index.css';
 import { App } from './ui/App';
 import { ConfigErrorPage } from './ui/ConfigErrorPage';

@@ -1,4 +1,4 @@
-import type { Layout } from '../../engine/layout';
+import type { Layout } from '@hinge/core/engine/layout';
 import { MapCard, RestaurantCardSmall, SectionHeader } from '../components';
 import { RESTAURANTS } from '../content';
 

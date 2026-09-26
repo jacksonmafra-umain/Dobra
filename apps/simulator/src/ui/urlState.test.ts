@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import raw from '@hinge/core/config/simulator.config.json';
 import { parseConfig } from '@hinge/core/config/schema';
-import { resolveEnvironment } from '../engine/environment';
+import { resolveEnvironment } from '@hinge/core/engine/environment';
 import { readUrlState, writeUrlState } from './urlState';
 
 const config = parseConfig(raw);

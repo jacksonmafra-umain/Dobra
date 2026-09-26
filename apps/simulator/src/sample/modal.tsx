@@ -1,4 +1,4 @@
-import type { ModalKind, ModalPlacement } from '../engine/modal';
+import type { ModalKind, ModalPlacement } from '@hinge/core/engine/modal';
 
 interface ModalProps {
   kind: ModalKind;
