@@ -98,10 +98,11 @@ export function Inspector({ config, env, layout, screen, collisions, modal, rtl 
           </div>
         )}
         <div>
-          <dt>panes</dt>
+          <dt>scene</dt>
           <dd>
-            {layout.panes}
-            {layout.panes > 1 ? ` · ${layout.paneRects.map((p) => Math.round(p.width)).join(' + ')} ${u}` : ''}
+            {layout.scene.strategy} · {layout.scene.panes.map((p) => `${p.role} ${Math.round(p.rect.width)}`).join(' + ')} {u}
+            {layout.scene.reason ? ` — ${layout.scene.reason}` : ''}
+            {env.platform === 'ios' && layout.scene.panes.length > 1 ? ' (NavigationSplitView columns)' : ''}
           </dd>
         </div>
       </dl>

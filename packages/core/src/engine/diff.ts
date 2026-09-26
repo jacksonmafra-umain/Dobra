@@ -71,6 +71,8 @@ export function describeChanges(config: SimulatorConfig, prev: Snapshot, next: S
   if (!la.foldGutter !== !lb.foldGutter)
     out.push(lb.foldGutter ? 'Even grids: middle gutter moves over the fold' : 'Grids: back to normal gutters');
   if (la.panes !== lb.panes) out.push(`Panes ${la.panes} → ${lb.panes}`);
+  const sceneLabel = (l: Layout) => `${l.scene.strategy}${l.scene.fellBack ? ' (single)' : ''} · ${l.scene.panes.map((p) => p.role).join('+')}`;
+  if (sceneLabel(la) !== sceneLabel(lb)) out.push(`Scene ${sceneLabel(la)} → ${sceneLabel(lb)}`);
   if (la.rule.grid.columns !== lb.rule.grid.columns) out.push(`Grid ${la.rule.grid.columns} → ${lb.rule.grid.columns} columns`);
   return out;
 }
