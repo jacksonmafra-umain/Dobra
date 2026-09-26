@@ -545,3 +545,49 @@ body {
   background: none;
   outline-style: dashed;
 }
+.device__screen--desktop {
+  background: linear-gradient(135deg, #3f3f46, #18181b);
+}
+.window {
+  position: absolute;
+  overflow: hidden;
+}
+.window--floating {
+  border-radius: 12px;
+  box-shadow: 0 12px 40px #00000066;
+}
+.window .resize-handle--x {
+  right: 0;
+}
+.window .resize-handle--y {
+  bottom: 0;
+}
+.window .resize-handle--xy {
+  right: 4px;
+  bottom: 4px;
+  z-index: 80;
+}
+.window-other {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  background: repeating-linear-gradient(45deg, #e4e4e7 0 8px, #d4d4d8 8px 16px);
+  color: #52525b;
+  font: 600 12px/1 ui-monospace, Menlo, monospace;
+}
+.window-divider {
+  position: absolute;
+  background: #18181b;
+}
+.caption-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: #27272a;
+  color: #fafafa;
+  font: 600 12px/1 system-ui, sans-serif;
+}
