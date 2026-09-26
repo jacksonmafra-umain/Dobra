@@ -150,3 +150,34 @@ describe('Apple devices', () => {
     expect(d.displays.inner.estimated).toBe(true);
   });
 });
+
+describe('no template leftovers', () => {
+  const android = (id: string) => {
+    const d = byId(id);
+    if (d.platform !== 'android') throw new Error(`${id} is not an Android device`);
+    return d;
+  };
+  const MOTOROLA = ['razr-plus-2024', 'razr-2026', 'razr-ultra-2026'];
+
+  it('calls a Motorola cover the external display, not by Samsung\'s name', () => {
+    for (const id of MOTOROLA) expect(android(id).displays.cover.label).toBe('External display');
+  });
+
+  it('gives a Motorola external display a status bar, since its size is the whole panel', () => {
+    for (const id of MOTOROLA) {
+      const insets = android(id).displays.cover.insets;
+      expect(insets.statusBar, id).toBeGreaterThan(0);
+      expect(insets.estimated, id).toBe(true);
+    }
+  });
+
+  it('draws no hole-punch on the Pixel Fold inner display: its camera sits in the bezel', () => {
+    expect(android('pixel-fold').displays.inner.insets.cutout).toBeNull();
+  });
+
+  it('sources the Pixel Fold and Pixel 10 Pro Fold creases from the Android Studio AVD', () => {
+    for (const id of ['pixel-fold', 'pixel-10-pro-fold']) {
+      expect(android(id).displays.inner.hinges?.[0]).toMatchObject({ source: 'android-studio-avd', estimated: false });
+    }
+  });
+});
