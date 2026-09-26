@@ -1,19 +1,17 @@
 // Answers the panel's messages. Every branch returns a reply; errors become an 'error' message.
-import { loadCatalog } from '@hinge/core/catalog/load';
 import { coverage, representativeTarget, type PresentFrame } from '@hinge/core/coverage';
 import type { EnvConfig } from '@hinge/core/engine/environment';
 import { matchFrame } from '@hinge/core/match';
 import { check } from '@hinge/core/rules';
 import { presetSpec } from '@hinge/core/presets';
-import { enumerateTargets, envConfigOf, parseTargetKey, targetKey, type Target } from '@hinge/core/targets';
+import { enumerateTargets, parseTargetKey, targetKey, type Target } from '@hinge/core/targets';
 import type { FigmaApi } from './api';
+import { catalog, config } from './catalog';
 import { toGeo } from './geo';
 import type { FrameFindings, ToMain, ToUi } from './messages';
 import { applyPreset, NAMESPACE } from './presets';
 import { applyTag, tagCandidates, topLevelFrames } from './tagging';
 
-const catalog = loadCatalog();
-const config = envConfigOf(catalog);
 
 /** Frames on the page that stand for a target: tagged ones first-class, the rest by name or size. */
 export function presentFrames(api: FigmaApi, env: EnvConfig): PresentFrame[] {

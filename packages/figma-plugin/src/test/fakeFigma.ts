@@ -40,6 +40,7 @@ export interface FakeNode {
   clone(): FakeNode;
   remove(): void;
   setProperties(props: Record<string, string | boolean>): void;
+  getMainComponentAsync(): Promise<{ parent: { type: 'COMPONENT_SET'; componentPropertyDefinitions: Record<string, { type: 'VARIANT'; variantOptions: string[] }> } } | null>;
   setRelaunchData(data: Record<string, string>): void;
   setExplicitVariableModeForCollection(collection: { id: string }, modeId: string): void;
   setSharedPluginData(namespace: string, key: string, value: string): void;
@@ -191,6 +192,11 @@ export function createFakeFigma(): FakeFigma {
         for (const [k, value] of Object.entries(props)) {
           if (node.componentProperties[k]) node.componentProperties[k] = { ...node.componentProperties[k], value };
         }
+      },
+      async getMainComponentAsync() {
+        if (node.type !== 'INSTANCE') return null;
+        const defs = Object.fromEntries(Object.entries(node.variantOptions).map(([k, v]) => [k, { type: 'VARIANT' as const, variantOptions: v }]));
+        return { parent: { type: 'COMPONENT_SET' as const, componentPropertyDefinitions: defs } };
       },
       setRelaunchData(d) {
         node.relaunch = d;
