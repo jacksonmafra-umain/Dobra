@@ -20,14 +20,16 @@ describe('preset frames', () => {
     const p = presetSpec(config, { deviceId: 'surface-duo-2', displayId: 'spanned', pose: 'spanned', orientation: 'landscape' });
     expect(p.hinges).toEqual([{ rect: { x: 537, y: 0, width: 26, height: 756 }, separating: true, occludes: true }]);
     expect(p.safeZones).toEqual([{ x: 521, y: 0, width: 58, height: 756 }]);
-    expect(p.twoPane).toEqual({ axis: 'vertical', gutter: 26, offset: 0 });
+    expect(p.paneGrid).toEqual({ axis: 'vertical', count: 2, gutter: 26 });
+    expect(p.paneEdges).toEqual([{ axis: 'vertical', at: 537, width: 26 }]);
   });
 
   it('has no two-pane grid when the crease does not separate', () => {
     const p = presetSpec(config, { deviceId: 'pixel-9-pro-fold', displayId: 'inner', pose: 'open', orientation: 'portrait' });
     expect(p.hinges).toHaveLength(1);
     expect(p.hinges[0].separating).toBe(false);
-    expect(p.twoPane).toBeNull();
+    expect(p.paneGrid).toBeNull();
+    expect(p.paneEdges).toEqual([]);
     expect(p.safeZones).toEqual([]);
   });
 
@@ -38,5 +40,18 @@ describe('preset frames', () => {
 
   it('copies the safe-area insets', () => {
     expect(presetSpec(config, { deviceId: 'pixel-9', displayId: 'main', orientation: 'portrait' }).insets).toEqual({ top: 48, right: 0, bottom: 24, left: 0 });
+  });
+
+  it('splits a tri-fold into three even panes when both hinges separate', () => {
+    const p = presetSpec(config, { deviceId: 'galaxy-z-trifold', displayId: 'inner', pose: 'both-half', orientation: 'landscape' });
+    expect(p.paneGrid).toMatchObject({ axis: 'vertical', count: 3 });
+    expect(p.paneEdges).toHaveLength(2);
+  });
+
+  it('marks an off-centre hinge by its edge instead of a centred pane grid', () => {
+    const p = presetSpec(config, { deviceId: 'galaxy-z-trifold', displayId: 'inner', pose: 'left-half', orientation: 'landscape' });
+    expect(p.paneGrid).toBeNull();
+    expect(p.paneEdges).toHaveLength(1);
+    expect(p.paneEdges[0].at).toBeLessThan(p.width / 2 - 50);
   });
 });

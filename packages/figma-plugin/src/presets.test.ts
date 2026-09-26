@@ -47,4 +47,12 @@ describe('applyPreset', () => {
     const b = applyPreset(api, duo, catalog.version);
     expect(b.x).toBeGreaterThanOrEqual(a.x + a.width + 80);
   });
+
+  it('marks an off-centre hinge with a grid edge exactly at the hinge', () => {
+    const left = presetSpec(config, { deviceId: 'galaxy-z-trifold', displayId: 'inner', pose: 'left-half', orientation: 'landscape' });
+    const frame = applyPreset(createFakeFigma(), left, catalog.version);
+    expect(frame.layoutGrids).toContainEqual(
+      expect.objectContaining({ pattern: 'COLUMNS', alignment: 'MIN', count: 1, offset: 0, sectionSize: left.paneEdges[0].at }),
+    );
+  });
 });

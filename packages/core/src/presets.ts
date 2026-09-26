@@ -16,7 +16,10 @@ export interface PresetFrame {
   insets: { top: number; right: number; bottom: number; left: number };
   reserved: { label: string; rect: Rect }[];
   grid: { columns: number; gutter: number; margin: number };
-  twoPane: { axis: 'vertical' | 'horizontal'; gutter: number; offset: number } | null;
+  /** Equal panes split at the hinges, when the separating hinges divide the window evenly. */
+  paneGrid: { axis: 'vertical' | 'horizontal'; count: number; gutter: number } | null;
+  /** Where each separating hinge starts, for grids that cannot be even (an off-centre hinge). */
+  paneEdges: { axis: 'vertical' | 'horizontal'; at: number; width: number }[];
   estimated: boolean;
 }
 
@@ -44,9 +47,28 @@ export function defaultGrid(env: Environment): { columns: number; gutter: number
   return { columns: 12, gutter: 24, margin: 24 };
 }
 
+/** Tolerance, in pt or dp, for treating panes as equal. */
+const EVEN_TOLERANCE = 1;
+
+function paneLayout(env: Environment): Pick<PresetFrame, 'paneGrid' | 'paneEdges'> {
+  const splits = env.folds.filter((f) => f.separating || f.occludes);
+  if (!splits.length) return { paneGrid: null, paneEdges: [] };
+  const axis = splits[0].axis;
+  const along = axis === 'vertical' ? env.width : env.height;
+  const edges = splits
+    .filter((f) => f.axis === axis)
+    .map((f) => ({ axis, at: axis === 'vertical' ? f.rect.x : f.rect.y, width: axis === 'vertical' ? f.rect.width : f.rect.height }))
+    .sort((a, b) => a.at - b.at);
+  const gutter = edges[0].width;
+  const count = edges.length + 1;
+  const pane = (along - gutter * edges.length) / count;
+  const even = edges.every((e, i) => e.width === gutter && Math.abs(e.at - (pane * (i + 1) + gutter * i)) <= EVEN_TOLERANCE);
+  return { paneGrid: even ? { axis, count, gutter } : null, paneEdges: edges };
+}
+
 export function presetSpec(config: EnvConfig, t: Target): PresetFrame {
   const env = resolveTarget(config, t);
-  const split = env.folds.find((f) => f.separating || f.occludes) ?? null;
+  const panes = paneLayout(env);
   const { top, right, bottom, left } = env.safeArea;
   return {
     key: targetKey(t),
@@ -60,7 +82,7 @@ export function presetSpec(config: EnvConfig, t: Target): PresetFrame {
     insets: { top, right, bottom, left },
     reserved: env.reservedRegions.map((r) => ({ label: r.label, rect: r.rect })),
     grid: defaultGrid(env),
-    twoPane: split ? { axis: split.axis, gutter: split.axis === 'vertical' ? split.rect.width : split.rect.height, offset: 0 } : null,
+    ...panes,
     estimated: env.estimated,
   };
 }

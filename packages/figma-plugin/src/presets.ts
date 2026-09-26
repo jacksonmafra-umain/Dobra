@@ -41,16 +41,31 @@ export function applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: strin
   const grids: LayoutGrid[] = [
     { pattern: 'COLUMNS', alignment: 'STRETCH', count: p.grid.columns, gutterSize: p.grid.gutter, offset: p.grid.margin, visible: true, color: { ...BLUE, a: 0.08 } },
   ];
-  if (p.twoPane) {
+  if (p.paneGrid) {
+    // Equal panes: a stretch grid whose gutters sit exactly on the hinges.
     grids.push({
-      pattern: p.twoPane.axis === 'vertical' ? 'COLUMNS' : 'ROWS',
+      pattern: p.paneGrid.axis === 'vertical' ? 'COLUMNS' : 'ROWS',
       alignment: 'STRETCH',
-      count: 2,
-      gutterSize: p.twoPane.gutter,
-      offset: p.twoPane.offset,
+      count: p.paneGrid.count,
+      gutterSize: p.paneGrid.gutter,
+      offset: 0,
       visible: true,
       color: { ...RED, a: 0.1 },
     });
+  } else {
+    // Uneven panes (an off-centre hinge): one grid per hinge, whose single section ends where the hinge starts.
+    for (const e of p.paneEdges) {
+      grids.push({
+        pattern: e.axis === 'vertical' ? 'COLUMNS' : 'ROWS',
+        alignment: 'MIN',
+        count: 1,
+        sectionSize: e.at,
+        gutterSize: 0,
+        offset: 0,
+        visible: true,
+        color: { ...RED, a: 0.1 },
+      });
+    }
   }
   frame.layoutGrids = grids;
 
