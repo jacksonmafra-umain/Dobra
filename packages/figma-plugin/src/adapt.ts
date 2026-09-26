@@ -10,7 +10,7 @@ import { resolveTarget, type Target } from '@hinge/core/targets';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';
 import { toGeo } from './geo';
-import { decorate, OVERLAY_NAME } from './presets';
+import { decorate, nextFreeX, OVERLAY_NAME } from './presets';
 
 const GAP = 80;
 const ADAPTABLE_PROPS = ['Size', 'Posture'];
@@ -20,6 +20,15 @@ function fixedChildren(frame: FrameNode): string[] {
   if (frame.layoutMode !== 'NONE') return [];
   return frame.children
     .filter((c) => c.name !== OVERLAY_NAME && 'constraints' in c && c.constraints.horizontal === 'MIN' && c.constraints.vertical === 'MIN')
+    .map((c) => c.id);
+}
+
+/** Children that resize with the frame: stretching constraints, or any child of an auto-layout frame. */
+function stretchingChildren(frame: FrameNode): string[] {
+  const reflows = frame.layoutMode !== 'NONE';
+  return frame.children
+    .filter((c) => c.name !== OVERLAY_NAME)
+    .filter((c) => reflows || ('constraints' in c && ['STRETCH', 'LEFT_RIGHT', 'SCALE'].includes(c.constraints.horizontal)))
     .map((c) => c.id);
 }
 
@@ -37,11 +46,16 @@ function instancesIn(node: BaseNode & ChildrenMixin): InstanceNode[] {
 
 function splitIntoPanes(api: FigmaApi, frame: FrameNode, split: NonNullable<AdaptPlan['split']>) {
   const vertical = split.axis === 'vertical';
+  const along = vertical ? frame.width : frame.height;
+  const across = vertical ? frame.height : frame.width;
+  // Pane i runs from the end of the previous hinge to the start of the next one.
+  const starts = [0, ...split.cuts.map((c) => c.at + c.gutter)];
+  const ends = [...split.cuts.map((c) => c.at), along];
   const panes = api.createFrame();
   panes.name = 'Panes';
   panes.fills = [];
   panes.layoutMode = vertical ? 'HORIZONTAL' : 'VERTICAL';
-  panes.itemSpacing = split.gutter;
+  panes.itemSpacing = split.cuts[0].gutter;
   panes.primaryAxisSizingMode = 'FIXED';
   panes.counterAxisSizingMode = 'FIXED';
   panes.resize(frame.width, frame.height);
@@ -49,24 +63,22 @@ function splitIntoPanes(api: FigmaApi, frame: FrameNode, split: NonNullable<Adap
   frame.appendChild(panes);
   panes.x = 0;
   panes.y = 0;
-  const [first, second] = ['Pane 1', 'Pane 2'].map((name) => {
+  const cells = starts.map((start, i) => {
     const pane = api.createFrame();
-    pane.name = name;
+    pane.name = `Pane ${i + 1}`;
     pane.fills = [];
     pane.clipsContent = false;
+    const size = ends[i] - start;
+    pane.resize(vertical ? size : across, vertical ? across : size);
     panes.appendChild(pane);
-    pane.layoutGrow = 1;
-    return pane;
+    return { pane, start, end: ends[i] };
   });
-  const secondStart = split.at + split.gutter;
   for (const child of content) {
     const centre = vertical ? child.x + child.width / 2 : child.y + child.height / 2;
-    const inSecond = centre >= split.at;
-    (inSecond ? second : first).appendChild(child);
-    if (inSecond) {
-      if (vertical) child.x -= secondStart;
-      else child.y -= secondStart;
-    }
+    const cell = cells.find((c) => centre < c.end) ?? cells[cells.length - 1];
+    cell.pane.appendChild(child);
+    if (vertical) child.x -= cell.start;
+    else child.y -= cell.start;
   }
 }
 
@@ -79,11 +91,12 @@ export async function adaptFrame(
   const src = await api.getNodeByIdAsync(frameId);
   if (!src || src.type !== 'FRAME') throw new Error(`Frame ${frameId} not found`);
   const env = resolveTarget(config, target);
+  const x = nextFreeX(api, GAP);
   const frame = src.clone();
-  frame.x = src.x + src.width + GAP;
+  frame.x = x;
   frame.y = src.y;
 
-  const plan = adaptPlan(config, { width: src.width, height: src.height, root: await toGeo(src), fixed: fixedChildren(src) }, target, opts);
+  const plan = adaptPlan(config, { width: src.width, height: src.height, root: await toGeo(src), fixed: fixedChildren(src), stretching: stretchingChildren(src) }, target, opts);
 
   frame.children.find((c) => c.name === OVERLAY_NAME)?.remove();
   frame.resize(plan.width, plan.height);

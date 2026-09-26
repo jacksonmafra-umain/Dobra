@@ -14,8 +14,8 @@ export interface AdaptPlan {
   target: Target;
   width: number;
   height: number;
-  /** Only when a hinge separates the window and the designer asked for a split. */
-  split: { axis: 'vertical' | 'horizontal'; at: number; gutter: number } | null;
+  /** Only when a hinge separates the window and the designer asked for a split: where each pane ends. */
+  split: { axis: 'vertical' | 'horizontal'; cuts: { at: number; gutter: number }[] } | null;
   /** Why there is no split although one was asked for. */
   splitNote: string | null;
   flags: AdaptFlag[];
@@ -29,15 +29,23 @@ const BOTTOM_BAR = /tab ?bar|bottom ?(bar|nav)/i;
 
 export function adaptPlan(
   config: EnvConfig,
-  source: { width: number; height: number; root: GeoNode[]; fixed: string[] },
+  /** `fixed`: pinned top-left outside auto layout. `stretching`: resize with the frame (constraints or fill). */
+  source: { width: number; height: number; root: GeoNode[]; fixed: string[]; stretching: string[] },
   target: Target,
   opts: { split: boolean },
 ): AdaptPlan {
   const env = resolveTarget(config, target);
-  const fold = env.folds.find((f) => f.separating) ?? null;
+  const separating = env.folds.filter((f) => f.separating);
+  const fold = separating[0] ?? null;
   const split =
     opts.split && fold
-      ? { axis: fold.axis, at: fold.axis === 'vertical' ? fold.rect.x : fold.rect.y, gutter: fold.axis === 'vertical' ? fold.rect.width : fold.rect.height }
+      ? {
+          axis: fold.axis,
+          cuts: separating
+            .filter((f) => f.axis === fold.axis)
+            .map((f) => (f.axis === 'vertical' ? { at: f.rect.x, gutter: f.rect.width } : { at: f.rect.y, gutter: f.rect.height }))
+            .sort((a, b) => a.at - b.at),
+        }
       : null;
   const splitNote = opts.split && !fold ? "This posture's hinge does not separate the window, so there is nothing to split at." : null;
 
@@ -46,8 +54,9 @@ export function adaptPlan(
   const sourceAspect = source.width / source.height;
   const aspectChange = Math.abs(env.width / env.height - sourceAspect) / sourceAspect;
   const byId = new Map(source.root.map((n) => [n.id, n]));
+  const stretching = new Set(source.stretching);
   for (const n of source.root) {
-    if (n.rect.x + n.rect.width > env.width + 1)
+    if (!stretching.has(n.id) && n.rect.x + n.rect.width > env.width + 1)
       flags.push({ nodeId: n.id, name: n.name, reason: 'past-new-edge', message: `${n.name} ends past the new ${env.width} ${env.unit} edge; resize or reflow it.` });
     if (n.role === 'chrome' && BOTTOM_BAR.test(n.name) && env.width >= RAIL_FROM)
       flags.push({ nodeId: n.id, name: n.name, reason: 'bar-to-rail', message: `${n.name}: at ${env.width} ${env.unit} navigation usually becomes a rail.` });

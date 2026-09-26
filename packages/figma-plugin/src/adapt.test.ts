@@ -69,4 +69,42 @@ describe('adaptFrame', () => {
     const { findings } = await adaptFrame(api, source(api).id, DUO, { split: false });
     expect(Array.isArray(findings)).toBe(true);
   });
+
+  it('sizes panes to the hinges on an uneven tri-fold, at full height', async () => {
+    const api = createFakeFigma();
+    const { frame, plan } = await adaptFrame(api, source(api).id, { deviceId: 'galaxy-z-trifold', displayId: 'inner', pose: 'left-half', orientation: 'landscape' }, { split: true });
+    const panes = frame.children.find((c) => c.name === 'Panes') as unknown as FrameNode;
+    const [a, b] = panes.children as unknown as FrameNode[];
+    const cut = plan.split!.cuts[0];
+    expect(a.width).toBeCloseTo(cut.at);
+    expect(b.width).toBeCloseTo(frame.width - cut.at - cut.gutter);
+    expect([a.height, b.height]).toEqual([frame.height, frame.height]);
+  });
+
+  it('makes three panes when both hinges of a tri-fold separate', async () => {
+    const api = createFakeFigma();
+    const { frame } = await adaptFrame(api, source(api).id, { deviceId: 'galaxy-z-trifold', displayId: 'inner', pose: 'both-half', orientation: 'landscape' }, { split: true });
+    const panes = frame.children.find((c) => c.name === 'Panes') as unknown as FrameNode;
+    expect(panes.children.map((c) => c.name)).toEqual(['Pane 1', 'Pane 2', 'Pane 3']);
+  });
+
+  it('places copies for several targets side by side, not on top of each other', async () => {
+    const api = createFakeFigma();
+    const src = source(api);
+    const a = await adaptFrame(api, src.id, DUO, { split: false });
+    const b = await adaptFrame(api, src.id, { deviceId: 'pixel-tablet', displayId: 'main', orientation: 'landscape' }, { split: false });
+    expect(b.frame.x).toBeGreaterThanOrEqual(a.frame.x + a.frame.width);
+  });
+
+  it('does not flag a child that stretches with the frame', async () => {
+    const api = createFakeFigma();
+    const src = source(api);
+    const hero = api.createFrame();
+    hero.name = 'Hero';
+    hero.resize(411, 200);
+    hero.constraints = { horizontal: 'STRETCH', vertical: 'MIN' };
+    src.appendChild(hero);
+    const { plan } = await adaptFrame(api, src.id, { deviceId: 'galaxy-z-flip-7', displayId: 'cover', pose: 'closed', orientation: 'landscape' }, { split: false });
+    expect(plan.flags.filter((f) => f.reason === 'past-new-edge').map((f) => f.name)).not.toContain('Hero');
+  });
 });

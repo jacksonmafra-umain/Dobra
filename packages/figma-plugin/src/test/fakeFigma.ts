@@ -25,6 +25,7 @@ export interface FakeNode {
   layoutMode: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
   itemSpacing: number;
   layoutGrow: number;
+  layoutPositioning: 'AUTO' | 'ABSOLUTE';
   primaryAxisSizingMode: string;
   counterAxisSizingMode: string;
   characters: string;
@@ -64,6 +65,7 @@ export interface FakeCollection {
 
 export type FakeFigma = FigmaApi & {
   page: FakePage;
+  addPage(): FakePage;
   zoomedTo: unknown;
   collections: FakeCollection[];
   container(type: 'SECTION' | 'GROUP'): FakeNode;
@@ -79,34 +81,39 @@ function detach(child: FakeNode) {
 
 export function createFakeFigma(): FakeFigma {
   let next = 1;
-  const page: FakePage = {
-    type: 'PAGE',
-    children: [],
-    selection: [],
-    appendChild(child) {
-      detach(child);
-      child.parent = page;
-      page.children.push(child);
-    },
-    insertChild(index, child) {
-      detach(child);
-      child.parent = page;
-      page.children.splice(index, 0, child);
-    },
-    findAllWithCriteria({ types, sharedPluginData }) {
-      const out: FakeNode[] = [];
-      const walk = (nodes: FakeNode[]) => {
-        for (const n of nodes) {
-          const typeOk = !types || types.includes(n.type);
-          const dataOk = !sharedPluginData || (sharedPluginData.keys ?? []).every((k) => n.getSharedPluginData(sharedPluginData.namespace, k) !== '');
-          if (typeOk && dataOk) out.push(n);
-          walk(n.children);
-        }
-      };
-      walk(page.children);
-      return out;
-    },
+  const makePage = (): FakePage => {
+    const pg: FakePage = {
+      type: 'PAGE',
+      children: [],
+      selection: [],
+      appendChild(child) {
+        detach(child);
+        child.parent = pg;
+        pg.children.push(child);
+      },
+      insertChild(index, child) {
+        detach(child);
+        child.parent = pg;
+        pg.children.splice(index, 0, child);
+      },
+      findAllWithCriteria({ types, sharedPluginData }) {
+        const out: FakeNode[] = [];
+        const walk = (nodes: FakeNode[]) => {
+          for (const n of nodes) {
+            const typeOk = !types || types.includes(n.type);
+            const dataOk = !sharedPluginData || (sharedPluginData.keys ?? []).every((k) => n.getSharedPluginData(sharedPluginData.namespace, k) !== '');
+            if (typeOk && dataOk) out.push(n);
+            walk(n.children);
+          }
+        };
+        walk(pg.children);
+        return out;
+      },
+    };
+    return pg;
   };
+  const page = makePage();
+  const pages: FakePage[] = [page];
 
   const DEFAULT_NAME: Record<NodeType, string> = {
     FRAME: 'Frame',
@@ -140,6 +147,7 @@ export function createFakeFigma(): FakeFigma {
       layoutMode: 'NONE',
       itemSpacing: 0,
       layoutGrow: 0,
+      layoutPositioning: 'AUTO',
       primaryAxisSizingMode: 'FIXED',
       counterAxisSizingMode: 'FIXED',
       characters: '',
@@ -211,7 +219,7 @@ export function createFakeFigma(): FakeFigma {
         return data.get(`${ns}:${key}`) ?? '';
       },
     };
-    if (append) page.appendChild(node);
+    if (append) api.currentPage.appendChild(node);
     return node;
   };
 
@@ -229,7 +237,15 @@ export function createFakeFigma(): FakeFigma {
     zoomedTo: null as unknown,
     collections: [] as FakeCollection[],
     currentPage: page,
-    root: { children: [page] },
+    root: { children: pages },
+    addPage: () => {
+      const pg = makePage();
+      pages.push(pg);
+      return pg;
+    },
+    setCurrentPageAsync: async (pg: FakePage) => {
+      api.currentPage = pg;
+    },
     skipInvisibleInstanceChildren: false,
     loadAllPagesAsync: async () => {},
     createFrame: () => make('FRAME'),
@@ -246,7 +262,7 @@ export function createFakeFigma(): FakeFigma {
     variables: {
       getLocalVariableCollectionsAsync: async () => api.collections,
     },
-    getNodeByIdAsync: async (id: string) => find(id, page.children),
+    getNodeByIdAsync: async (id: string) => pages.map((pg) => find(id, pg.children)).find(Boolean) ?? null,
   };
   return api as unknown as FakeFigma;
 }
