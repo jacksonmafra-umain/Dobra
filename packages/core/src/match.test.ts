@@ -35,4 +35,9 @@ describe('matchFrame', () => {
     expect(m.by).toBe('none');
     expect(m.nearest).toBeDefined();
   });
+
+  it('does not trust a tag or name for a target the device cannot show', () => {
+    expect(matchFrame({ tag: 'iphone-duo/outer/book/portrait', name: 'x', width: 1, height: 1 }, config).by).toBe('none');
+    expect(matchFrame({ name: 'galaxy-z-flip-7/cover/closed/portrait', width: 1, height: 1 }, config).by).toBe('none');
+  });
 });

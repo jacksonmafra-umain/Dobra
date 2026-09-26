@@ -57,13 +57,22 @@ export function enumerateTargets(config: EnvConfig): Target[] {
   return out;
 }
 
+const knownCache = new WeakMap<EnvConfig, Set<string>>();
+
+/** Whether a target is one the catalog lists: its posture on that display, in an orientation it takes. */
+export function isKnownTarget(config: EnvConfig, t: Target): boolean {
+  let keys = knownCache.get(config);
+  if (!keys) {
+    keys = new Set(enumerateTargets(config).map(targetKey));
+    knownCache.set(config, keys);
+  }
+  return keys.has(targetKey(t));
+}
+
 /** The window a target describes. Android targets rotate away from the display's natural shape when needed. */
 export function resolveTarget(config: EnvConfig, t: Target): Environment {
-  const device = config.devices.find((d) => d.id === t.deviceId);
-  const poses = device ? (device.platform === 'ios' ? device.poses : device.postures) : undefined;
-  if (!device || !device.displays[t.displayId] || (t.pose && !poses?.some((p) => p.id === t.pose))) {
-    throw new Error(`Unknown target ${targetKey(t)}`);
-  }
+  if (!isKnownTarget(config, t)) throw new Error(`Unknown target ${targetKey(t)}`);
+  const device = config.devices.find((d) => d.id === t.deviceId)!;
   let rotation = t.rotation;
   if (device.platform === 'android' && rotation === undefined) {
     const disp = device.displays[t.displayId];

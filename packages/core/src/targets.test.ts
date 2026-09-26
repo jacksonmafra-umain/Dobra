@@ -39,4 +39,9 @@ describe('targets', () => {
       /pixel-9\/main\/nope\/portrait/,
     );
   });
+
+  it('refuses targets a device cannot show: a posture on the wrong display, or an orientation it never takes', () => {
+    expect(() => resolveTarget(config, { deviceId: 'iphone-duo', displayId: 'outer', pose: 'book', orientation: 'portrait' })).toThrow(/Unknown target/);
+    expect(() => resolveTarget(config, { deviceId: 'galaxy-z-flip-7', displayId: 'cover', pose: 'closed', orientation: 'portrait' })).toThrow(/Unknown target/);
+  });
 });
