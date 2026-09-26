@@ -82,3 +82,26 @@ describe('book foldables', () => {
     for (const id of ['pixel-fold', 'pixel-10-pro-fold']) expect(estimated(id), id).toBe(false);
   });
 });
+
+describe('flip foldables', () => {
+  it.each([
+    ['razr-plus-2024', 'cover', { width: 392.5, height: 462.5 }],
+    ['razr-plus-2024', 'inner', { width: 392.5, height: 960 }],
+    ['razr-2026', 'cover', { width: 384, height: 387.5 }],
+    ['razr-2026', 'inner', { width: 392.5, height: 960 }],
+    ['razr-ultra-2026', 'cover', { width: 360, height: 424 }],
+    ['razr-ultra-2026', 'inner', { width: 408, height: 997.5 }],
+  ])('%s %s is %o dp', (id, display, expected) => {
+    expect(byId(id).category).toBe('foldable-flip');
+    expect(size(id, display)).toEqual(expected);
+  });
+
+  it('lets any app run on a Motorola cover screen', () => {
+    for (const id of ['razr-plus-2024', 'razr-2026', 'razr-ultra-2026']) {
+      const d = byId(id);
+      if (d.platform !== 'android') throw new Error('android expected');
+      expect(d.displays.cover.coverScreen).toMatchObject({ policy: 'any-app', continuity: true });
+      expect(estimated(id)).toBe(true);
+    }
+  });
+});

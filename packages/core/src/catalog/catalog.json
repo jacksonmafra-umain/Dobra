@@ -2502,6 +2502,483 @@
       "$comment": "The most valuable cell in the matrix: the cover window is landscape-shaped but Compact width."
     },
     {
+      "id": "razr-plus-2024",
+      "platform": "android",
+      "name": "Motorola Razr+ (2024)",
+      "enabled": true,
+      "category": "foldable-flip",
+      "displays": {
+        "cover": {
+          "label": "Cover display (FlexWindow)",
+          "size": {
+            "width": 392.5,
+            "height": 462.5
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 0,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "coverScreen": {
+            "policy": "any-app",
+            "continuity": true,
+            "note": "Motorola lets the user add any installed app to the external display (en-us.support.motorola.com/app/answers/detail/a_id/174650). Continuity keeps the app there when the phone closes."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Motorola Support (a_id 181473). Motorola does not publish the density; 2.75 (440 dpi) is assumed.",
+          "pixels": {
+            "width": 1080,
+            "height": 1272
+          }
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 392.5,
+            "height": 960.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2640
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 480.0,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Motorola Support (a_id 181473). Motorola does not publish the density; 2.75 (440 dpi) is assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "kind": "cover",
+          "display": "cover",
+          "features": [],
+          "note": "Any app the user has added to the external display."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from Motorola Support (a_id 181473). Motorola does not publish the density; 2.75 (440 dpi) is assumed."
+    },
+    {
+      "id": "razr-2026",
+      "platform": "android",
+      "name": "Motorola Razr (2026)",
+      "enabled": true,
+      "category": "foldable-flip",
+      "displays": {
+        "cover": {
+          "label": "Cover display (FlexWindow)",
+          "size": {
+            "width": 384.0,
+            "height": 387.5
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 0,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "coverScreen": {
+            "policy": "any-app",
+            "continuity": true,
+            "note": "Motorola lets the user add any installed app to the external display (en-us.support.motorola.com/app/answers/detail/a_id/174650). Continuity keeps the app there when the phone closes."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Inner pixels from GSMArena and Google Fi; the 1056×1066 px cover is from GSMArena and matches the official Razr 2024 cover. Density 2.75 assumed.",
+          "pixels": {
+            "width": 1056,
+            "height": 1066
+          }
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 392.5,
+            "height": 960.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2640
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 480.0,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Inner pixels from GSMArena and Google Fi; the 1056×1066 px cover is from GSMArena and matches the official Razr 2024 cover. Density 2.75 assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "kind": "cover",
+          "display": "cover",
+          "features": [],
+          "note": "Any app the user has added to the external display."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Inner pixels from GSMArena and Google Fi; the 1056×1066 px cover is from GSMArena and matches the official Razr 2024 cover. Density 2.75 assumed."
+    },
+    {
+      "id": "razr-ultra-2026",
+      "platform": "android",
+      "name": "Motorola Razr Ultra (2026)",
+      "enabled": true,
+      "category": "foldable-flip",
+      "displays": {
+        "cover": {
+          "label": "Cover display (FlexWindow)",
+          "size": {
+            "width": 360.0,
+            "height": 424.0
+          },
+          "density": 3.0,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 0,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "coverScreen": {
+            "policy": "any-app",
+            "continuity": true,
+            "note": "Motorola lets the user add any installed app to the external display (en-us.support.motorola.com/app/answers/detail/a_id/174650). Continuity keeps the app there when the phone closes."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from GSMArena (motorola.com did not render its specs). Density 3.0 assumed.",
+          "pixels": {
+            "width": 1080,
+            "height": 1272
+          }
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 408.0,
+            "height": 997.5
+          },
+          "pixels": {
+            "width": 1224,
+            "height": 2992
+          },
+          "density": 3.0,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 498.75,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from GSMArena (motorola.com did not render its specs). Density 3.0 assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "kind": "cover",
+          "display": "cover",
+          "features": [],
+          "note": "Any app the user has added to the external display."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from GSMArena (motorola.com did not render its specs). Density 3.0 assumed."
+    },
+    {
       "id": "surface-duo-2",
       "platform": "android",
       "name": "Surface Duo 2",

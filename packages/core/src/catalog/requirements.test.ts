@@ -33,6 +33,8 @@ describe('coverage requirements', () => {
     const cat = loadCatalog();
     expect(cat.requirements).toContainEqual(expect.objectContaining({ category: 'foldable-flip', kind: 'cover', orientation: 'landscape' }));
     const raw = clone();
+    // Only the Galaxy Z Flip 7: the Motorola covers are portrait-shaped and would meet the row.
+    raw.devices = raw.devices.filter((d: { category: string; id: string }) => d.category !== 'foldable-flip' || d.id === 'galaxy-z-flip-7');
     raw.requirements.push({ category: 'foldable-flip', kind: 'cover', orientation: 'portrait', level: 'required' });
     expect(() => loadCatalog(raw)).toThrow(/foldable-flip cover portrait cannot be met/);
   });
