@@ -443,6 +443,9 @@ const profileShape = {
     screens: z.array(screen).min(1),
 };
 
+/** Top-level keys that belong to the catalog; a profile may not set them. */
+export const CATALOG_KEYS = Object.keys(catalogShape);
+
 const catalogObject = z.strictObject(catalogShape);
 const configObject = z.strictObject({ ...catalogShape, ...profileShape });
 type CatalogShape = z.infer<typeof catalogObject>;

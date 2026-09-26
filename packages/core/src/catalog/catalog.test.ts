@@ -25,4 +25,11 @@ describe('catalog and profile', () => {
   it('composes the bundled catalog and sample profile', () => {
     expect(composeConfig(catalogJson, profileJson)).toEqual(loadConfig());
   });
+
+  it('refuses a profile that would replace catalog data', () => {
+    for (const key of ['devices', 'requirements', 'platforms', 'version']) {
+      const profile = { ...profileJson, [key]: (catalogJson as Record<string, unknown>)[key] };
+      expect(() => composeConfig(catalogJson, profile)).toThrow(new RegExp(`profile.*${key}`));
+    }
+  });
 });
