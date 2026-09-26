@@ -101,6 +101,19 @@ const androidProfile = z.strictObject({
     source: sourceRef,
   }),
   fontScale: fontScale.optional(),
+  windowModes: z.strictObject({
+    split: z.strictObject({ divider: nonNeg, ratios: z.array(z.number().gt(0).lt(1)).min(1), source: sourceRef }),
+    freeform: z.strictObject({ captionBar: pos, minSize: size, defaultSize: size, source: sourceRef }),
+    popup: z.strictObject({ scale: z.number().gt(0).lt(1), captionBar: pos, source: sourceRef }),
+    pip: z.strictObject({ width: pos, aspect: z.tuple([pos, pos]), margin: nonNeg, source: sourceRef }),
+  }),
+  /** Settings › Display size: the user scales the density, so the same panel reports fewer or more dp. */
+  displaySize: z.strictObject({
+    steps: z.array(z.strictObject({ id: z.string(), label: z.string(), factor: pos })).min(1),
+    source: sourceRef,
+  }),
+  /** Short guidance the inspector shows for Android windows. */
+  notes: z.array(z.strictObject({ id: z.string(), title: z.string(), text: z.string(), source: sourceRef })),
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -146,6 +159,8 @@ const iosDisplay = z.strictObject({
     fold: z.strictObject({ width: nonNeg, estimated: z.boolean().optional() }).optional(),
   }),
   reservedRegions: z.array(reservedRegion).optional(),
+  /** Software keyboard height including its suggestion bar. */
+  keyboard: z.strictObject({ portrait: pos, landscape: pos, source: sourceRef }).optional(),
 });
 
 const iosPose = z.strictObject({
@@ -239,6 +254,8 @@ const androidDevice = z.strictObject({
   class: z.enum(['phone', 'book-foldable', 'clamshell', 'tri-fold', 'tablet', 'desktop']),
   displays: z.record(z.string(), androidDisplay),
   postures: z.array(posture).optional(),
+  /** Window states this device offers. The first is the default. */
+  windowModes: z.array(z.enum(['fullscreen', 'split', 'freeform', 'popup', 'pip'])).min(1),
   source: sourceRef,
   estimated: z.boolean(),
 });
@@ -251,7 +268,26 @@ const heroRule = z.strictObject({ variant: z.enum(['stacked', 'split']), bleed: 
 const tabBarRule = z.strictObject({ item: z.enum(['stacked', 'inline']) });
 const carouselRule = z.strictObject({ mode: z.literal('carousel') });
 
-const RULE_BY_KIND = { grid: gridRule, hero: heroRule, 'tab-bar': tabBarRule, carousel: carouselRule } as const;
+const track = z.union([
+  z.strictObject({ fixed: pos }),
+  z.strictObject({ fr: pos }),
+  z.strictObject({ adaptive: z.strictObject({ min: pos, max: pos.optional() }) }),
+]);
+const gridForm = z.strictObject({
+  grid: z.strictObject({ columns: z.array(track).min(1), gap: nonNeg, areas: z.record(z.string(), z.array(z.number().int().min(0)).min(1)).optional() }),
+});
+const flexForm = z.strictObject({
+  flex: z.strictObject({
+    wrap: z.boolean(),
+    basis: pos,
+    grow: nonNeg,
+    shrink: nonNeg,
+    gap: nonNeg,
+    justify: z.enum(['start', 'center', 'end', 'space-between', 'space-around']).optional(),
+  }),
+});
+
+const RULE_BY_KIND = { grid: z.union([gridRule, gridForm, flexForm]), hero: heroRule, 'tab-bar': tabBarRule, carousel: carouselRule } as const;
 export type ComponentKind = keyof typeof RULE_BY_KIND;
 
 const layoutRule = z.strictObject({
@@ -271,7 +307,9 @@ const layoutRule = z.strictObject({
   pageMargin: z.strictObject({ base: nonNeg, mode: z.enum(['max', 'add']) }),
   grid: z.strictObject({ columns: z.number().int().positive(), gutter: nonNeg, proposed: z.boolean().optional() }),
   panes: z.number().int().positive(),
-  components: z.record(z.string(), z.union([gridRule, heroRule, tabBarRule, carouselRule])),
+  /** Force one pane whatever the screen's scene asks for. */
+  scene: z.literal('single').optional(),
+  components: z.record(z.string(), z.union([gridRule, gridForm, flexForm, heroRule, tabBarRule, carouselRule])),
   source: sourceRef.optional(),
 });
 
@@ -280,6 +318,10 @@ const componentSpec = z.strictObject({
   gap: nonNeg.optional(),
   split: z.strictObject({ imageFraction: z.number().gt(0).lt(1), textPadding: nonNeg }).optional(),
   minLegibleWidth: pos.optional(),
+  /** Rule forms this component accepts. */
+  forms: z.array(z.enum(['perRow', 'grid', 'flex'])).optional(),
+  /** Items the sample screen shows; flex widths depend on it. */
+  items: z.number().int().positive().optional(),
   source: sourceRef.optional(),
 });
 
@@ -305,6 +347,8 @@ const screen = z.strictObject({
   figma: z.strictObject({ portrait: z.string().optional(), landscape: z.string().optional() }).nullable(),
   source: z.string().optional(),
   components: z.array(z.string()),
+  /** Pane strategy from "scenes". Screens without one are single-pane. */
+  scene: z.string().optional(),
   toolbar: z.strictObject({
     component: z.enum(['app_toolbar', 'toolbar']),
     logo: z.string().optional(),
@@ -318,6 +362,20 @@ const tabItem = z.strictObject({ id: z.string(), title: z.string(), icon: z.stri
 
 // ---------------------------------------------------------------------------------------------
 
+const sceneSpec = z.strictObject({
+  strategy: z.enum(['single', 'list-detail', 'two-pane', 'supporting-pane']),
+  listFraction: z.number().gt(0).lt(1).optional(),
+  listMinWidth: nonNeg.optional(),
+  detailMinWidth: nonNeg.optional(),
+  ratio: z.number().gt(0).lt(1).optional(),
+  paneMinWidth: nonNeg.optional(),
+  supportingWidth: pos.optional(),
+  mainMinWidth: nonNeg.optional(),
+  /** Narrowest pane text still reads in; the min-legible-width check uses it. */
+  textMinWidth: pos.optional(),
+  source: sourceRef,
+});
+
 export const configSchema = z
   .strictObject({
     version: z.string(),
@@ -326,6 +384,18 @@ export const configSchema = z
     sources: z.record(z.string(), z.string()),
     platforms: z.strictObject({ ios: iosProfile, android: androidProfile }),
     components: z.record(z.string(), componentSpec),
+    scenes: z.record(z.string(), sceneSpec).optional(),
+    /** Sample type styles. Sizes are pt on iOS and sp on Android; both follow the user's text size. */
+    typography: z.record(z.string(), z.strictObject({ size: pos, lineHeight: pos })),
+    /** How the Sample app declares itself to each platform. */
+    app: z.strictObject({
+      android: z.strictObject({
+        targetSdk: z.number().int().positive(),
+        screenOrientation: z.enum(['unspecified', 'portrait']),
+        configChanges: z.array(z.string()),
+        source: sourceRef,
+      }),
+    }),
     devices: z.array(z.discriminatedUnion('platform', [iosDevice, androidDevice])).min(1),
     layoutRules: z.array(layoutRule).min(1),
     tabBar: z.strictObject({ component: z.string(), items: z.array(tabItem).min(1) }),
@@ -439,6 +509,15 @@ export const configSchema = z
         }
         const parsed = RULE_BY_KIND[spec.kind].safeParse(value);
         if (!parsed.success) issue([...path, 'components', id], `Settings do not fit a ${spec.kind} component: ${parsed.error.issues[0].message}`);
+        if (!parsed.success) continue;
+        const form = 'grid' in value ? 'grid' : 'flex' in value ? 'flex' : 'perRow';
+        if (spec.kind === 'grid' && !(spec.forms ?? ['perRow']).includes(form))
+          issue([...path, 'components', id], `Component "${id}" does not accept the ${form} form; allowed: ${(spec.forms ?? ['perRow']).join(', ')}`);
+        if (form === 'grid') {
+          const g = (value as z.infer<typeof gridForm>).grid;
+          for (const [area, cols] of Object.entries(g.areas ?? {}))
+            if (cols.some((c) => c >= g.columns.length)) issue([...path, 'components', id, 'grid', 'areas', area], `Span runs past the ${g.columns.length} tracks`);
+        }
       }
       for (const id of Object.keys(r.components)) {
         if (!cfg.components[id]) issue([...path, 'components', id], `Unknown component "${id}"; add it to "components"`);
@@ -447,6 +526,11 @@ export const configSchema = z
     for (const p of PLATFORMS) {
       if (!fallbacks.has(p)) issue(['layoutRules'], `Add a ${p} fallback rule with "match": {} after the other ${p} rules`);
     }
+
+    cfg.screens.forEach((s, si) => {
+      if (s.scene && !cfg.scenes?.[s.scene]) issue(['screens', si, 'scene'], `Unknown scene "${s.scene}"; add it to "scenes"`);
+    });
+    for (const [id, sc] of Object.entries(cfg.scenes ?? {})) checkSource(sc.source, ['scenes', id, 'source']);
 
     const tabs = new Set(cfg.tabBar.items.map((t) => t.id));
     cfg.screens.forEach((s, si) => {
@@ -461,6 +545,8 @@ export const configSchema = z
 
 export type SimulatorConfig = z.infer<typeof configSchema>;
 export type GridRule = z.infer<typeof gridRule>;
+export type GridFormRule = z.infer<typeof gridForm>;
+export type FlexFormRule = z.infer<typeof flexForm>;
 export type HeroRule = z.infer<typeof heroRule>;
 export type TabBarRule = z.infer<typeof tabBarRule>;
 
