@@ -164,9 +164,14 @@ const iosDisplay = z.strictObject({
   keyboard: z.strictObject({ portrait: pos, landscape: pos, source: sourceRef }).optional(),
 });
 
+/** What a posture offers a layout; see catalog/postures.ts. */
+const postureKind = z.enum(['cover', 'flat', 'book', 'tabletop', 'partial', 'dual', 'rear']);
+export const POSTURE_KIND_VALUES = postureKind.options;
+
 const iosPose = z.strictObject({
   id: z.string(),
   label: z.string(),
+  kind: postureKind,
   display: z.string(),
   folded: z.boolean(),
   orientations: z.array(orientation).min(1),
@@ -242,6 +247,7 @@ const androidDisplay = z.strictObject({
 const posture = z.strictObject({
   id: z.string(),
   label: z.string(),
+  kind: postureKind,
   display: z.string(),
   /** Rotation the posture implies (tabletop turns a book-style hinge horizontal). Omit to follow the user's choice. */
   rotation: z.union([z.literal(0), z.literal(90)]).optional(),

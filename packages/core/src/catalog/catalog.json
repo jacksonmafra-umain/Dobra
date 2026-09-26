@@ -739,6 +739,7 @@
         {
           "id": "closed",
           "label": "Closed",
+          "kind": "cover",
           "display": "outer",
           "folded": false,
           "orientations": [
@@ -749,6 +750,7 @@
         {
           "id": "open",
           "label": "Fully open",
+          "kind": "flat",
           "display": "inner",
           "folded": false,
           "orientations": [
@@ -759,6 +761,7 @@
         {
           "id": "book",
           "label": "Folded like a book",
+          "kind": "book",
           "display": "inner",
           "folded": true,
           "orientations": [
@@ -769,6 +772,7 @@
         {
           "id": "flat",
           "label": "Laid flat",
+          "kind": "flat",
           "display": "inner",
           "folded": false,
           "orientations": [
@@ -780,6 +784,7 @@
         {
           "id": "stand",
           "label": "Standing on its edge",
+          "kind": "tabletop",
           "display": "inner",
           "folded": true,
           "orientations": [
@@ -1229,12 +1234,14 @@
         {
           "id": "closed",
           "label": "Closed (outer display)",
+          "kind": "cover",
           "display": "outer",
           "features": []
         },
         {
           "id": "open",
           "label": "Open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1247,6 +1254,7 @@
         {
           "id": "book",
           "label": "Half-open, book",
+          "kind": "book",
           "display": "inner",
           "rotation": 0,
           "features": [
@@ -1260,6 +1268,7 @@
         {
           "id": "tabletop",
           "label": "Half-open, tabletop",
+          "kind": "tabletop",
           "display": "inner",
           "rotation": 90,
           "features": [
@@ -1273,6 +1282,7 @@
         {
           "id": "rear-display",
           "label": "Rear display mode",
+          "kind": "rear",
           "display": "outer",
           "features": [],
           "windowArea": "rear-display",
@@ -1281,6 +1291,7 @@
         {
           "id": "dual-screen",
           "label": "Dual-screen mode",
+          "kind": "dual",
           "display": "inner",
           "features": [
             {
@@ -1408,12 +1419,14 @@
         {
           "id": "closed",
           "label": "Closed (cover display)",
+          "kind": "cover",
           "display": "cover",
           "features": []
         },
         {
           "id": "open",
           "label": "Open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1425,6 +1438,7 @@
         {
           "id": "book",
           "label": "Half-open, book (Flex mode)",
+          "kind": "book",
           "display": "inner",
           "rotation": 0,
           "features": [
@@ -1437,6 +1451,7 @@
         {
           "id": "tabletop",
           "label": "Half-open, tabletop (Flex mode)",
+          "kind": "tabletop",
           "display": "inner",
           "rotation": 90,
           "features": [
@@ -1449,6 +1464,7 @@
         {
           "id": "dual-screen",
           "label": "Dual-screen mode",
+          "kind": "dual",
           "display": "inner",
           "features": [
             {
@@ -1570,6 +1586,7 @@
         {
           "id": "closed",
           "label": "Closed (cover display)",
+          "kind": "cover",
           "display": "cover",
           "features": [],
           "note": "Only when the user has allowed the app on the cover screen."
@@ -1577,6 +1594,7 @@
         {
           "id": "open",
           "label": "Open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1588,6 +1606,7 @@
         {
           "id": "flex",
           "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
           "display": "inner",
           "rotation": 0,
           "features": [
@@ -1601,6 +1620,7 @@
         {
           "id": "flex-rotated",
           "label": "Half-open, rotated (book)",
+          "kind": "book",
           "display": "inner",
           "rotation": 90,
           "features": [
@@ -1728,12 +1748,14 @@
         {
           "id": "closed",
           "label": "Closed (cover display)",
+          "kind": "cover",
           "display": "cover",
           "features": []
         },
         {
           "id": "open",
           "label": "Fully open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1749,6 +1771,7 @@
         {
           "id": "left-half",
           "label": "Left hinge half-open",
+          "kind": "book",
           "display": "inner",
           "features": [
             {
@@ -1765,6 +1788,7 @@
         {
           "id": "both-half",
           "label": "Both hinges half-open",
+          "kind": "book",
           "display": "inner",
           "features": [
             {
@@ -1947,12 +1971,14 @@
         {
           "id": "single",
           "label": "One panel",
+          "kind": "cover",
           "display": "single",
           "features": []
         },
         {
           "id": "dual",
           "label": "Two panels, flat",
+          "kind": "partial",
           "display": "dual",
           "features": [
             {
@@ -1964,6 +1990,7 @@
         {
           "id": "triple",
           "label": "Three panels, flat",
+          "kind": "flat",
           "display": "triple",
           "features": [
             {
@@ -1979,6 +2006,7 @@
         {
           "id": "triple-half",
           "label": "Three panels, one hinge half-open",
+          "kind": "book",
           "display": "triple",
           "features": [
             {
