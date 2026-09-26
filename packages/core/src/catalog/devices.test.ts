@@ -10,6 +10,12 @@ const byId = (id: string) => {
   if (!d) throw new Error(`No device "${id}"`);
   return d;
 };
+/** Android devices carry `estimated` themselves; iOS devices only per display. */
+const estimated = (id: string) => {
+  const d = byId(id);
+  if (d.platform !== 'android') throw new Error(`${id} is not an Android device`);
+  return d.estimated;
+};
 const size = (id: string, display: string) => {
   const d = byId(id);
   return d.platform === 'android' ? d.displays[display].size : d.displays[display].portraitSize;
@@ -44,5 +50,35 @@ describe('catalog devices', () => {
   it('requires dual-screen coverage now that a dual-screen device exists', () => {
     const rows = cat.requirements.filter((r) => r.category === 'dual-screen' && r.level === 'required');
     expect(rows.map((r) => `${r.kind}/${r.orientation}`).sort()).toEqual(['book/landscape', 'cover/portrait', 'tabletop/portrait']);
+  });
+});
+
+describe('book foldables', () => {
+  it.each([
+    ['pixel-fold', 'outer', { width: 411.5, height: 797 }],
+    ['pixel-fold', 'inner', { width: 841, height: 701 }],
+    ['pixel-10-pro-fold', 'outer', { width: 443, height: 970 }],
+    ['pixel-10-pro-fold', 'inner', { width: 851.5, height: 883 }],
+    ['pixel-11-pro-fold', 'outer', { width: 443, height: 961 }],
+    ['oneplus-open', 'outer', { width: 425, height: 946.5 }],
+    ['oneplus-open', 'inner', { width: 864, height: 929.5 }],
+    ['oppo-find-n6', 'outer', { width: 434.5, height: 996.5 }],
+    ['oppo-find-n6', 'inner', { width: 856.5, height: 945 }],
+    ['galaxy-z-fold-7', 'cover', { width: 411, height: 960 }],
+    ['galaxy-z-fold-7', 'inner', { width: 750, height: 832 }],
+  ])('%s %s is %o dp', (id, display, expected) => {
+    expect(byId(id).category).toBe('foldable-book');
+    expect(size(id, display)).toEqual(expected);
+  });
+
+  it('keeps the Pixel Fold inner display landscape-native with the crease across its width', () => {
+    const d = byId('pixel-fold');
+    if (d.platform !== 'android') throw new Error('android expected');
+    expect(d.displays.inner.hinges?.[0]).toMatchObject({ axis: 'vertical', position: 420.5, width: 0, occlusion: 'NONE' });
+  });
+
+  it('marks unpublished densities as estimated', () => {
+    for (const id of ['oneplus-open', 'oppo-find-n6', 'pixel-11-pro-fold', 'galaxy-z-fold-7']) expect(estimated(id), id).toBe(true);
+    for (const id of ['pixel-fold', 'pixel-10-pro-fold']) expect(estimated(id), id).toBe(false);
   });
 });

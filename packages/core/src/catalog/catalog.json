@@ -1317,6 +1317,538 @@
       "$comment": "The emulator profile the Android density crash was seen on. Outer 443×995 dp, inner 851×883 dp (brief values, consistent with the pixel sizes at 2.4375)."
     },
     {
+      "id": "pixel-fold",
+      "platform": "android",
+      "name": "Pixel Fold",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 411.5,
+            "height": 797.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2092
+          },
+          "density": 2.625,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_fold: 420 dpi. The inner display is landscape-native (2208×1840 px); the crease runs across its width."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 841.0,
+            "height": 701.0
+          },
+          "pixels": {
+            "width": 2208,
+            "height": 1840
+          },
+          "density": 2.625,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 420.5,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": false
+            }
+          ],
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_fold: 420 dpi. The inner display is landscape-native (2208×1840 px); the crease runs across its width."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "android-studio-avd",
+      "estimated": false,
+      "$note": "Android Studio AVD pixel_fold: 420 dpi. The inner display is landscape-native (2208×1840 px); the crease runs across its width."
+    },
+    {
+      "id": "pixel-10-pro-fold",
+      "platform": "android",
+      "name": "Pixel 10 Pro Fold",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 443.0,
+            "height": 970.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2364
+          },
+          "density": 2.4375,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_10_pro_fold: 390 dpi. Outer 1080×2364 px is 443×970 dp (not 995, which is the 9 Pro Fold). Chrome DevTools uses 2.625 for the 9 Pro Fold cover; if the cover uses it, the outer would be about 411×900 dp."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 851.5,
+            "height": 883.0
+          },
+          "pixels": {
+            "width": 2076,
+            "height": 2152
+          },
+          "density": 2.4375,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 425.75,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": false
+            }
+          ],
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_10_pro_fold: 390 dpi. Outer 1080×2364 px is 443×970 dp (not 995, which is the 9 Pro Fold). Chrome DevTools uses 2.625 for the 9 Pro Fold cover; if the cover uses it, the outer would be about 411×900 dp."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        },
+        {
+          "id": "rear-display",
+          "label": "Rear display mode",
+          "kind": "rear",
+          "display": "outer",
+          "features": [],
+          "windowArea": "rear-display",
+          "note": "Rear display mode (WindowAreaController.transferActivityToWindowArea): the app moves to the outer display so the rear cameras can frame the user. Documented only: the simulator shows the outer display."
+        },
+        {
+          "id": "dual-screen",
+          "label": "Dual-screen mode",
+          "kind": "dual",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "windowArea": "dual-screen",
+          "note": "Dual-screen mode (WindowAreaController.presentContentOnWindowArea): the app keeps the inner display and presents extra content on the outer one. Documented only: the outer presentation is not rendered."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "android-studio-avd",
+      "estimated": false,
+      "$note": "Android Studio AVD pixel_10_pro_fold: 390 dpi. Outer 1080×2364 px is 443×970 dp (not 995, which is the 9 Pro Fold). Chrome DevTools uses 2.625 for the 9 Pro Fold cover; if the cover uses it, the outer would be about 411×900 dp."
+    },
+    {
+      "id": "pixel-11-pro-fold",
+      "platform": "android",
+      "name": "Pixel 11 Pro Fold",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 443.0,
+            "height": 961.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2342
+          },
+          "density": 2.4375,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Google Pixel support (support.google.com/pixelphone/answer/7158570). Density assumed to match the 10 Pro Fold (390 dpi); no AVD yet."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 851.5,
+            "height": 883.0
+          },
+          "pixels": {
+            "width": 2076,
+            "height": 2152
+          },
+          "density": 2.4375,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 425.75,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Google Pixel support (support.google.com/pixelphone/answer/7158570). Density assumed to match the 10 Pro Fold (390 dpi); no AVD yet."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        },
+        {
+          "id": "rear-display",
+          "label": "Rear display mode",
+          "kind": "rear",
+          "display": "outer",
+          "features": [],
+          "windowArea": "rear-display",
+          "note": "Rear display mode (WindowAreaController.transferActivityToWindowArea): the app moves to the outer display so the rear cameras can frame the user. Documented only: the simulator shows the outer display."
+        },
+        {
+          "id": "dual-screen",
+          "label": "Dual-screen mode",
+          "kind": "dual",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "windowArea": "dual-screen",
+          "note": "Dual-screen mode (WindowAreaController.presentContentOnWindowArea): the app keeps the inner display and presents extra content on the outer one. Documented only: the outer presentation is not rendered."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from Google Pixel support (support.google.com/pixelphone/answer/7158570). Density assumed to match the 10 Pro Fold (390 dpi); no AVD yet."
+    },
+    {
       "id": "galaxy-z-fold-7",
       "platform": "android",
       "name": "Galaxy Z Fold 7",
@@ -1362,7 +1894,7 @@
           },
           "source": "device-spec",
           "estimated": true,
-          "$note": "1080×2520 px. Default density assumed 420 dpi (2.625): verify with adb shell wm density."
+          "$note": "1080×2520 px (GSMArena; 6.5-inch on Samsung specs). At the assumed 2.625: 411×960 dp."
         },
         "inner": {
           "label": "Inner display",
@@ -1414,7 +1946,7 @@
           ],
           "source": "device-spec",
           "estimated": true,
-          "$note": "1968×2184 px. At 2.625 the inner width is 750 dp: Medium, not Expanded. Samsung may ship a different inner density; confirm on device."
+          "$note": "1968×2184 px (Samsung Developers emulator skin). Samsung publishes no density; 2.625 is supported by Chrome DevTools' Fold 5 profile, which matches the Fold 5 pixels exactly. 750×832 dp. duoresponsive lists the Fold 6 at 768×904, which no single density produces: not a dp value."
         }
       },
       "postures": [
@@ -1488,6 +2020,330 @@
       "source": "device-spec",
       "estimated": true,
       "$comment": "All dp values estimated from pixels and an assumed density."
+    },
+    {
+      "id": "oneplus-open",
+      "platform": "android",
+      "name": "OnePlus Open",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 425.0,
+            "height": 946.5
+          },
+          "pixels": {
+            "width": 1116,
+            "height": 2484
+          },
+          "density": 2.625,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oneplus.com/us/open/specs. OnePlus does not publish the default density; 2.625 (420 dpi) is assumed."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 864.0,
+            "height": 929.5
+          },
+          "pixels": {
+            "width": 2268,
+            "height": 2440
+          },
+          "density": 2.625,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 432.0,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oneplus.com/us/open/specs. OnePlus does not publish the default density; 2.625 (420 dpi) is assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from oneplus.com/us/open/specs. OnePlus does not publish the default density; 2.625 (420 dpi) is assumed."
+    },
+    {
+      "id": "oppo-find-n6",
+      "platform": "android",
+      "name": "Oppo Find N6",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 434.5,
+            "height": 996.5
+          },
+          "pixels": {
+            "width": 1140,
+            "height": 2616
+          },
+          "density": 2.625,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oppo.com Find N6 specs (announced March 2026). Oppo does not publish the density; 2.625 is an assumption, so every dp value is a guess."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 856.5,
+            "height": 945.0
+          },
+          "pixels": {
+            "width": 2248,
+            "height": 2480
+          },
+          "density": 2.625,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 428.25,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oppo.com Find N6 specs (announced March 2026). Oppo does not publish the density; 2.625 is an assumption, so every dp value is a guess."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from oppo.com Find N6 specs (announced March 2026). Oppo does not publish the density; 2.625 is an assumption, so every dp value is a guess."
     },
     {
       "id": "galaxy-z-flip-7",
