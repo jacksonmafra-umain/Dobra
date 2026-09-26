@@ -9,7 +9,9 @@
     "material3": "Material 3 adaptive guidance and component specs: m3.material.io/foundations/layout/applying-layout",
     "android-docs": "Android platform documentation (developer.android.com)",
     "device-spec": "Manufacturer device specification (pixels and default density); dp derived as px / density",
-    "observed": "Observed on hardware or an emulator while testing an Android app"
+    "observed": "Observed on hardware or an emulator while testing an Android app",
+    "microsoft-learn": "Microsoft Learn, Surface Duo screen dimensions: learn.microsoft.com/en-us/previous-versions/dual-screen/android/surface-duo-dimensions",
+    "android-studio-avd": "Android Studio device definitions (AOSP sdklib devices/nexus.xml)"
   },
   "platforms": {
     "ios": {
@@ -1644,6 +1646,137 @@
       "$comment": "The most valuable cell in the matrix: the cover window is landscape-shaped but Compact width."
     },
     {
+      "id": "surface-duo-2",
+      "platform": "android",
+      "name": "Surface Duo 2",
+      "enabled": true,
+      "category": "dual-screen",
+      "displays": {
+        "single": {
+          "label": "One screen",
+          "size": {
+            "width": 537,
+            "height": 756
+          },
+          "pixels": {
+            "width": 1344,
+            "height": 1892
+          },
+          "density": 2.5,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "24 dp status bar per screen from the Microsoft Learn diagram; navigation and IME values are estimates."
+          },
+          "source": "microsoft-learn",
+          "estimated": false,
+          "$note": "1344×1892 px at 2.5 (Microsoft Learn dimensions diagram). 5.8-inch screen."
+        },
+        "spanned": {
+          "label": "Both screens (spanned)",
+          "size": {
+            "width": 1100,
+            "height": 756
+          },
+          "density": 2.5,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "24 dp status bar per screen from the Microsoft Learn diagram; navigation and IME values are estimates."
+          },
+          "hinges": [
+            {
+              "id": "hinge",
+              "axis": "vertical",
+              "position": 537,
+              "width": 26,
+              "occlusion": "FULL",
+              "source": "microsoft-learn"
+            }
+          ],
+          "source": "microsoft-learn",
+          "estimated": false,
+          "$note": "1100×756 dp as Microsoft Learn publishes it: two 537 dp screens and a 26 dp hinge, each rounded down. The spanned panel is 2754×1892 px (66 px hinge mask), which divides to 1101.6 dp, so pixels are not listed here."
+        }
+      },
+      "postures": [
+        {
+          "id": "single",
+          "label": "One screen",
+          "kind": "cover",
+          "display": "single",
+          "features": []
+        },
+        {
+          "id": "spanned",
+          "label": "Spanned, double portrait",
+          "kind": "book",
+          "display": "spanned",
+          "features": [
+            {
+              "hinge": "hinge",
+              "state": "FLAT"
+            }
+          ],
+          "note": "The gap hides content even when flat (FULL occlusion), so isSeparating is true: split at the hinge."
+        },
+        {
+          "id": "spanned-landscape",
+          "label": "Spanned, double landscape",
+          "kind": "tabletop",
+          "display": "spanned",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "hinge",
+              "state": "FLAT"
+            }
+          ],
+          "note": "The hinge turns HORIZONTAL: one screen above the other."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "microsoft-learn",
+      "estimated": false,
+      "$comment": "The only device in the catalog whose hinge hides content (FULL occlusion). Reference fixture for the hinge-content rule."
+    },
+    {
       "id": "galaxy-z-trifold",
       "platform": "android",
       "name": "Galaxy Z TriFold",
@@ -2280,6 +2413,25 @@
       "category": "desktop",
       "kind": "flat",
       "orientation": "landscape",
+      "level": "required"
+    },
+    {
+      "category": "dual-screen",
+      "kind": "cover",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "dual-screen",
+      "kind": "book",
+      "orientation": "landscape",
+      "level": "required",
+      "note": "Double portrait spans 1100×756 dp: a landscape-shaped window split by a 26 dp gap."
+    },
+    {
+      "category": "dual-screen",
+      "kind": "tabletop",
+      "orientation": "portrait",
       "level": "required"
     }
   ]
