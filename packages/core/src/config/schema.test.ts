@@ -39,10 +39,11 @@ describe('config schema', () => {
 
   it('checks cross references', () => {
     const cfg = clone();
-    cfg.devices[3].poses[0].display = 'cover';
+    const duo = cfg.devices.findIndex((d: { id: string }) => d.id === 'iphone-duo');
+    cfg.devices[duo].poses[0].display = 'cover';
     cfg.screens[0].tab = 'missing';
     const issues = issuesOf(cfg).join('\n');
-    expect(issues).toMatch(/devices\[3\]\.poses\[0\]\.display: .*"cover"/);
+    expect(issues).toMatch(new RegExp(`devices\\[${duo}\\]\\.poses\\[0\\]\\.display: .*"cover"`));
     expect(issues).toMatch(/screens\[0\]\.tab: /);
   });
 

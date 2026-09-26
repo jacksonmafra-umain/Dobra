@@ -437,6 +437,71 @@
       }
     },
     {
+      "id": "iphone-mini",
+      "platform": "ios",
+      "name": "iPhone mini (5.4-inch)",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 375,
+            "height": 812
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 50,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 50,
+                "bottom": 21,
+                "left": 50,
+                "source": "estimated"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 336,
+            "landscape": 209,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1125,
+            "height": 2436
+          },
+          "$note": "375×812 pt, the iPhone 13 mini / 12 mini class (Apple HIG device table). No mini is on sale; kept as the smallest notch-era size. Corner radius copied from the template: Apple publishes none."
+        }
+      }
+    },
+    {
       "id": "iphone-17",
       "platform": "ios",
       "name": "iPhone 17",
@@ -497,6 +562,144 @@
             "landscape": 209,
             "source": "estimated"
           }
+        }
+      }
+    },
+    {
+      "id": "iphone-plus",
+      "platform": "ios",
+      "name": "iPhone Plus (6.7-inch)",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 430,
+            "height": 932
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 62,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "apple-device"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 62,
+                "bottom": 21,
+                "left": 62,
+                "source": "figma-tokens"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": {
+              "width": 125,
+              "height": 37,
+              "offset": 11
+            }
+          },
+          "keyboard": {
+            "portrait": 346,
+            "landscape": 209,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1290,
+            "height": 2796
+          },
+          "$note": "430×932 pt, the iPhone 16 Plus / 15 Plus class (Apple HIG). The 16 Plus is the last Plus model. Corner radius copied from the template: Apple publishes none."
+        }
+      }
+    },
+    {
+      "id": "iphone-air",
+      "platform": "ios",
+      "name": "iPhone Air",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 420,
+            "height": 912
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 62,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 62,
+                "bottom": 21,
+                "left": 62,
+                "source": "estimated"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": {
+              "width": 125,
+              "height": 37,
+              "offset": 11
+            }
+          },
+          "keyboard": {
+            "portrait": 346,
+            "landscape": 209,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1260,
+            "height": 2736
+          },
+          "$note": "420×912 pt (Apple HIG). Safe areas copied from the Pro Max and marked estimated. Corner radius copied from the template: Apple publishes none."
         }
       }
     },
@@ -796,6 +999,331 @@
         }
       ],
       "$note": "Apple published pixels for the iPhone Duo (apple.com/iphone-duo/specs): inner 1878×2670 px, outer 1398×2034 px. Point sizes are not published: the 3x scale, and so every pt value, stays estimated."
+    },
+    {
+      "id": "ipad-mini",
+      "platform": "ios",
+      "name": "iPad mini",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 744,
+            "height": 1133
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1488,
+            "height": 2266
+          },
+          "$note": "744×1133 pt, iPad mini (A17 Pro), apple.com/ipad/compare. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-11",
+      "platform": "ios",
+      "name": "iPad / iPad Air 11-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 820,
+            "height": 1180
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1640,
+            "height": 2360
+          },
+          "$note": "820×1180 pt, shared by iPad (A16) and iPad Air 11-inch (M4). Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-pro-11",
+      "platform": "ios",
+      "name": "iPad Pro 11-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 834,
+            "height": 1210
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1668,
+            "height": 2420
+          },
+          "$note": "834×1210 pt, iPad Pro 11-inch (M4/M5), apple.com/ipad-pro/specs. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-air-13",
+      "platform": "ios",
+      "name": "iPad Air 13-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 1024,
+            "height": 1366
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 2048,
+            "height": 2732
+          },
+          "$note": "1024×1366 pt, iPad Air 13-inch (M4); also the older 12.9-inch Pro. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-pro-13",
+      "platform": "ios",
+      "name": "iPad Pro 13-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 1032,
+            "height": 1376
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 2064,
+            "height": 2752
+          },
+          "$note": "1032×1376 pt, iPad Pro 13-inch (M4/M5), apple.com/ipad-pro/specs. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
     },
     {
       "id": "android-compact-phone",

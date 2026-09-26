@@ -117,3 +117,36 @@ describe('Galaxy S25 family', () => {
     expect(estimated(id)).toBe(true);
   });
 });
+
+describe('Apple devices', () => {
+  it.each([
+    ['iphone-mini', 'phone', { width: 375, height: 812 }],
+    ['iphone-plus', 'phone', { width: 430, height: 932 }],
+    ['iphone-air', 'phone', { width: 420, height: 912 }],
+    ['ipad-mini', 'tablet', { width: 744, height: 1133 }],
+    ['ipad-11', 'tablet', { width: 820, height: 1180 }],
+    ['ipad-pro-11', 'tablet', { width: 834, height: 1210 }],
+    ['ipad-air-13', 'tablet', { width: 1024, height: 1366 }],
+    ['ipad-pro-13', 'tablet', { width: 1032, height: 1376 }],
+  ])('%s is a %s at %o pt', (id, category, expected) => {
+    expect(byId(id).category).toBe(category);
+    expect(size(id, 'main')).toEqual(expected);
+  });
+
+  it('gives iPads regular width and height in both orientations, with no Dynamic Island regions', () => {
+    for (const id of ['ipad-mini', 'ipad-11', 'ipad-pro-11', 'ipad-air-13', 'ipad-pro-13']) {
+      const d = byId(id);
+      if (d.platform !== 'ios') throw new Error('ios expected');
+      for (const o of ['portrait', 'landscape'] as const) {
+        expect(d.displays.main.orientations[o]?.sizeClass).toMatchObject({ horizontal: 'regular', vertical: 'regular' });
+      }
+      expect(d.displays.main.reservedRegions ?? []).toEqual([]);
+    }
+  });
+
+  it('keeps the iPhone Duo estimated', () => {
+    const d = byId('iphone-duo');
+    if (d.platform !== 'ios') throw new Error('ios expected');
+    expect(d.displays.inner.estimated).toBe(true);
+  });
+});
