@@ -405,11 +405,21 @@ const sceneSpec = z.strictObject({
   source: sourceRef,
 });
 
+/** A cell coverage expects: some device of this category, in this kind of posture and orientation. */
+const requirement = z.strictObject({
+  category,
+  kind: postureKind,
+  orientation: orientation,
+  level: z.enum(['required', 'optional']),
+  note: z.string().optional(),
+});
+
 const catalogShape = {
     version: z.string(),
     sources: z.record(z.string(), z.string()),
     platforms: z.strictObject({ ios: iosProfile, android: androidProfile }),
     devices: z.array(z.discriminatedUnion('platform', [iosDevice, androidDevice])).min(1),
+  requirements: z.array(requirement).min(1),
 };
 
 const profileShape = {
@@ -527,6 +537,21 @@ function checkCatalog(cfg: CatalogShape, issue: Issue) {
     });
   });
 
+  // Coverage: a required cell must be something at least one enabled device can show.
+  const offered = new Set<string>();
+  for (const d of cfg.devices) {
+    if (!d.enabled) continue;
+    const list = d.platform === 'ios' ? (d.poses ?? []) : (d.postures ?? []);
+    for (const kind of list.length ? list.map((p) => p.kind) : ['flat']) offered.add(`${d.category}/${kind}`);
+  }
+  const seen = new Set<string>();
+  cfg.requirements.forEach((r, ri) => {
+    const key = `${r.category}/${r.kind}/${r.orientation}`;
+    if (seen.has(key)) issue(['requirements', ri], `Duplicate requirement ${key}`);
+    seen.add(key);
+    if (r.level === 'required' && !offered.has(`${r.category}/${r.kind}`))
+      issue(['requirements', ri], `Required ${r.category} ${r.kind} cannot be met: no enabled ${r.category} device has a ${r.kind} posture`);
+  });
 }
 
 /** Checks that need the app profile: components, layout rules, scenes, the tab bar and screens. */

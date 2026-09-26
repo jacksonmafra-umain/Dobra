@@ -2183,5 +2183,104 @@
       "estimated": true,
       "$comment": "Android 16 desktop windowing on an external 2560×1440 display at an assumed 1.5 density."
     }
+  ],
+  "requirements": [
+    {
+      "category": "phone",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "phone",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "optional"
+    },
+    {
+      "category": "foldable-book",
+      "kind": "cover",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "foldable-book",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "foldable-book",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
+    },
+    {
+      "category": "foldable-book",
+      "kind": "book",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "foldable-book",
+      "kind": "tabletop",
+      "orientation": "landscape",
+      "level": "required"
+    },
+    {
+      "category": "foldable-flip",
+      "kind": "cover",
+      "orientation": "portrait",
+      "level": "required",
+      "note": "The Flip cover is wider than tall yet compact width; landscape is not wide."
+    },
+    {
+      "category": "foldable-flip",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "foldable-flip",
+      "kind": "tabletop",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "multi-fold",
+      "kind": "cover",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "multi-fold",
+      "kind": "partial",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "multi-fold",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
+    },
+    {
+      "category": "tablet",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "tablet",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
+    },
+    {
+      "category": "desktop",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
+    }
   ]
 }
