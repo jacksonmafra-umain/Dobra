@@ -1,5 +1,6 @@
-// Schema for simulator.config.json. The config is the product: it is validated on load, and any
-// problem is reported with the path of the offending value.
+// Schemas for the device catalog (catalog/catalog.json) and an app profile (profiles/*.profile.json).
+// The config is the product: it is validated on load, and any problem is reported with the path of
+// the offending value.
 import { z } from 'zod';
 
 const num = z.number();
@@ -376,13 +377,16 @@ const sceneSpec = z.strictObject({
   source: sourceRef,
 });
 
-export const configSchema = z
-  .strictObject({
+const catalogShape = {
     version: z.string(),
-    /** Figma file key the screens' frame ids live in. Required only when a screen names a frame. */
-    figmaFile: z.string().optional(),
     sources: z.record(z.string(), z.string()),
     platforms: z.strictObject({ ios: iosProfile, android: androidProfile }),
+    devices: z.array(z.discriminatedUnion('platform', [iosDevice, androidDevice])).min(1),
+};
+
+const profileShape = {
+    /** Figma file key the screens' frame ids live in. Required only when a screen names a frame. */
+    figmaFile: z.string().optional(),
     components: z.record(z.string(), componentSpec),
     scenes: z.record(z.string(), sceneSpec).optional(),
     /** Sample type styles. Sizes are pt on iOS and sp on Android; both follow the user's text size. */
@@ -396,152 +400,185 @@ export const configSchema = z
         source: sourceRef,
       }),
     }),
-    devices: z.array(z.discriminatedUnion('platform', [iosDevice, androidDevice])).min(1),
     layoutRules: z.array(layoutRule).min(1),
     tabBar: z.strictObject({ component: z.string(), items: z.array(tabItem).min(1) }),
     screens: z.array(screen).min(1),
-  })
-  .superRefine((cfg, ctx) => {
-    const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: 'custom', path, message });
-    const sources = new Set([...Object.keys(cfg.sources), 'free-resize']);
-    const checkSource = (value: string | undefined, path: (string | number)[]) => {
-      if (value !== undefined && !sources.has(value)) issue(path, `Unknown source "${value}"; add it to "sources"`);
-    };
-    const unique = (ids: string[], path: string) => {
-      const seen = new Set<string>();
-      ids.forEach((id, i) => {
-        if (seen.has(id)) issue([path, i, 'id'], `Duplicate id "${id}"`);
-        seen.add(id);
-      });
-    };
-    unique(cfg.devices.map((d) => d.id), 'devices');
-    unique(cfg.screens.map((s) => s.id), 'screens');
-    unique(cfg.layoutRules.map((r) => r.id), 'layoutRules');
+};
 
-    const android = cfg.platforms.android;
-    checkSource(android.sizeClasses.source, ['platforms', 'android', 'sizeClasses', 'source']);
-    android.navigation.rules.forEach((r, i) => checkSource(r.source, ['platforms', 'android', 'navigation', 'rules', i, 'source']));
-    const widthIds = new Set(android.sizeClasses.width.map((b) => b.id));
-    const heightIds = new Set(android.sizeClasses.height.map((b) => b.id));
-    const checkClasses = (ids: string[] | undefined, known: Set<string>, path: (string | number)[]) =>
-      ids?.forEach((id, i) => {
-        if (!known.has(id)) issue([...path, i], `Unknown window size class "${id}"; known: ${[...known].join(', ')}`);
-      });
-    android.navigation.rules.forEach((r, i) => {
-      checkClasses(r.when.width, widthIds, ['platforms', 'android', 'navigation', 'rules', i, 'when', 'width']);
-      checkClasses(r.when.height, heightIds, ['platforms', 'android', 'navigation', 'rules', i, 'when', 'height']);
+const catalogObject = z.strictObject(catalogShape);
+const configObject = z.strictObject({ ...catalogShape, ...profileShape });
+type CatalogShape = z.infer<typeof catalogObject>;
+type ConfigShape = z.infer<typeof configObject>;
+
+type Issue = (path: (string | number)[], message: string) => void;
+
+/** Shared checks for catalog and profile validation. */
+function checkers(cfg: { sources: Record<string, string>; platforms: { android: z.infer<typeof androidProfile> } }, issue: Issue) {
+  const sources = new Set([...Object.keys(cfg.sources), 'free-resize']);
+  const checkSource = (value: string | undefined, path: (string | number)[]) => {
+    if (value !== undefined && !sources.has(value)) issue(path, `Unknown source "${value}"; add it to "sources"`);
+  };
+  const unique = (ids: string[], path: string) => {
+    const seen = new Set<string>();
+    ids.forEach((id, i) => {
+      if (seen.has(id)) issue([path, i, 'id'], `Duplicate id "${id}"`);
+      seen.add(id);
     });
-    for (const axis of ['width', 'height'] as const) {
-      const list = android.sizeClasses[axis];
-      list.forEach((b, i) => {
-        if (i === 0 ? b.min !== 0 : b.min <= list[i - 1].min)
-          issue(['platforms', 'android', 'sizeClasses', axis, i, 'min'], i === 0 ? 'The first breakpoint must start at 0' : 'Breakpoints must increase');
-      });
-    }
+  };
+  const android = cfg.platforms.android;
+  const widthIds = new Set(android.sizeClasses.width.map((b) => b.id));
+  const heightIds = new Set(android.sizeClasses.height.map((b) => b.id));
+  const checkClasses = (ids: string[] | undefined, known: Set<string>, path: (string | number)[]) =>
+    ids?.forEach((id, i) => {
+      if (!known.has(id)) issue([...path, i], `Unknown window size class "${id}"; known: ${[...known].join(', ')}`);
+    });
+  return { checkSource, unique, android, widthIds, heightIds, checkClasses };
+}
 
-    for (const [id, c] of Object.entries(cfg.components)) {
-      checkSource(c.source, ['components', id, 'source']);
-      if (c.kind === 'grid' && c.gap === undefined) issue(['components', id, 'gap'], 'Grid components need a gap');
-    }
+/** Checks that only need the catalog: devices, displays, postures and platform vocabularies. */
+function checkCatalog(cfg: CatalogShape, issue: Issue) {
+  const { checkSource, unique, android, widthIds, heightIds, checkClasses } = checkers(cfg, issue);
+  unique(cfg.devices.map((d) => d.id), 'devices');
 
-    cfg.devices.forEach((d, di) => {
-      if (d.platform === 'android') {
-        checkSource(d.source, ['devices', di, 'source']);
-        for (const [displayId, disp] of Object.entries(d.displays)) {
-          const path = ['devices', di, 'displays', displayId];
-          checkSource(disp.source, [...path, 'source']);
-          checkSource(disp.insets.source, [...path, 'insets', 'source']);
-          if (disp.pixels) {
-            for (const axis of ['width', 'height'] as const) {
-              const derived = disp.pixels[axis] / disp.density;
-              if (Math.abs(derived - disp.size[axis]) > 1.5 && !disp.estimated)
-                issue([...path, 'size', axis], `${disp.size[axis]} dp does not match ${disp.pixels[axis]} px / ${disp.density} = ${derived.toFixed(1)} dp; mark it estimated or fix it`);
-            }
+  checkSource(android.sizeClasses.source, ['platforms', 'android', 'sizeClasses', 'source']);
+  android.navigation.rules.forEach((r, i) => checkSource(r.source, ['platforms', 'android', 'navigation', 'rules', i, 'source']));
+  android.navigation.rules.forEach((r, i) => {
+    checkClasses(r.when.width, widthIds, ['platforms', 'android', 'navigation', 'rules', i, 'when', 'width']);
+    checkClasses(r.when.height, heightIds, ['platforms', 'android', 'navigation', 'rules', i, 'when', 'height']);
+  });
+  for (const axis of ['width', 'height'] as const) {
+    const list = android.sizeClasses[axis];
+    list.forEach((b, i) => {
+      if (i === 0 ? b.min !== 0 : b.min <= list[i - 1].min)
+        issue(['platforms', 'android', 'sizeClasses', axis, i, 'min'], i === 0 ? 'The first breakpoint must start at 0' : 'Breakpoints must increase');
+    });
+  }
+
+  cfg.devices.forEach((d, di) => {
+    if (d.platform === 'android') {
+      checkSource(d.source, ['devices', di, 'source']);
+      for (const [displayId, disp] of Object.entries(d.displays)) {
+        const path = ['devices', di, 'displays', displayId];
+        checkSource(disp.source, [...path, 'source']);
+        checkSource(disp.insets.source, [...path, 'insets', 'source']);
+        if (disp.pixels) {
+          for (const axis of ['width', 'height'] as const) {
+            const derived = disp.pixels[axis] / disp.density;
+            if (Math.abs(derived - disp.size[axis]) > 1.5 && !disp.estimated)
+              issue([...path, 'size', axis], `${disp.size[axis]} dp does not match ${disp.pixels[axis]} px / ${disp.density} = ${derived.toFixed(1)} dp; mark it estimated or fix it`);
           }
         }
-        d.postures?.forEach((p, pi) => {
-          const path = ['devices', di, 'postures', pi];
-          const disp = d.displays[p.display];
-          if (!disp) return issue([...path, 'display'], `Posture uses display "${p.display}", which device "${d.id}" does not have`);
-          const hinges = new Set((disp.hinges ?? []).map((h) => h.id));
-          p.features.forEach((f, fi) => {
-            if (!hinges.has(f.hinge)) issue([...path, 'features', fi, 'hinge'], `Display "${p.display}" has no hinge "${f.hinge}"`);
-          });
+      }
+      d.postures?.forEach((p, pi) => {
+        const path = ['devices', di, 'postures', pi];
+        const disp = d.displays[p.display];
+        if (!disp) return issue([...path, 'display'], `Posture uses display "${p.display}", which device "${d.id}" does not have`);
+        const hinges = new Set((disp.hinges ?? []).map((h) => h.id));
+        p.features.forEach((f, fi) => {
+          if (!hinges.has(f.hinge)) issue([...path, 'features', fi, 'hinge'], `Display "${p.display}" has no hinge "${f.hinge}"`);
         });
-        for (const [displayId, disp] of Object.entries(d.displays)) {
-          disp.hinges?.forEach((h, hi) => {
-            const path = ['devices', di, 'displays', displayId, 'hinges', hi];
-            checkSource(h.source, [...path, 'source']);
-            const extent = h.axis === 'vertical' ? disp.size.width : disp.size.height;
-            if (h.position + h.width > extent) issue([...path, 'position'], `Hinge runs past the display edge (${extent} dp)`);
-          });
-        }
-        return;
-      }
+      });
       for (const [displayId, disp] of Object.entries(d.displays)) {
-        for (const [o, spec] of Object.entries(disp.orientations)) {
-          if (spec) checkSource(spec.safeArea.source, ['devices', di, 'displays', displayId, 'orientations', o, 'safeArea', 'source']);
-        }
+        disp.hinges?.forEach((h, hi) => {
+          const path = ['devices', di, 'displays', displayId, 'hinges', hi];
+          checkSource(h.source, [...path, 'source']);
+          const extent = h.axis === 'vertical' ? disp.size.width : disp.size.height;
+          if (h.position + h.width > extent) issue([...path, 'position'], `Hinge runs past the display edge (${extent} dp)`);
+        });
       }
-      d.poses?.forEach((p, pi) => {
-        if (!d.displays[p.display]) issue(['devices', di, 'poses', pi, 'display'], `Pose uses display "${p.display}", which device "${d.id}" does not have`);
-      });
-    });
-
-    const fallbacks = new Set<string>();
-    cfg.layoutRules.forEach((r, ri) => {
-      const path = ['layoutRules', ri];
-      checkSource(r.source, [...path, 'source']);
-      const m = r.match;
-      if (r.platform === 'ios' && (m.width || m.height))
-        issue([...path, 'match'], 'An iOS rule is keyed by UIKit size classes (horizontal/vertical), not width/height classes');
-      if (r.platform === 'android' && (m.horizontal || m.vertical))
-        issue([...path, 'match'], 'An Android rule is keyed by window size classes (width/height), not compact/regular');
-      checkClasses(m.width, widthIds, [...path, 'match', 'width']);
-      checkClasses(m.height, heightIds, [...path, 'match', 'height']);
-      if (Object.keys(m).length === 0) fallbacks.add(r.platform);
-      else if (fallbacks.has(r.platform)) issue([...path], `Rule "${r.id}" comes after the ${r.platform} fallback, so it never matches`);
-      for (const [id, spec] of Object.entries(cfg.components)) {
-        const value = r.components[id];
-        if (!value) {
-          issue([...path, 'components'], `Missing settings for component "${id}"`);
-          continue;
-        }
-        const parsed = RULE_BY_KIND[spec.kind].safeParse(value);
-        if (!parsed.success) issue([...path, 'components', id], `Settings do not fit a ${spec.kind} component: ${parsed.error.issues[0].message}`);
-        if (!parsed.success) continue;
-        const form = 'grid' in value ? 'grid' : 'flex' in value ? 'flex' : 'perRow';
-        if (spec.kind === 'grid' && !(spec.forms ?? ['perRow']).includes(form))
-          issue([...path, 'components', id], `Component "${id}" does not accept the ${form} form; allowed: ${(spec.forms ?? ['perRow']).join(', ')}`);
-        if (form === 'grid') {
-          const g = (value as z.infer<typeof gridForm>).grid;
-          for (const [area, cols] of Object.entries(g.areas ?? {}))
-            if (cols.some((c) => c >= g.columns.length)) issue([...path, 'components', id, 'grid', 'areas', area], `Span runs past the ${g.columns.length} tracks`);
-        }
-      }
-      for (const id of Object.keys(r.components)) {
-        if (!cfg.components[id]) issue([...path, 'components', id], `Unknown component "${id}"; add it to "components"`);
-      }
-    });
-    for (const p of PLATFORMS) {
-      if (!fallbacks.has(p)) issue(['layoutRules'], `Add a ${p} fallback rule with "match": {} after the other ${p} rules`);
+      return;
     }
-
-    cfg.screens.forEach((s, si) => {
-      if (s.scene && !cfg.scenes?.[s.scene]) issue(['screens', si, 'scene'], `Unknown scene "${s.scene}"; add it to "scenes"`);
-    });
-    for (const [id, sc] of Object.entries(cfg.scenes ?? {})) checkSource(sc.source, ['scenes', id, 'source']);
-
-    const tabs = new Set(cfg.tabBar.items.map((t) => t.id));
-    cfg.screens.forEach((s, si) => {
-      if (!tabs.has(s.tab)) issue(['screens', si, 'tab'], `Screen "${s.id}" selects tab "${s.tab}", which the tab bar does not have`);
-      if (s.figma && !cfg.figmaFile) issue(['figmaFile'], `Screen "${s.id}" names Figma frames, so the config needs a "figmaFile"`);
-      if (!s.figma && !s.source) issue(['screens', si, 'source'], `Screen "${s.id}" has no Figma frame, so it needs a "source" explaining where it comes from`);
-      s.components.forEach((c, ci) => {
-        if (!cfg.components[c]) issue(['screens', si, 'components', ci], `Unknown component "${c}"`);
-      });
+    for (const [displayId, disp] of Object.entries(d.displays)) {
+      for (const [o, spec] of Object.entries(disp.orientations)) {
+        if (spec) checkSource(spec.safeArea.source, ['devices', di, 'displays', displayId, 'orientations', o, 'safeArea', 'source']);
+      }
+    }
+    d.poses?.forEach((p, pi) => {
+      if (!d.displays[p.display]) issue(['devices', di, 'poses', pi, 'display'], `Pose uses display "${p.display}", which device "${d.id}" does not have`);
     });
   });
+
+}
+
+/** Checks that need the app profile: components, layout rules, scenes, the tab bar and screens. */
+function checkProfile(cfg: ConfigShape, issue: Issue) {
+  const { checkSource, unique, widthIds, heightIds, checkClasses } = checkers(cfg, issue);
+  unique(cfg.screens.map((s) => s.id), 'screens');
+  unique(cfg.layoutRules.map((r) => r.id), 'layoutRules');
+
+  for (const [id, c] of Object.entries(cfg.components)) {
+    checkSource(c.source, ['components', id, 'source']);
+    if (c.kind === 'grid' && c.gap === undefined) issue(['components', id, 'gap'], 'Grid components need a gap');
+  }
+
+  const fallbacks = new Set<string>();
+  cfg.layoutRules.forEach((r, ri) => {
+    const path = ['layoutRules', ri];
+    checkSource(r.source, [...path, 'source']);
+    const m = r.match;
+    if (r.platform === 'ios' && (m.width || m.height))
+      issue([...path, 'match'], 'An iOS rule is keyed by UIKit size classes (horizontal/vertical), not width/height classes');
+    if (r.platform === 'android' && (m.horizontal || m.vertical))
+      issue([...path, 'match'], 'An Android rule is keyed by window size classes (width/height), not compact/regular');
+    checkClasses(m.width, widthIds, [...path, 'match', 'width']);
+    checkClasses(m.height, heightIds, [...path, 'match', 'height']);
+    if (Object.keys(m).length === 0) fallbacks.add(r.platform);
+    else if (fallbacks.has(r.platform)) issue([...path], `Rule "${r.id}" comes after the ${r.platform} fallback, so it never matches`);
+    for (const [id, spec] of Object.entries(cfg.components)) {
+      const value = r.components[id];
+      if (!value) {
+        issue([...path, 'components'], `Missing settings for component "${id}"`);
+        continue;
+      }
+      const parsed = RULE_BY_KIND[spec.kind].safeParse(value);
+      if (!parsed.success) issue([...path, 'components', id], `Settings do not fit a ${spec.kind} component: ${parsed.error.issues[0].message}`);
+      if (!parsed.success) continue;
+      const form = 'grid' in value ? 'grid' : 'flex' in value ? 'flex' : 'perRow';
+      if (spec.kind === 'grid' && !(spec.forms ?? ['perRow']).includes(form))
+        issue([...path, 'components', id], `Component "${id}" does not accept the ${form} form; allowed: ${(spec.forms ?? ['perRow']).join(', ')}`);
+      if (form === 'grid') {
+        const g = (value as z.infer<typeof gridForm>).grid;
+        for (const [area, cols] of Object.entries(g.areas ?? {}))
+          if (cols.some((c) => c >= g.columns.length)) issue([...path, 'components', id, 'grid', 'areas', area], `Span runs past the ${g.columns.length} tracks`);
+      }
+    }
+    for (const id of Object.keys(r.components)) {
+      if (!cfg.components[id]) issue([...path, 'components', id], `Unknown component "${id}"; add it to "components"`);
+    }
+  });
+  for (const p of PLATFORMS) {
+    if (!fallbacks.has(p)) issue(['layoutRules'], `Add a ${p} fallback rule with "match": {} after the other ${p} rules`);
+  }
+
+  cfg.screens.forEach((s, si) => {
+    if (s.scene && !cfg.scenes?.[s.scene]) issue(['screens', si, 'scene'], `Unknown scene "${s.scene}"; add it to "scenes"`);
+  });
+  for (const [id, sc] of Object.entries(cfg.scenes ?? {})) checkSource(sc.source, ['scenes', id, 'source']);
+
+  const tabs = new Set(cfg.tabBar.items.map((t) => t.id));
+  cfg.screens.forEach((s, si) => {
+    if (!tabs.has(s.tab)) issue(['screens', si, 'tab'], `Screen "${s.id}" selects tab "${s.tab}", which the tab bar does not have`);
+    if (s.figma && !cfg.figmaFile) issue(['figmaFile'], `Screen "${s.id}" names Figma frames, so the config needs a "figmaFile"`);
+    if (!s.figma && !s.source) issue(['screens', si, 'source'], `Screen "${s.id}" has no Figma frame, so it needs a "source" explaining where it comes from`);
+    s.components.forEach((c, ci) => {
+      if (!cfg.components[c]) issue(['screens', si, 'components', ci], `Unknown component "${c}"`);
+    });
+  });
+}
+
+/** A device catalog on its own. The plugin validates catalogs with this; it knows nothing about screens. */
+export const catalogSchema = catalogObject.superRefine((cat, ctx) => {
+  checkCatalog(cat, (path, message) => ctx.addIssue({ code: 'custom', path, message }));
+});
+
+/** A catalog and an app profile together: what the simulator runs on. */
+export const configSchema = configObject.superRefine((cfg, ctx) => {
+  const issue: Issue = (path, message) => ctx.addIssue({ code: 'custom', path, message });
+  checkCatalog(cfg, issue);
+  checkProfile(cfg, issue);
+});
+
+export type Catalog = z.infer<typeof catalogSchema>;
 
 export type SimulatorConfig = z.infer<typeof configSchema>;
 export type GridRule = z.infer<typeof gridRule>;
@@ -552,7 +589,7 @@ export type TabBarRule = z.infer<typeof tabBarRule>;
 
 export class ConfigError extends Error {
   constructor(public readonly issues: string[]) {
-    super(`simulator.config.json is invalid:\n${issues.map((i) => `  • ${i}`).join('\n')}`);
+    super(`Config is invalid:\n${issues.map((i) => `  • ${i}`).join('\n')}`);
     this.name = 'ConfigError';
   }
 }
@@ -574,11 +611,20 @@ export function formatPath(path: PropertyKey[]): string {
   return path.reduce<string>((out, key) => (typeof key === 'number' ? `${out}[${key}]` : out ? `${out}.${String(key)}` : String(key)), '');
 }
 
-/** Validates raw config JSON and throws a ConfigError listing every problem with its path. */
-export function parseConfig(raw: unknown): SimulatorConfig {
-  const result = configSchema.safeParse(stripComments(raw));
+function parseWith<T>(schema: z.ZodType<T>, raw: unknown): T {
+  const result = schema.safeParse(stripComments(raw));
   if (!result.success) {
     throw new ConfigError(result.error.issues.map((i) => `${formatPath(i.path) || '(root)'}: ${i.message}`));
   }
   return result.data;
+}
+
+/** Validates raw config JSON and throws a ConfigError listing every problem with its path. */
+export function parseConfig(raw: unknown): SimulatorConfig {
+  return parseWith(configSchema, raw);
+}
+
+/** Validates a catalog on its own (no app profile). */
+export function parseCatalog(raw: unknown): Catalog {
+  return parseWith(catalogSchema, raw);
 }
