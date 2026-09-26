@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CoverageMatrix } from '@hinge/core/coverage';
-import type { TagCandidate, ToMain, ToUi } from '../messages';
+import type { Command, TagCandidate, ToMain, ToUi } from '../messages';
 import './app.css';
 
-type Tab = 'presets' | 'tag' | 'coverage';
+type Tab = Command;
 type Target = { key: string; name: string; category: string };
 
 const post = (msg: ToMain) => parent.postMessage({ pluginMessage: msg }, '*');
@@ -19,7 +19,7 @@ export function App() {
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      const msg = e.data?.pluginMessage as (ToUi & { command?: Tab }) | undefined;
+      const msg = e.data?.pluginMessage as ToUi | undefined;
       if (!msg) return;
       if (msg.command) setTab(msg.command);
       if (msg.type === 'targets') setTargets(msg.items);
@@ -32,6 +32,8 @@ export function App() {
       }
     };
     window.addEventListener('message', onMessage);
+    // Only now can replies be received: ask for the opening view.
+    post({ type: 'ready' });
     return () => window.removeEventListener('message', onMessage);
   }, []);
 

@@ -2,6 +2,7 @@
 import type { CoverageMatrix } from '@hinge/core/coverage';
 
 export type ToMain =
+  | { type: 'ready' }
   | { type: 'list-targets' }
   | { type: 'create-presets'; keys: string[] }
   | { type: 'scan-tags' }
@@ -17,9 +18,12 @@ export interface TagCandidate {
   nearest?: string;
 }
 
-export type ToUi =
+export type Command = 'presets' | 'tag' | 'coverage';
+
+export type ToUi = (
   | { type: 'targets'; items: { key: string; name: string; category: string }[] }
   | { type: 'created'; frameIds: string[] }
   | { type: 'tag-candidates'; frames: TagCandidate[] }
   | { type: 'coverage'; matrix: CoverageMatrix }
-  | { type: 'error'; message: string };
+  | { type: 'error'; message: string }
+) & { command?: Command };

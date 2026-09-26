@@ -34,6 +34,8 @@ function create(api: FigmaApi, targets: Target[]): ToUi {
 export async function handle(api: FigmaApi, msg: ToMain): Promise<ToUi | null> {
   try {
     switch (msg.type) {
+      case 'ready':
+        return null;
       case 'list-targets':
         return {
           type: 'targets',
