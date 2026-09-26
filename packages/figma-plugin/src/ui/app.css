@@ -1,0 +1,73 @@
+/* Figma provides --figma-color-* when the plugin opens with themeColors: true. */
+body {
+  margin: 0;
+  font: 12px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--figma-color-text, #1e1e1e);
+  background: var(--figma-color-bg, #ffffff);
+}
+main {
+  padding: 8px 12px 16px;
+}
+button,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--figma-color-bg-secondary, #f5f5f5);
+  border: 1px solid var(--figma-color-border, #e6e6e6);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+button.primary {
+  background: var(--figma-color-bg-brand, #0d99ff);
+  color: var(--figma-color-text-onbrand, #ffffff);
+  border-color: transparent;
+  margin-bottom: 8px;
+}
+button:disabled {
+  opacity: 0.5;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.tabs button[aria-pressed='true'] {
+  border-color: var(--figma-color-border-brand, #0d99ff);
+}
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 2px 0;
+}
+.card {
+  display: grid;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--figma-color-border, #e6e6e6);
+}
+.muted {
+  color: var(--figma-color-text-secondary, #757575);
+}
+.notice {
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.notice--error {
+  background: var(--figma-color-bg-danger-tertiary, #ffe0e0);
+}
+.notice--info {
+  background: var(--figma-color-bg-secondary, #f5f5f5);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+td,
+th {
+  text-align: left;
+  padding: 2px 4px;
+}
+.summary {
+  padding-left: 16px;
+}
