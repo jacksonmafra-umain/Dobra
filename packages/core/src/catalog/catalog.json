@@ -2,7 +2,7 @@
   "$comment": "Generic device catalog: devices, displays, postures, folds and platform profiles. Sizes are in the unit of the device platform (pt on iOS, dp on Android). App-specific screens and layout rules live in a profile.",
   "version": "0.5.0",
   "sources": {
-    "figma-tokens": "Sample design system: device and orientation tokens (hSafeAreaInset 24/62, bottomSafeAreaInset 21)",
+    "figma-tokens": "Design tokens: device and orientation safe-area insets (hSafeAreaInset 24/62, bottomSafeAreaInset 21)",
     "apple-device": "Apple device spec (not in our Figma: Figma frames are 375×812 portrait / 812 landscape)",
     "estimated": "Estimated: not confirmed. Verify in Xcode 27.1 Device Hub.",
     "androidx-window": "androidx.window documentation (WindowSizeClass, FoldingFeature, WindowInsets): developer.android.com/develop/ui/compose/layouts/adaptive",
