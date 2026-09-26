@@ -5,10 +5,10 @@
   "type": "module",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
-    "dev": "npm run dev -w @hinge/simulator",
+    "dev": "npm run dev -w @hinge/simulator --",
     "build": "npm run build -w @hinge/simulator",
     "build:single": "npm run build:single -w @hinge/simulator",
-    "preview": "npm run preview -w @hinge/simulator",
+    "preview": "npm run preview -w @hinge/simulator --",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   }
