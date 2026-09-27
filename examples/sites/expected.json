@@ -1,0 +1,5 @@
+{
+  "$comment": "What the website checks must find on each page. expect: rule ids that must appear on that target. forbid: rule ids that must not. Rule ids outside both lists are not asserted. Transitions go from the cover display to the inner display of the same device without a reload. Checks on folded or spanned targets assume viewport-segment emulation.",
+  "pages": [],
+  "transitions": []
+}
