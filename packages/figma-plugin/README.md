@@ -67,7 +67,7 @@ chrome. The patterns live in `src/geo.ts` (`INTERACTIVE_NAME`, `CHROME_NAME`).
 
 ## What a tag stores
 
-Shared plugin data in the `hinge` namespace, readable by the Figma REST API and the web report:
+Shared plugin data in the `dobra` namespace, readable by the Figma REST API and the web report:
 
 - `target` — the target key, `device/display/posture/orientation`, for example
   `galaxy-z-fold-7/inner/book/landscape` (`-` when the device has no posture).

@@ -18,7 +18,7 @@ npm run build:report        # one self-contained dist/index.html to open or host
 3. Press **Check file**.
 
 The report reads the file's pages, the frames on them (it opens each Section and Group to find the
-frames inside), each frame's layers and the tag the Hinge plugin stores (`hinge` / `target`). Frames without a tag are
+frames inside), each frame's layers and the tag the Dobra plugin stores (`dobra` / `target`). Frames without a tag are
 matched by name, then by size, and marked as lower confidence.
 
 ### The token

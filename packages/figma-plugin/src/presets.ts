@@ -2,7 +2,7 @@
 import type { PresetFrame } from '@dobra/core/presets';
 import type { FigmaApi } from './api';
 
-export const NAMESPACE = 'hinge';
+export const NAMESPACE = 'dobra';
 export const OVERLAY_NAME = '⎔ hinge-overlay';
 const GAP = 80;
 const RED = { r: 0.94, g: 0.27, b: 0.27 };

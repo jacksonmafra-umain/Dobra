@@ -5,7 +5,7 @@ import { FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
 
 const box = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
-const home: RestNode = { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { hinge: { target: 'surface-duo-2/spanned/spanned/landscape' } }, children: [] };
+const home: RestNode = { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { dobra: { target: 'surface-duo-2/spanned/spanned/landscape' } }, children: [] };
 const cover: RestNode = { id: '1:3', name: 'Cover', type: 'FRAME', absoluteBoundingBox: box(2000, 0, 352, 339), children: [] };
 const section: RestNode = { id: '1:2', name: 'Flows', type: 'SECTION', children: [cover] };
 // depth=2 returns a page's direct children only: the section comes back without its frames.
