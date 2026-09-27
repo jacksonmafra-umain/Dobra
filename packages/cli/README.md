@@ -1,6 +1,6 @@
-# Hinge CLI — website checks
+# Dobra CLI — website checks
 
-`hinge check site <url>` opens a website in Chromium at each device target, emulates the hinge
+`dobra check site <url>` opens a website in Chromium at each device target, emulates the hinge
 where the device has one, and runs the same foldable rules as the Figma plugin and the web report.
 It also checks whether the page lays itself out again when a foldable unfolds. It writes a report
 JSON that the web report opens, an optional Markdown summary, and an exit code for CI.
@@ -10,13 +10,13 @@ JSON that the web report opens, an optional Markdown summary, and an exit code f
 ```bash
 npm install
 npx playwright install chromium   # once: downloads Playwright's Chromium build
-npm run build:cli                 # writes packages/cli/dist/hinge.mjs
+npm run build:cli                 # writes packages/cli/dist/dobra.mjs
 ```
 
 ## Usage
 
 ```bash
-npm run hinge -- check site https://example.com --md foldable-report.md
+npm run dobra -- check site https://example.com --md foldable-report.md
 ```
 
 | Option | Meaning |
@@ -86,7 +86,7 @@ With `--fail-on never`, findings never fail the run, but a target that could not
 
 ```yaml
 - run: npm ci && npx playwright install --with-deps chromium && npm run build:cli
-- run: npm run hinge -- check site ${{ env.PREVIEW_URL }} --out foldable-report.json --md foldable-report.md
+- run: npm run dobra -- check site ${{ env.PREVIEW_URL }} --out foldable-report.json --md foldable-report.md
 - uses: actions/upload-artifact@v4
   if: always()
   with: { name: foldable-report, path: "foldable-report.*" }
@@ -98,7 +98,7 @@ finding per device.
 ## Tests
 
 ```bash
-npm test -w @hinge/cli
+npm test -w @dobra/cli
 ```
 
 The browser tests start Chromium against local fixture pages in `src/test/fixtures`.

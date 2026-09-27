@@ -1,6 +1,6 @@
 // CSS variables the sample screen lays out with: insets, page margins and toolbar insets.
-import type { Environment } from '@hinge/core/engine/environment';
-import type { Layout } from '@hinge/core/engine/layout';
+import type { Environment } from '@dobra/core/engine/environment';
+import type { Layout } from '@dobra/core/engine/layout';
 
 /** Toolbar content never sits closer than this to the window edge. */
 export const TOOLBAR_MIN_INSET = 16;

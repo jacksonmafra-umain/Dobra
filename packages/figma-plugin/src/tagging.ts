@@ -1,7 +1,7 @@
 // Tag frames: suggest a target for frames the plugin did not create, then store the designer's choice.
-import type { EnvConfig } from '@hinge/core/engine/environment';
-import { matchFrame } from '@hinge/core/match';
-import { parseTargetKey, targetKey } from '@hinge/core/targets';
+import type { EnvConfig } from '@dobra/core/engine/environment';
+import { matchFrame } from '@dobra/core/match';
+import { parseTargetKey, targetKey } from '@dobra/core/targets';
 import type { FigmaApi } from './api';
 import type { TagCandidate } from './messages';
 import { NAMESPACE } from './presets';

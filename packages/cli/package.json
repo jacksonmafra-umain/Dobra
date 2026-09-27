@@ -1,16 +1,16 @@
 {
-  "name": "@hinge/cli",
+  "name": "@dobra/cli",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "bin": { "hinge": "dist/hinge.mjs" },
+  "bin": { "dobra": "dist/dobra.mjs" },
   "scripts": {
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
-    "@hinge/core": "*",
+    "@dobra/core": "*",
     "playwright": "^1.63.0"
   },
   "devDependencies": {

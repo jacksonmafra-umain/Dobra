@@ -1,8 +1,8 @@
 // One browser context per device target: size, device scale, user agent and, on Android foldables,
 // the hinge through the Chrome DevTools display-feature override (spec §7.1–7.2).
 import type { Browser, BrowserContext, CDPSession, Page } from 'playwright';
-import { resolveTarget, type Target } from '@hinge/core/targets';
-import type { EnvConfig } from '@hinge/core/engine/environment';
+import { resolveTarget, type Target } from '@dobra/core/targets';
+import type { EnvConfig } from '@dobra/core/engine/environment';
 
 export interface Fold {
   orientation: 'vertical' | 'horizontal';

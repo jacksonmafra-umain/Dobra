@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import type { Finding } from '@hinge/core/engine/checks';
-import { buildReport, parseReport, type Report } from '@hinge/core/report';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import type { Finding } from '@dobra/core/engine/checks';
+import { buildReport, parseReport, type Report } from '@dobra/core/report';
 import { run } from './main';
 
 const catalog = loadCatalog();
@@ -35,7 +35,7 @@ describe('run', () => {
   it('prints the usage for help and returns 2', async () => {
     const h = harness(report());
     expect(await run(['--help'], h.io)).toBe(2);
-    expect(h.out.join('\n')).toMatch(/Usage: hinge check site/);
+    expect(h.out.join('\n')).toMatch(/Usage: dobra check site/);
   });
 
   it('writes the report, summarises each frame and returns 0 when clean', async () => {

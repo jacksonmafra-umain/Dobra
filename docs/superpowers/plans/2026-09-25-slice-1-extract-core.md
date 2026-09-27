@@ -24,7 +24,7 @@ slice 1.
 - `core` ships as TypeScript source: `"exports": {"./*": "./src/*.ts"}`; Vite and esbuild consume
   it directly, no build step (spec §3).
 - npm workspaces; no extra build orchestrator (spec §3).
-- Package names use the working name: `@hinge/core`, `@hinge/simulator` (spec header).
+- Package names use the working name: `@dobra/core`, `@dobra/simulator` (spec header).
 - Commits in English, microcommits, never mention the assistant (no trailers, no footers).
 - Never push to or merge into `main`. The PR closes a labeled issue (`enhancement`, `area:core`).
 - Base branch: `origin/chore/remove-brand` (PR #5). Work branch: `refactor/extract-core`.
@@ -37,7 +37,7 @@ slice 1.
    to the workspace (checked in Task 1 Step 5).
 2. The single-file build (`build:single`) still produces one HTML file with images inlined —
    expected: run in Task 1 Step 5 and Task 4 Step 5.
-3. Importing JSON through the package (`@hinge/core/config/simulator.config.json`) resolves in
+3. Importing JSON through the package (`@dobra/core/config/simulator.config.json`) resolves in
    Vite, Vitest and `tsc` — expected: the `./*.json` export entry wins over `./*` (test in Task 2).
 4. Something in core quietly uses a DOM or React API — expected: core's `tsconfig` has no `DOM`
    lib and no React types, so `tsc` fails (Task 2 Step 6).
@@ -56,7 +56,7 @@ slice 1.
 - Modify: root `package.json` (becomes the workspace root), `package-lock.json` (regenerated)
 
 **Interfaces:**
-- Produces: workspace `@hinge/simulator` with scripts `dev`, `build`, `build:single`, `preview`,
+- Produces: workspace `@dobra/simulator` with scripts `dev`, `build`, `build:single`, `preview`,
   `typecheck`, `test`, `test:watch`; root scripts of the same names delegating to it.
 
 - [ ] **Step 1: Move the app**
@@ -71,7 +71,7 @@ git mv index.html vite.config.ts vitest.config.ts tsconfig.json src apps/simulat
 
 ```json
 {
-  "name": "@hinge/simulator",
+  "name": "@dobra/simulator",
   "private": true,
   "version": "0.5.0",
   "type": "module",
@@ -109,16 +109,16 @@ These are the root `package.json` versions on `origin/chore/remove-brand`; do no
 
 ```json
 {
-  "name": "size-class-simulator",
+  "name": "dobra",
   "private": true,
   "version": "0.5.0",
   "type": "module",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
-    "dev": "npm run dev -w @hinge/simulator",
-    "build": "npm run build -w @hinge/simulator",
-    "build:single": "npm run build:single -w @hinge/simulator",
-    "preview": "npm run preview -w @hinge/simulator",
+    "dev": "npm run dev -w @dobra/simulator",
+    "build": "npm run build -w @dobra/simulator",
+    "build:single": "npm run build:single -w @dobra/simulator",
+    "preview": "npm run preview -w @dobra/simulator",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   }
@@ -128,7 +128,7 @@ These are the root `package.json` versions on `origin/chore/remove-brand`; do no
 - [ ] **Step 4: Reinstall**
 
 Run: `npm install`
-Expected: exits 0; `package-lock.json` lists `apps/simulator`; `node_modules/@hinge/simulator` is a
+Expected: exits 0; `package-lock.json` lists `apps/simulator`; `node_modules/@dobra/simulator` is a
 symlink.
 
 - [ ] **Step 5: Verify from the root**
@@ -152,24 +152,24 @@ git commit -m "Move the simulator into an npm workspace under apps/simulator"
 - Move (git mv): `apps/simulator/src/engine/*` and `apps/simulator/src/config/*` →
   `packages/core/src/engine/`, `packages/core/src/config/`
 - Create shims: one file per moved non-test module at its old path
-- Modify: `apps/simulator/package.json` (add `@hinge/core`, drop `zod`),
+- Modify: `apps/simulator/package.json` (add `@dobra/core`, drop `zod`),
   `apps/simulator/src/sample/art.test.ts` (JSON import)
 
 **Interfaces:**
-- Produces: `@hinge/core/engine/<module>` and `@hinge/core/config/<module>` for every moved module
+- Produces: `@dobra/core/engine/<module>` and `@dobra/core/config/<module>` for every moved module
   (`android`, `bars`, `diff`, `environment`, `folds`, `ios`, `layout`, `modal`, `sizeClass`,
-  `load`, `schema`, `types`), and `@hinge/core/config/simulator.config.json`.
+  `load`, `schema`, `types`), and `@dobra/core/config/simulator.config.json`.
 
 - [ ] **Step 1: Write the failing test** `apps/simulator/src/core.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
 import { splitRegions as viaShim } from './engine/folds';
-import { splitRegions } from '@hinge/core/engine/folds';
-import { loadConfig } from '@hinge/core/config/load';
-import raw from '@hinge/core/config/simulator.config.json';
+import { splitRegions } from '@dobra/core/engine/folds';
+import { loadConfig } from '@dobra/core/config/load';
+import raw from '@dobra/core/config/simulator.config.json';
 
-describe('@hinge/core', () => {
+describe('@dobra/core', () => {
   it('is what the old engine path re-exports', () => {
     expect(viaShim).toBe(splitRegions);
   });
@@ -182,15 +182,15 @@ describe('@hinge/core', () => {
 
 - [ ] **Step 2: Run it**
 
-Run: `npm test -w @hinge/simulator -- src/core.test.ts`
-Expected: FAIL — `Failed to resolve import "@hinge/core/engine/folds"`.
+Run: `npm test -w @dobra/simulator -- src/core.test.ts`
+Expected: FAIL — `Failed to resolve import "@dobra/core/engine/folds"`.
 
 - [ ] **Step 3: Create the package**
 
 `packages/core/package.json`:
 ```json
 {
-  "name": "@hinge/core",
+  "name": "@dobra/core",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -252,7 +252,7 @@ mkdir -p apps/simulator/src/engine apps/simulator/src/config
 for f in packages/core/src/engine/*.ts packages/core/src/config/*.ts; do
   case "$f" in *.test.ts) continue ;; esac
   dir=$(basename "$(dirname "$f")"); mod=$(basename "$f" .ts)
-  printf "// Moved to @hinge/core. This re-export keeps old imports working until they are rewritten.\nexport * from '@hinge/core/%s/%s';\n" "$dir" "$mod" > "apps/simulator/src/$dir/$mod.ts"
+  printf "// Moved to @dobra/core. This re-export keeps old imports working until they are rewritten.\nexport * from '@dobra/core/%s/%s';\n" "$dir" "$mod" > "apps/simulator/src/$dir/$mod.ts"
 done
 ```
 `export *` does not re-export a default export; none of the moved modules has one (checked with
@@ -260,10 +260,10 @@ done
 
 - [ ] **Step 5: Point the app at the package**
 
-In `apps/simulator/package.json` add `"@hinge/core": "*"` to `dependencies` and remove `zod`
+In `apps/simulator/package.json` add `"@dobra/core": "*"` to `dependencies` and remove `zod`
 (core owns it). In `apps/simulator/src/sample/art.test.ts` change
 `import raw from '../config/simulator.config.json';` to
-`import raw from '@hinge/core/config/simulator.config.json';`. Then `npm install`.
+`import raw from '@dobra/core/config/simulator.config.json';`. Then `npm install`.
 
 - [ ] **Step 6: Run everything**
 
@@ -278,11 +278,11 @@ Also run: `grep -rnE "from 'react|document\.|window\." packages/core/src` → no
 ```bash
 git add packages/core/package.json packages/core/tsconfig.json packages/core/vitest.config.ts package-lock.json
 git add -A packages/core/src apps/simulator/src/engine apps/simulator/src/config
-git commit -m "Move the engine and config into @hinge/core, with re-exports at the old paths"
+git commit -m "Move the engine and config into @dobra/core, with re-exports at the old paths"
 git add apps/simulator/package.json apps/simulator/src/core.test.ts apps/simulator/src/sample/art.test.ts package-lock.json
-git commit -m "Consume @hinge/core from the simulator and test the package boundary"
+git commit -m "Consume @dobra/core from the simulator and test the package boundary"
 ```
-If the first commit alone does not build (the app must depend on `@hinge/core` to resolve the
+If the first commit alone does not build (the app must depend on `@dobra/core` to resolve the
 shims), fold the `apps/simulator/package.json` change into it and keep the test in the second.
 
 ### Task 3: Pure collision geometry in core, the DOM hook as an adapter
@@ -292,7 +292,7 @@ shims), fold the `apps/simulator/package.json` change into it and keep the test 
 - Modify: `apps/simulator/src/sample/collisions.ts`
 
 **Interfaces:**
-- Produces (in `@hinge/core/collisions`):
+- Produces (in `@dobra/core/collisions`):
   - `interface CollisionZone { label: string; rect: Rect; scrollAxis: 'x' | 'none' }`
   - `interface CollisionSubject { id: string; rect: Rect; scrolls: boolean }`
   - `interface CollisionHit { id: string; zone: string }`
@@ -301,8 +301,8 @@ shims), fold the `apps/simulator/package.json` change into it and keep the test 
   - `collisionZones(env: Pick<Environment, 'folds' | 'reservedRegions'>): CollisionZone[]`
   - `findCollisions(subjects: CollisionSubject[], zones: CollisionZone[]): CollisionHit[]` —
     first matching zone per subject, in subject order.
-- Consumes: `Rect` from `@hinge/core/config/types`; `Environment` from
-  `@hinge/core/engine/environment`; `FoldFeature` from `@hinge/core/engine/folds`.
+- Consumes: `Rect` from `@dobra/core/config/types`; `Environment` from
+  `@dobra/core/engine/environment`; `FoldFeature` from `@dobra/core/engine/folds`.
 - Spec note: §3.2 names `findCollisions(nodes: GeoNode[], zones: Rect[])`. `GeoNode` does not
   exist until the checker slice; this slice uses `CollisionSubject`, which `GeoNode` will satisfy
   (it has `id` and `rect`).
@@ -363,7 +363,7 @@ describe('collision geometry', () => {
 
 - [ ] **Step 2: Run it**
 
-Run: `npm test -w @hinge/core -- src/collisions.test.ts`
+Run: `npm test -w @dobra/core -- src/collisions.test.ts`
 Expected: FAIL — cannot resolve `./collisions`.
 
 - [ ] **Step 3: Implement `packages/core/src/collisions.ts`**
@@ -429,15 +429,15 @@ export function findCollisions(subjects: CollisionSubject[], zones: CollisionZon
 
 - [ ] **Step 4: Run it**
 
-Run: `npm test -w @hinge/core -- src/collisions.test.ts`
+Run: `npm test -w @dobra/core -- src/collisions.test.ts`
 Expected: PASS (3 tests).
 
 - [ ] **Step 5: Make the hook an adapter** — in `apps/simulator/src/sample/collisions.ts`:
   - import `collisionZones`, `findCollisions`, `rectsOverlap`, `spansOverlap` and
-    `type CollisionSubject` from `@hinge/core/collisions`;
+    `type CollisionSubject` from `@dobra/core/collisions`;
   - delete the local `Zone` interface, the zone-building loops, and the local `rectsOverlap` /
     `spansOverlap` bodies, re-exporting the core ones instead
-    (`export { rectsOverlap, spansOverlap } from '@hinge/core/collisions';`);
+    (`export { rectsOverlap, spansOverlap } from '@dobra/core/collisions';`);
   - in `measure`, build `subjects: CollisionSubject[]` with `id` = the element's index in
     `elements`, keep a `byId` array of the elements, call
     `findCollisions(subjects, collisionZones(env))`, and for each hit set `data-collision` and push
@@ -457,9 +457,9 @@ second dev server started from a checkout of that branch, or against a note take
 
 ```bash
 git add packages/core/src/collisions.ts packages/core/src/collisions.test.ts
-git commit -m "Add pure collision geometry to @hinge/core"
+git commit -m "Add pure collision geometry to @dobra/core"
 git add apps/simulator/src/sample/collisions.ts
-git commit -m "Make the collision hook a DOM adapter over @hinge/core"
+git commit -m "Make the collision hook a DOM adapter over @dobra/core"
 ```
 
 ### Task 4: Issue, push and PR
@@ -467,8 +467,8 @@ git commit -m "Make the collision hook a DOM adapter over @hinge/core"
 - [ ] **Step 1: Issue**
 
 ```bash
-gh issue create -R jacksonmafra-umain/SizeClassSimulator \
-  --title "Extract @hinge/core into an npm workspace" --label enhancement --label area:core \
+gh issue create -R jacksonmafra-umain/Dobra \
+  --title "Extract @dobra/core into an npm workspace" --label enhancement --label area:core \
   --body "Slice 1 of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md (section 12). Workspaces; the app moves to apps/simulator; engine and config move to packages/core with re-exports at the old paths; collision geometry becomes pure core. Old-path re-exports are removed in a follow-up once the Android branch has rebased."
 ```
 Record the number as `$ISSUE`.
@@ -503,20 +503,20 @@ it('has no old-path re-exports left in the app', () => {
   }
 });
 ```
-and delete the `viaShim` import and its test. Run `npm test -w @hinge/simulator -- src/core.test.ts`
+and delete the `viaShim` import and its test. Run `npm test -w @dobra/simulator -- src/core.test.ts`
 → FAIL.
 
 - [ ] **Step 2: Rewrite imports**
 
 ```bash
 cd apps/simulator/src
-grep -rlE "from '(\.\./)+(engine|config)/" . | xargs perl -pi -e "s#from '(?:\.\./)+(engine|config)/([\w.]+)'#from '\@hinge/core/\$1/\$2'#g"
-grep -rlE "from '\./(engine|config)/" . | xargs perl -pi -e "s#from '\./(engine|config)/([\w.]+)'#from '\@hinge/core/\$1/\$2'#g"
+grep -rlE "from '(\.\./)+(engine|config)/" . | xargs perl -pi -e "s#from '(?:\.\./)+(engine|config)/([\w.]+)'#from '\@dobra/core/\$1/\$2'#g"
+grep -rlE "from '\./(engine|config)/" . | xargs perl -pi -e "s#from '\./(engine|config)/([\w.]+)'#from '\@dobra/core/\$1/\$2'#g"
 cd - && git rm -rq apps/simulator/src/engine apps/simulator/src/config
 ```
 Check: `grep -rnE "from '(\.\.?/)+(engine|config)/" apps/simulator/src` → no output.
 
 - [ ] **Step 3:** `npm test && npm run typecheck && npm run build && npm run build:single` → PASS.
-- [ ] **Step 4: Commit** — `git commit -am "Import @hinge/core directly and drop the old-path re-exports"`
-- [ ] **Step 5:** Issue ("Drop the old-path re-exports of @hinge/core", `enhancement,area:core`),
+- [ ] **Step 4: Commit** — `git commit -am "Import @dobra/core directly and drop the old-path re-exports"`
+- [ ] **Step 5:** Issue ("Drop the old-path re-exports of @dobra/core", `enhancement,area:core`),
   push, PR targeting the branch slice 1 merged into, `Closes #N`.

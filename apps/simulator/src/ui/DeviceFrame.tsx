@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
-import type { Rect } from '@hinge/core/config/types';
-import type { Environment } from '@hinge/core/engine/environment';
+import type { Rect } from '@dobra/core/config/types';
+import type { Environment } from '@dobra/core/engine/environment';
 
 const BEZEL = 12;
 

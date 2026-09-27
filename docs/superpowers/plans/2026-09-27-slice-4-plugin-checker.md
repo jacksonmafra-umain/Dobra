@@ -141,7 +141,7 @@ describe('geometry tree', () => {
   });
 });
 ```
-Run: `npm test -w @hinge/core -- src/geo.test.ts` → FAIL.
+Run: `npm test -w @dobra/core -- src/geo.test.ts` → FAIL.
 
 - [ ] **Step 2: Implement** `geo.ts`
 
@@ -224,7 +224,7 @@ export function outermost(placed: Placed[], pick: (n: GeoNode) => boolean): Plac
 ```
 In `engine/checks.ts` extend `RuleId` with `| 'overflow-x' | 'frame-size-mismatch'`.
 
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck -w @hinge/core` → PASS.
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck -w @dobra/core` → PASS.
 - [ ] **Step 4: Commit**
 
 ```bash
@@ -447,7 +447,7 @@ export function check(subject: Subject, config: EnvConfig, rules?: RuleId[]): Fi
 `rectsOverlap` is imported for Task 3's `chromeOverlap`; until then `noUnusedLocals` flags it, so
 leave it out of this task's import line and add it in Task 3.
 
-- [ ] **Step 4:** `npm test -w @hinge/core -- src/rules.test.ts` → PASS; `npm run typecheck -w @hinge/core` → PASS.
+- [ ] **Step 4:** `npm test -w @dobra/core -- src/rules.test.ts` → PASS; `npm run typecheck -w @dobra/core` → PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
@@ -570,7 +570,7 @@ function chromeOverlap({ env, placed, add }: Ctx) {
 Register: `'touch-target': touchTarget, 'min-legible-width': minLegibleWidth, 'landscape-not-wide': landscapeNotWide, 'chrome-overlap': chromeOverlap`.
 Add `rectsOverlap` to the `./collisions` import line.
 
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck -w @hinge/core` → PASS.
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck -w @dobra/core` → PASS.
 - [ ] **Step 4: Commit**
 
 ```bash
@@ -662,7 +662,7 @@ Run → FAIL.
 
 ```ts
 // Figma nodes → the core geometry tree. Rects are relative to the frame being checked.
-import type { GeoNode, GeoRole } from '@hinge/core/geo';
+import type { GeoNode, GeoRole } from '@dobra/core/geo';
 import { OVERLAY_NAME } from './presets';
 
 /** Layer names treated as tappable. Edit to match a design system's naming. */
@@ -719,7 +719,7 @@ export async function toGeo(frame: FrameNode, onProgress?: (visited: number) => 
 Instances are leaves (their inside is the component's business, and `skipInvisibleInstanceChildren`
 keeps traversal cheap).
 
-- [ ] **Step 4:** `npm test -w @hinge/figma-plugin && npm run typecheck -w @hinge/figma-plugin` → PASS.
+- [ ] **Step 4:** `npm test -w @dobra/figma-plugin && npm run typecheck -w @dobra/figma-plugin` → PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
@@ -802,7 +802,7 @@ it('sets a Re-check button on created presets', async () => {
   - `code.ts`: set `figma.skipInvisibleInstanceChildren = true` before `showUI`.
   - `route.ts`: `OPENING.check = { type: 'check', scope: 'selection' }` falling back to `page`
     when the selection is empty (decide inside the `check` handler: empty selection → page).
-- [ ] **Step 3:** `npm run build -w @hinge/figma-plugin && npm test -w @hinge/figma-plugin && npm run typecheck -w @hinge/figma-plugin` → PASS.
+- [ ] **Step 3:** `npm run build -w @dobra/figma-plugin && npm test -w @dobra/figma-plugin && npm run typecheck -w @dobra/figma-plugin` → PASS.
 - [ ] **Step 4: Commit**
 
 ```bash
@@ -946,7 +946,7 @@ export function adaptPlan(
 }
 ```
 
-- [ ] **Step 3:** `npm test -w @hinge/core` → PASS. Commit:
+- [ ] **Step 3:** `npm test -w @dobra/core` → PASS. Commit:
 
 ```bash
 git add packages/core/src/adapt.ts packages/core/src/adapt.test.ts
@@ -1035,7 +1035,7 @@ describe('adaptFrame', () => {
      `frame.setExplicitVariableModeForCollection(collection, mode.modeId)`. Add `'variables'` to
      `FigmaApi`'s `Pick`; the fake returns `[]` by default and a test-provided list otherwise.
   8. `findings = check(subject of the clone, config)`; return `{ frame, plan, findings }`.
-- [ ] **Step 6:** `npm test -w @hinge/figma-plugin && npm run typecheck -w @hinge/figma-plugin` → PASS.
+- [ ] **Step 6:** `npm test -w @dobra/figma-plugin && npm run typecheck -w @dobra/figma-plugin` → PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
@@ -1067,7 +1067,7 @@ git commit -m "Adapt a frame to other devices and flag what needs a designer"
     category (reuse the Artboards list component), a "Split at hinge" checkbox, and an "Adapt"
     button. Results list each new frame with its flags (reason + message) and its findings count,
     each clickable.
-- [ ] **Step 3:** `npm run build -w @hinge/figma-plugin && npm test && npm run typecheck && npm run build` → PASS.
+- [ ] **Step 3:** `npm run build -w @dobra/figma-plugin && npm test && npm run typecheck && npm run build` → PASS.
   Serve `packages/figma-plugin/dist/ui.html` locally and drive it with simulated messages in the
   built-in browser (as in slice 3) to see both panels render with no console errors.
 - [ ] **Step 4: Commit** (two microcommits: handler + manifest; panels)
@@ -1090,7 +1090,7 @@ git commit -m "Add the plugin panels for checking and adapting frames"
 - [ ] **Step 3:** Issue:
 
 ```bash
-gh issue create -R jacksonmafra-umain/SizeClassSimulator \
+gh issue create -R jacksonmafra-umain/Dobra \
   --title "Figma plugin: checker and Adapt & flag" --label enhancement --label area:plugin \
   --body "Slice 4 of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. Checks frames against the foldable rules (hinge content, pane split, landscape-not-wide, legible width, chrome overlap, touch targets, overflow, tabletop controls, frame size) and adapts a frame to other devices, doing the mechanical work and flagging the design decisions."
 ```

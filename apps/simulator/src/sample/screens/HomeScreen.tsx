@@ -1,4 +1,4 @@
-import type { Layout } from '@hinge/core/engine/layout';
+import type { Layout } from '@dobra/core/engine/layout';
 import { asset } from '../assets';
 import {
   ActionCard,

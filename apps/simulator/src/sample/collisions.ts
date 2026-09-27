@@ -1,9 +1,9 @@
 // Finds important elements that sit in the fold or in a reserved region, and outlines them in red.
 import { useEffect, useRef, type RefObject } from 'react';
-import { collisionZones, findCollisions, type CollisionSubject } from '@hinge/core/collisions';
-import type { Environment } from '@hinge/core/engine/environment';
+import { collisionZones, findCollisions, type CollisionSubject } from '@dobra/core/collisions';
+import type { Environment } from '@dobra/core/engine/environment';
 
-export { rectsOverlap, spansOverlap } from '@hinge/core/collisions';
+export { rectsOverlap, spansOverlap } from '@dobra/core/collisions';
 
 export interface Collision {
   region: string;

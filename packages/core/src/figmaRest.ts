@@ -40,7 +40,7 @@ export function parseFileKey(url: string): string | null {
 }
 
 export function tagOf(node: RestNode): string {
-  return node.sharedPluginData?.hinge?.target ?? '';
+  return node.sharedPluginData?.dobra?.target ?? '';
 }
 
 export function frameCandidates(document: RestNode): RestFrame[] {

@@ -1,4 +1,4 @@
-// Command-line arguments: `hinge check site <url> [options]`. Anything malformed returns the usage text.
+// Command-line arguments: `dobra check site <url> [options]`. Anything malformed returns the usage text.
 import { parseArgs as parseNodeArgs } from 'node:util';
 
 export type FailOn = 'error' | 'warn' | 'never';
@@ -15,7 +15,7 @@ export interface CliOptions {
   transitions: boolean;
 }
 
-export const USAGE = `Usage: hinge check site <url> [options]
+export const USAGE = `Usage: dobra check site <url> [options]
 
   --targets <keys>     Comma-separated target keys (device/display/posture/orientation)
   --category <name>    Every target of a category; repeat for more

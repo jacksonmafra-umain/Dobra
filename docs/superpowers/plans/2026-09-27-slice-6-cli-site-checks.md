@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** `hinge check site <url>` opens a website in Chromium at every chosen device target,
+**Goal:** `dobra check site <url>` opens a website in Chromium at every chosen device target,
 emulates the hinge where the device has one, collects the page's layout, runs the same rules as
 the plugin and the web report, checks the resize-versus-reload behaviour, and writes a report JSON
 (and Markdown) the web report opens — with a non-zero exit code for CI.
 
 **Architecture:** Core gains the `resize-vs-reload` rule as a pure comparison of two layout trees.
-A new package, `packages/cli` (`@hinge/cli`), holds: argument parsing and target selection (pure,
+A new package, `packages/cli` (`@dobra/cli`), holds: argument parsing and target selection (pure,
 unit-tested), a Playwright emulation layer (viewport, device scale, user agent, and the Chrome
 DevTools `Emulation.setDisplayFeaturesOverride` for folds), an in-page DOM collector that returns
 `GeoNode` trees, and `checkSite`, which builds a `Report` with core's `buildReport`. esbuild bundles
@@ -151,7 +151,7 @@ export function resizeVsReload(
   ];
 }
 ```
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck` → PASS. **Step 4: Commit**
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck` → PASS. **Step 4: Commit**
 
 ```bash
 git add packages/core/src/transition.ts packages/core/src/transition.test.ts packages/core/src/engine/checks.ts
@@ -175,27 +175,27 @@ git commit -m "Compare a resized layout with a reloaded one"
 
 ```json
 {
-  "name": "@hinge/cli",
+  "name": "@dobra/cli",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "bin": { "hinge": "dist/hinge.mjs" },
+  "bin": { "dobra": "dist/dobra.mjs" },
   "scripts": {
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "dependencies": { "@hinge/core": "*", "playwright": "^1.63.0" },
+  "dependencies": { "@dobra/core": "*", "playwright": "^1.63.0" },
   "devDependencies": { "@types/node": "^26.6.2", "esbuild": "^0.28.2", "typescript": "^7.0.2", "vitest": "^4.1.11" }
 }
 ```
-`build.mjs`: esbuild `src/main.ts` → `dist/hinge.mjs`, `platform: 'node'`, `format: 'esm'`,
+`build.mjs`: esbuild `src/main.ts` → `dist/dobra.mjs`, `platform: 'node'`, `format: 'esm'`,
 `target: 'node22'`, `bundle: true`, `external: ['playwright', 'playwright-core']`,
-`banner: { js: '#!/usr/bin/env node' }`; then `chmodSync('dist/hinge.mjs', 0o755)`.
+`banner: { js: '#!/usr/bin/env node' }`; then `chmodSync('dist/dobra.mjs', 0o755)`.
 `tsconfig.json`: `lib: ['ES2023', 'DOM']` (the collector runs in the page), `types: ['node']`,
 strict, bundler resolution, `resolveJsonModule`, `noEmit`. `vitest.config.ts`: node environment,
 `src/**/*.test.ts`, `testTimeout: 60_000` (browser tests).
-Root scripts: `"hinge": "node packages/cli/dist/hinge.mjs"`, `"build:cli": "npm run build -w @hinge/cli"`.
+Root scripts: `"dobra": "node packages/cli/dist/dobra.mjs"`, `"build:cli": "npm run build -w @dobra/cli"`.
 
 - [ ] **Step 2: Failing tests** `args.test.ts`:
 
@@ -226,8 +226,8 @@ describe('parseArgs', () => {
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { targetKey } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { targetKey } from '@dobra/core/targets';
 import { chooseTargets } from './targets';
 
 const catalog = loadCatalog();
@@ -251,7 +251,7 @@ describe('chooseTargets', () => {
   });
 });
 ```
-Run: `npm install && npm test -w @hinge/cli` → FAIL.
+Run: `npm install && npm test -w @dobra/cli` → FAIL.
 
 - [ ] **Step 3: Implement** `args.ts` with `node:util`'s `parseArgs` (`allowPositionals: true`,
   options `targets`, `category` (multiple), `out`, `md`, `wait`, `fail-on`, `no-transitions`
@@ -260,7 +260,7 @@ Run: `npm install && npm test -w @hinge/cli` → FAIL.
   `error|warn|never`. Anything else returns `{ help: USAGE }` where `USAGE` is:
 
 ```
-Usage: hinge check site <url> [options]
+Usage: dobra check site <url> [options]
 
   --targets <keys>     Comma-separated target keys (device/display/posture/orientation)
   --category <name>    Every target of a category; repeat for more
@@ -274,7 +274,7 @@ Usage: hinge check site <url> [options]
   `throw new Error(`Unknown target ${key}`)`; categories → `enumerateTargets` filtered by the
   device category; default → `representativeTarget` for every `required` requirement, deduplicated
   by `targetKey`.
-- [ ] **Step 4:** `npm test -w @hinge/cli && npm run typecheck -w @hinge/cli` → PASS.
+- [ ] **Step 4:** `npm test -w @dobra/cli && npm run typecheck -w @dobra/cli` → PASS.
   **Step 5: Commit**
 
 ```bash
@@ -336,8 +336,8 @@ git commit -m "Add the hinge CLI package with argument parsing and target select
 ```ts
 import { chromium, type Browser } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { envConfigOf } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { envConfigOf } from '@dobra/core/targets';
 import { deviceProfile, openTarget } from './emulate';
 import { startFixtureServer } from './test/server';
 
@@ -391,7 +391,7 @@ Run → FAIL.
   is experimental), try the newer `Emulation.setDevicePostureOverride({ posture: { type: 'folded' } })`
   together with it; if neither makes `twoSegments` true, keep size-only emulation, mark every
   hinge finding for that run `estimated: true`, and ledger it.
-- [ ] **Step 5:** `npm test -w @hinge/cli && npm run typecheck -w @hinge/cli` → PASS.
+- [ ] **Step 5:** `npm test -w @dobra/cli && npm run typecheck -w @dobra/cli` → PASS.
   **Step 6: Commit**
 
 ```bash
@@ -426,7 +426,7 @@ git commit -m "Emulate device size, scale, user agent and the hinge in Chromium"
 
 ```ts
 // The page's layout as GeoNodes, in document coordinates. Runs inside the page: no imports.
-import type { GeoNode } from '@hinge/core/geo';
+import type { GeoNode } from '@dobra/core/geo';
 import type { Page } from 'playwright';
 
 export async function collectLayout(page: Page, cap = 4000): Promise<{ root: GeoNode[]; scrollWidth: number; truncated: boolean }> {
@@ -496,7 +496,7 @@ export async function collectLayout(page: Page, cap = 4000): Promise<{ root: Geo
   The collector keeps only elements that carry a role and lifts the children of role-less
   wrappers, so the tree mirrors what the rules care about. Adjust `roleOf` only if a fixture
   assertion shows a wrong role, and ledger it.
-- [ ] **Step 4:** `npm test -w @hinge/cli && npm run typecheck -w @hinge/cli` → PASS.
+- [ ] **Step 4:** `npm test -w @dobra/cli && npm run typecheck -w @dobra/cli` → PASS.
   **Step 5: Commit**
 
 ```bash
@@ -528,12 +528,12 @@ git commit -m "Collect a page's layout as a geometry tree in document coordinate
 - [ ] **Step 3: Implement** `checkSite.ts`:
 
 ```ts
-// hinge check site: one Chromium context per target, the same rules as the plugin, and an unfold pass.
-import { loadCatalog } from '@hinge/core/catalog/load';
-import type { Finding } from '@hinge/core/engine/checks';
-import { buildReport, type Report, type ReportInput } from '@hinge/core/report';
-import { envConfigOf, targetKey, type Target } from '@hinge/core/targets';
-import { resizeVsReload } from '@hinge/core/transition';
+// dobra check site: one Chromium context per target, the same rules as the plugin, and an unfold pass.
+import { loadCatalog } from '@dobra/core/catalog/load';
+import type { Finding } from '@dobra/core/engine/checks';
+import { buildReport, type Report, type ReportInput } from '@dobra/core/report';
+import { envConfigOf, targetKey, type Target } from '@dobra/core/targets';
+import { resizeVsReload } from '@dobra/core/transition';
 import { chromium, type Browser, type Page } from 'playwright';
 import { collectLayout } from './collect';
 import { deviceProfile, openTarget } from './emulate';
@@ -608,7 +608,7 @@ export async function checkSite(url: string, targets: Target[], opts: { wait: nu
   'overflow-x'` is wrong for it): add a report-level `notes: string[]` field to core's `Report`
   (optional in the schema, so older reports still parse) and push `"<key>: page truncated at 4000 elements"`.
   Ledger that schema addition.
-- [ ] **Step 4:** `npm test -w @hinge/cli && npm test -w @hinge/core && npm run typecheck` → PASS.
+- [ ] **Step 4:** `npm test -w @dobra/cli && npm test -w @dobra/core && npm run typecheck` → PASS.
   **Step 5: Commit** (two: core `notes`; CLI `checkSite`)
 
 ```bash
@@ -639,16 +639,16 @@ when run directly.
   `node:fs/promises`, summarise: `✓`/`⛔`/`⚠️` per frame with counts, then the coverage line
   `Coverage: <present>/<required> required cells`), and the entry point. Keep all Playwright use
   inside `checkSite` so `run` stays unit-testable.
-- [ ] **Step 3:** `npm test -w @hinge/cli && npm run build:cli && node packages/cli/dist/hinge.mjs --help`
+- [ ] **Step 3:** `npm test -w @dobra/cli && npm run build:cli && node packages/cli/dist/dobra.mjs --help`
   → PASS; the help text prints. Then a real smoke run against a fixture:
-  `node packages/cli/dist/hinge.mjs check site <fixture server>/layout.html --targets surface-duo-2/spanned/spanned/landscape --out $SCRATCH/cli.json`
+  `node packages/cli/dist/dobra.mjs check site <fixture server>/layout.html --targets surface-duo-2/spanned/spanned/landscape --out $SCRATCH/cli.json`
   exits `1` (the fixture has a hinge error) and writes a report the web report's `parseReport`
   accepts (open it in the report page in the built-in browser).
 - [ ] **Step 4: Commit**
 
 ```bash
 git add packages/cli/src/main.ts packages/cli/src/main.test.ts
-git commit -m "Add the hinge check site command with CI exit codes"
+git commit -m "Add the dobra check site command with CI exit codes"
 ```
 
 ### Task 7: README, issue and PR
@@ -660,16 +660,16 @@ git commit -m "Add the hinge check site command with CI exit codes"
 
 ```yaml
 - run: npm ci && npx playwright install --with-deps chromium && npm run build:cli
-- run: npm run hinge -- check site ${{ env.PREVIEW_URL }} --out foldable-report.json --md foldable-report.md
+- run: npm run dobra -- check site ${{ env.PREVIEW_URL }} --out foldable-report.json --md foldable-report.md
 - uses: actions/upload-artifact@v4
   with: { name: foldable-report, path: "foldable-report.*" }
 ```
 - [ ] **Step 2:** Issue:
 
 ```bash
-gh issue create -R jacksonmafra-umain/SizeClassSimulator \
+gh issue create -R jacksonmafra-umain/Dobra \
   --title "CLI: check a website on foldable devices" --label enhancement --label area:cli \
-  --body "Slice 6 of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. hinge check site <url> opens the site in Chromium at every device target, emulates the hinge, runs the foldable rules plus resize-vs-reload, and writes a report JSON (and Markdown) the web report opens, with CI exit codes."
+  --body "Slice 6 of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. dobra check site <url> opens the site in Chromium at every device target, emulates the hinge, runs the foldable rules plus resize-vs-reload, and writes a report JSON (and Markdown) the web report opens, with CI exit codes."
 ```
 - [ ] **Step 3:** `git push -u origin feat/cli-site-checks`; PR targeting `feat/web-report`,
   labels `enhancement,area:cli`, body `Closes #N`, Summary, Test plan (counts, typecheck, builds,

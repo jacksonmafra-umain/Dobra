@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { envConfigOf } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { envConfigOf } from '@dobra/core/targets';
 import { NAMESPACE } from './presets';
 import { applyTag, tagCandidates } from './tagging';
 import { createFakeFigma } from './test/fakeFigma';

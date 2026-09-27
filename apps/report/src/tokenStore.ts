@@ -1,6 +1,6 @@
 // The personal access token lives in memory; this keeps it in the tab's session storage only while
 // "Remember for this tab" is ticked, and removes it the moment it is unticked.
-const KEY = 'hinge.token';
+const KEY = 'dobra.token';
 
 type Storage = Pick<globalThis.Storage, 'getItem' | 'setItem' | 'removeItem'>;
 

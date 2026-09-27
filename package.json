@@ -1,5 +1,5 @@
 {
-  "name": "size-class-simulator",
+  "name": "dobra",
   "private": true,
   "version": "0.5.0",
   "type": "module",
@@ -8,15 +8,15 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w @hinge/simulator --",
-    "build": "npm run build -w @hinge/simulator",
-    "build:single": "npm run build:single -w @hinge/simulator",
-    "preview": "npm run preview -w @hinge/simulator --",
+    "dev": "npm run dev -w @dobra/simulator --",
+    "build": "npm run build -w @dobra/simulator",
+    "build:single": "npm run build:single -w @dobra/simulator",
+    "preview": "npm run preview -w @dobra/simulator --",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "dev:report": "npm run dev -w @hinge/report --",
-    "build:report": "npm run build -w @hinge/report",
-    "hinge": "node packages/cli/dist/hinge.mjs",
-    "build:cli": "npm run build -w @hinge/cli"
+    "dev:report": "npm run dev -w @dobra/report --",
+    "build:report": "npm run build -w @dobra/report",
+    "dobra": "node packages/cli/dist/dobra.mjs",
+    "build:cli": "npm run build -w @dobra/cli"
   }
 }

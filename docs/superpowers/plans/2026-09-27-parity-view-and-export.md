@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Show the same screen and state on an iOS device and an Android device side by side, with a table of what differs. Export the current screen's findings as a Hinge Report JSON that the web report can open.
+**Goal:** Show the same screen and state on an iOS device and an Android device side by side, with a table of what differs. Export the current screen's findings as a Dobra Report JSON that the web report can open.
 
-**Architecture:** The canvas's device-plus-screen rendering moves into a `Stage` component, so the app can render one or two stages. Parity is a URL flag (`vs=<deviceId>`). The counterpart device is chosen by a pure function: same category, nearest width. A second pure function compares the two resolved environments and layouts row by row. The export walks the rendered screen's DOM into records, a pure function turns them into core `GeoNode`s, and `buildReport` from `@hinge/core/report` produces the Report JSON. Nothing in `packages/core` changes.
+**Architecture:** The canvas's device-plus-screen rendering moves into a `Stage` component, so the app can render one or two stages. Parity is a URL flag (`vs=<deviceId>`). The counterpart device is chosen by a pure function: same category, nearest width. A second pure function compares the two resolved environments and layouts row by row. The export walks the rendered screen's DOM into records, a pure function turns them into core `GeoNode`s, and `buildReport` from `@dobra/core/report` produces the Report JSON. Nothing in `packages/core` changes.
 
-**Tech Stack:** TypeScript, React 19, Vitest; `@hinge/core` read-only.
+**Tech Stack:** TypeScript, React 19, Vitest; `@dobra/core` read-only.
 
 **Spec:** `docs/android-extension-brief.md`, whose last slice is "exports and the parity view". Also `docs/superpowers/specs/2026-09-25-foldable-artboards-design.md` §3.2 (GeoNode, Report) and §6 (the web report).
 
@@ -43,7 +43,7 @@
 - Test: `apps/simulator/src/ui/parity.test.ts`
 
 **Interfaces:**
-- Consumes: `SimulatorConfig`, `DeviceSpec` (`@hinge/core/config/types`), `Environment`, `Selection`, `resolveEnvironment` (`@hinge/core/engine/environment`), `Layout` (`@hinge/core/engine/layout`), `Finding` (`@hinge/core/engine/checks`).
+- Consumes: `SimulatorConfig`, `DeviceSpec` (`@dobra/core/config/types`), `Environment`, `Selection`, `resolveEnvironment` (`@dobra/core/engine/environment`), `Layout` (`@dobra/core/engine/layout`), `Finding` (`@dobra/core/engine/checks`).
 - Produces:
   - `counterpartOf(config: SimulatorConfig, device: DeviceSpec): DeviceSpec`
   - `counterpartSelection(config: SimulatorConfig, sel: Selection, counterpartId: string, orientation: Orientation): Selection`
@@ -56,11 +56,11 @@
 ```ts
 // apps/simulator/src/ui/parity.test.ts
 import { describe, expect, it } from 'vitest';
-import { rawConfig as raw } from '@hinge/core/config/load';
-import { parseConfig } from '@hinge/core/config/schema';
-import { runLayoutChecks, targetOf } from '@hinge/core/engine/checks';
-import { findDevice, resolveEnvironment, type Selection } from '@hinge/core/engine/environment';
-import { resolveLayout } from '@hinge/core/engine/layout';
+import { rawConfig as raw } from '@dobra/core/config/load';
+import { parseConfig } from '@dobra/core/config/schema';
+import { runLayoutChecks, targetOf } from '@dobra/core/engine/checks';
+import { findDevice, resolveEnvironment, type Selection } from '@dobra/core/engine/environment';
+import { resolveLayout } from '@dobra/core/engine/layout';
 import { counterpartOf, counterpartSelection, parityRows } from './parity';
 
 const config = parseConfig(raw);
@@ -112,7 +112,7 @@ describe('parityRows', () => {
 
 - [ ] **Step 2: Run and fail**
 
-Run: `npm test -w @hinge/simulator -- src/ui/parity.test.ts`
+Run: `npm test -w @dobra/simulator -- src/ui/parity.test.ts`
 Expected: FAIL, `Cannot find module './parity'`.
 
 - [ ] **Step 3: Implement**
@@ -120,11 +120,11 @@ Expected: FAIL, `Cannot find module './parity'`.
 ```ts
 // apps/simulator/src/ui/parity.ts
 // Pairs a device with its nearest peer on the other platform and compares how both resolve.
-import type { DeviceSpec, Orientation, SimulatorConfig } from '@hinge/core/config/types';
-import type { Finding } from '@hinge/core/engine/checks';
-import type { Environment, Selection } from '@hinge/core/engine/environment';
-import type { Layout } from '@hinge/core/engine/layout';
-import { formatSizeClass } from '@hinge/core/engine/sizeClass';
+import type { DeviceSpec, Orientation, SimulatorConfig } from '@dobra/core/config/types';
+import type { Finding } from '@dobra/core/engine/checks';
+import type { Environment, Selection } from '@dobra/core/engine/environment';
+import type { Layout } from '@dobra/core/engine/layout';
+import { formatSizeClass } from '@dobra/core/engine/sizeClass';
 
 type Category = DeviceSpec['category'];
 
@@ -183,7 +183,7 @@ export function parityRows(a: ParitySide, b: ParitySide): ParityRow[] {
 
 - [ ] **Step 4: Run and pass**
 
-Run: `npm test -w @hinge/simulator -- src/ui/parity.test.ts`
+Run: `npm test -w @dobra/simulator -- src/ui/parity.test.ts`
 Expected: PASS, 6/6. If a counterpart id assertion fails because of catalog widths, print the widths, fix the expectation to the nearest-width result, and ledger it.
 
 - [ ] **Step 5: Commit**
@@ -238,7 +238,7 @@ git commit -m "Move the device frame and sample screen into a Stage component"
 
 (If Task 2 of the media-facts plan has already merged, `writeUrlState` takes a third `device` argument. Pass it.)
 
-- [ ] **Step 2: Run and fail.** Run `npm test -w @hinge/simulator -- src/ui/urlState.test.ts`. Expect a FAIL on `state.vs`.
+- [ ] **Step 2: Run and fail.** Run `npm test -w @dobra/simulator -- src/ui/urlState.test.ts`. Expect a FAIL on `state.vs`.
 - [ ] **Step 3: Implement.**
   - Read `vs: q.get('vs') ?? undefined`, and write `if (state.vs) q.set('vs', state.vs)`.
   - Export `validCounterpart(config, deviceId, vs): string | undefined` from `parity.ts`. It returns `vs` only when `vs` is an enabled device of the other platform.
@@ -277,7 +277,7 @@ Before starting, check that `main` has `packages/core/src/report.ts`, `geo.ts` a
 - Test: `apps/simulator/src/ui/exportReport.test.ts`
 
 **Interfaces:**
-- Consumes: `GeoNode`, `GeoRole` (`@hinge/core/geo`); `buildReport`, `parseReport`, `ReportInput`, `Report` (`@hinge/core/report`); `targetKey`, `isKnownTarget`, `envConfigOf` (`@hinge/core/targets`); `loadCatalog` (`@hinge/core/catalog/load`); `Target` (`@hinge/core/engine/checks`).
+- Consumes: `GeoNode`, `GeoRole` (`@dobra/core/geo`); `buildReport`, `parseReport`, `ReportInput`, `Report` (`@dobra/core/report`); `targetKey`, `isKnownTarget`, `envConfigOf` (`@dobra/core/targets`); `loadCatalog` (`@dobra/core/catalog/load`); `Target` (`@dobra/core/engine/checks`).
 - Produces:
   - `interface NodeRecord { id: string; name: string; role: GeoRole; rect: Rect; fontSize?: number; chars?: number; scrollAxis?: 'x' | 'y' | 'none'; parent: string | null }`
   - `toGeoTree(records: NodeRecord[]): GeoNode[]`
@@ -289,7 +289,7 @@ Before starting, check that `main` has `packages/core/src/report.ts`, `geo.ts` a
 ```ts
 // apps/simulator/src/ui/exportReport.test.ts
 import { describe, expect, it } from 'vitest';
-import { parseReport } from '@hinge/core/report';
+import { parseReport } from '@dobra/core/report';
 import { exportable, simulatorReport, toGeoTree, type NodeRecord } from './exportReport';
 
 const r = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
@@ -332,21 +332,21 @@ The `hinge-content` expectation rests on the CTA's x span (400–520) crossing t
 
 - [ ] **Step 2: Run and fail**
 
-Run: `npm test -w @hinge/simulator -- src/ui/exportReport.test.ts`
+Run: `npm test -w @dobra/simulator -- src/ui/exportReport.test.ts`
 Expected: FAIL, `Cannot find module './exportReport'`.
 
 - [ ] **Step 3: Implement**
 
 ```ts
 // apps/simulator/src/ui/exportReport.ts
-// Turns the rendered sample screen into a Hinge Report that the web report can open.
-import { loadCatalog } from '@hinge/core/catalog/load';
-import type { Rect } from '@hinge/core/config/types';
-import type { Target } from '@hinge/core/engine/checks';
-import type { Environment } from '@hinge/core/engine/environment';
-import type { GeoNode, GeoRole } from '@hinge/core/geo';
-import { buildReport, type Report } from '@hinge/core/report';
-import { envConfigOf, isKnownTarget, targetKey } from '@hinge/core/targets';
+// Turns the rendered sample screen into a Dobra Report that the web report can open.
+import { loadCatalog } from '@dobra/core/catalog/load';
+import type { Rect } from '@dobra/core/config/types';
+import type { Target } from '@dobra/core/engine/checks';
+import type { Environment } from '@dobra/core/engine/environment';
+import type { GeoNode, GeoRole } from '@dobra/core/geo';
+import { buildReport, type Report } from '@dobra/core/report';
+import { envConfigOf, isKnownTarget, targetKey } from '@dobra/core/targets';
 
 export interface NodeRecord { id: string; name: string; role: GeoRole; rect: Rect; fontSize?: number; chars?: number; scrollAxis?: 'x' | 'y' | 'none'; parent: string | null }
 
@@ -378,12 +378,12 @@ export function simulatorReport(target: Target, label: string, url: string, widt
 
 `matchFrame` parses `tag` with `parseTargetKey`, so the tag is the bare target key.
 
-- [ ] **Step 4: Run and pass.** Run `npm test -w @hinge/simulator -- src/ui/exportReport.test.ts`. Expect PASS, 4/4.
+- [ ] **Step 4: Run and pass.** Run `npm test -w @dobra/simulator -- src/ui/exportReport.test.ts`. Expect PASS, 4/4.
 - [ ] **Step 5: Commit**
 
 ```bash
 git add apps/simulator/src/ui/exportReport.ts apps/simulator/src/ui/exportReport.test.ts
-git commit -m "Build a Hinge Report from the simulator's rendered screen"
+git commit -m "Build a Dobra Report from the simulator's rendered screen"
 ```
 
 ### Task 5: Walk the DOM and download the Report
@@ -401,7 +401,7 @@ git commit -m "Build a Hinge Report from the simulator's rendered screen"
   - This is DOM-only glue. Its logic under test is `toGeoTree` and `simulatorReport` (Task 4). Verify the glue in the browser (Step 3).
 - [ ] **Step 2: Add the button.**
   - In the header, add an "Export findings" button. It is disabled with `title={reason}` when `exportable(env, target)` is not ok.
-  - A click calls `collectRecords` and `simulatorReport(target, `${env.deviceName} · ${screen.name}`, location.href, env.width, env.height, records)`, then downloads the result through a `Blob` and an `a[download]` named `hinge-report-<targetKey with / replaced by _>.json`.
+  - A click calls `collectRecords` and `simulatorReport(target, `${env.deviceName} · ${screen.name}`, location.href, env.width, env.height, records)`, then downloads the result through a `Blob` and an `a[download]` named `dobra-report-<targetKey with / replaced by _>.json`.
   - A one-line note next to the button says that exported findings come from the shared geometry rules.
 - [ ] **Step 3: Verify.**
   - Run `npm test && npm run typecheck`; expect a pass.
@@ -414,5 +414,5 @@ git commit -m "Build a Hinge Report from the simulator's rendered screen"
 git add apps/simulator/src/ui/exportReport.ts apps/simulator/src/ui/Stage.tsx
 git commit -m "Collect the rendered screen's geometry for the Report"
 git add apps/simulator/src/ui/App.tsx
-git commit -m "Export the current screen's findings as a Hinge Report JSON"
+git commit -m "Export the current screen's findings as a Dobra Report JSON"
 ```

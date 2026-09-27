@@ -1,12 +1,12 @@
-# Hinge — Figma plugin
+# Dobra — Figma plugin
 
-Artboards for foldable and dual-screen devices, straight from the device catalog in `@hinge/core`.
+Artboards for foldable and dual-screen devices, straight from the device catalog in `@dobra/core`.
 
 ## Build
 
 ```bash
 npm install
-npm run build -w @hinge/figma-plugin
+npm run build -w @dobra/figma-plugin
 ```
 
 This writes `dist/code.js` (the plugin's main thread) and `dist/ui.html` (its panel), then checks
@@ -15,7 +15,7 @@ that the bundle carries the device catalog and no app profile.
 ## Import into Figma
 
 Figma desktop › Plugins › Development › Import plugin from manifest… › choose
-`packages/figma-plugin/manifest.json`. Run it from Plugins › Development › Hinge.
+`packages/figma-plugin/manifest.json`. Run it from Plugins › Development › Dobra.
 
 ## Commands
 
@@ -67,7 +67,7 @@ chrome. The patterns live in `src/geo.ts` (`INTERACTIVE_NAME`, `CHROME_NAME`).
 
 ## What a tag stores
 
-Shared plugin data in the `hinge` namespace, readable by the Figma REST API and the web report:
+Shared plugin data in the `dobra` namespace, readable by the Figma REST API and the web report:
 
 - `target` — the target key, `device/display/posture/orientation`, for example
   `galaxy-z-fold-7/inner/book/landscape` (`-` when the device has no posture).

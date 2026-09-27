@@ -2,7 +2,7 @@
 
 Date: 2026-09-25
 Status: approved in conversation, pending written-spec review
-Working name: **Hinge** (plugin, CLI and plugin-data namespace `hinge`); rename freely before the
+Name: **Dobra** (plugin, CLI and plugin-data namespace `dobra`); rename freely before the
 first release.
 
 ## 1. Goal
@@ -165,7 +165,7 @@ Each source turns what it reads into `Subject`s; the same `check()` and `coverag
 
 - `figma.createFrame()` sized to the resolved environment. Name for humans:
   `Screen / Galaxy Z Fold 7 · inner · book · landscape`.
-- Identity: `setSharedPluginData('hinge', 'target', targetKey)` and `'catalogVersion'`. Shared data
+- Identity: `setSharedPluginData('dobra', 'target', targetKey)` and `'catalogVersion'`. Shared data
   lets REST, the web app and the CLI read it.
 - Overlay: a locked child frame `⎔ hinge-overlay` (ignores auto layout, stretch constraints) with
   the hinge (hatched, 20% opacity), safe areas, insets and reserved regions. Toggling sets
@@ -198,7 +198,7 @@ through the checker and the flags are listed.
 ### 5.5 Checker
 
 - Scope: selection, current page, or all pages (`figma.loadAllPagesAsync()`, opt-in).
-- Discovery: `findAllWithCriteria({ sharedPluginData: { namespace: 'hinge', keys: ['target'] } })`,
+- Discovery: `findAllWithCriteria({ sharedPluginData: { namespace: 'dobra', keys: ['target'] } })`,
   then name, then size. `figma.skipInvisibleInstanceChildren = true`.
 - Yields every ~500 nodes, reports progress, caches per frame.
 - Results grouped by frame and rule; clicking selects the node and calls
@@ -223,7 +223,7 @@ Exportable as JSON for the web app and CLI.
 
 ## 7. CLI (website checks)
 
-`hinge check site <url> --targets …` with Playwright and Chromium:
+`dobra check site <url> --targets …` with Playwright and Chromium:
 
 1. For each target, set the viewport, `deviceScaleFactor` and a platform user agent.
 2. For folded or spanned targets, emulate the fold through the CDP display-feature override so

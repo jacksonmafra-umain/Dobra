@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { presetSpec } from '@hinge/core/presets';
-import { envConfigOf } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { presetSpec } from '@dobra/core/presets';
+import { envConfigOf } from '@dobra/core/targets';
 import { applyPreset, decorate, NAMESPACE, OVERLAY_NAME } from './presets';
 import { createFakeFigma } from './test/fakeFigma';
 

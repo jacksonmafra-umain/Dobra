@@ -62,7 +62,7 @@ export interface CollisionReport {
   element: string;
 }
 
-/** Collision-checker results as Hinge hinge-content findings. */
+/** Collision-checker results as Dobra hinge-content findings. */
 export function collisionsToFindings(collisions: CollisionReport[], target: Target, env: Environment): Finding[] {
   return collisions.map((c) => {
     const fold = c.region === 'Folding region' ? env.folds.find((f) => f.separating || f.occludes) : null;

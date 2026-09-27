@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { PLATFORMS, type SimulatorConfig } from '@hinge/core/config/types';
-import { runLayoutChecks, targetOf } from '@hinge/core/engine/checks';
-import { describeChanges, type Snapshot } from '@hinge/core/engine/diff';
-import { findDevice, resolveEnvironment, type Selection } from '@hinge/core/engine/environment';
-import { resolveLayout } from '@hinge/core/engine/layout';
-import type { ModalKind } from '@hinge/core/engine/modal';
-import type { TextSettings } from '@hinge/core/engine/typography';
-import { collisionsToFindings } from '@hinge/core/collisions';
+import { PLATFORMS, type SimulatorConfig } from '@dobra/core/config/types';
+import { runLayoutChecks, targetOf } from '@dobra/core/engine/checks';
+import { describeChanges, type Snapshot } from '@dobra/core/engine/diff';
+import { findDevice, resolveEnvironment, type Selection } from '@dobra/core/engine/environment';
+import { resolveLayout } from '@dobra/core/engine/layout';
+import type { ModalKind } from '@dobra/core/engine/modal';
+import type { TextSettings } from '@dobra/core/engine/typography';
+import { collisionsToFindings } from '@dobra/core/collisions';
 import type { Collision } from '../sample/collisions';
 import type { Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
@@ -111,7 +111,7 @@ export function App({ config }: { config: SimulatorConfig }) {
     <div className="app" data-theme={theme}>
       <header className="topbar">
         <h1 className="topbar__title">
-          Size-Class Simulator <span className="tag">step 4</span>
+          Dobra Simulator <span className="tag">step 4</span>
           <span className="topbar__version" title="Version and build date of this copy">
             v{config.version} · {__BUILD_DATE__}
           </span>
@@ -499,7 +499,7 @@ export function App({ config }: { config: SimulatorConfig }) {
             <button
               className="seg-single"
               disabled={!canExport.ok}
-              title={canExport.ok ? 'Download a Hinge Report JSON for the web report. It holds the shared geometry rules over what is on screen.' : canExport.reason}
+              title={canExport.ok ? 'Download a Dobra Report JSON for the web report. It holds the shared geometry rules over what is on screen.' : canExport.reason}
               onClick={exportReport}
             >
               Export report

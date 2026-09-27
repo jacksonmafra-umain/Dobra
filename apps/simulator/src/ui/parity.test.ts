@@ -1,10 +1,10 @@
 // src/ui/parity.test.ts
 import { describe, expect, it } from 'vitest';
-import { rawConfig as raw } from '@hinge/core/config/load';
-import { parseConfig } from '@hinge/core/config/schema';
-import { runLayoutChecks, targetOf } from '@hinge/core/engine/checks';
-import { findDevice, resolveEnvironment, type Selection } from '@hinge/core/engine/environment';
-import { resolveLayout } from '@hinge/core/engine/layout';
+import { rawConfig as raw } from '@dobra/core/config/load';
+import { parseConfig } from '@dobra/core/config/schema';
+import { runLayoutChecks, targetOf } from '@dobra/core/engine/checks';
+import { findDevice, resolveEnvironment, type Selection } from '@dobra/core/engine/environment';
+import { resolveLayout } from '@dobra/core/engine/layout';
 import { counterpartOf, counterpartSelection, parityRows } from './parity';
 
 const config = parseConfig(raw);

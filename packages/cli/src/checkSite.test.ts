@@ -1,7 +1,7 @@
 import { chromium, type Browser } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { Report } from '@hinge/core/report';
-import { targetKey } from '@hinge/core/targets';
+import type { Report } from '@dobra/core/report';
+import { targetKey } from '@dobra/core/targets';
 import { checkSite } from './checkSite';
 import { startFixtureServer } from './test/server';
 

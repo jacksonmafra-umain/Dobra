@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { representativeTarget } from '@hinge/core/coverage';
-import { presetSpec } from '@hinge/core/presets';
-import { presetZip } from '@hinge/core/presetZip';
-import { parseReport, toMarkdown, type Report, type ReportFrame } from '@hinge/core/report';
-import { envConfigOf, parseTargetKey, type Target } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { representativeTarget } from '@dobra/core/coverage';
+import { presetSpec } from '@dobra/core/presets';
+import { presetZip } from '@dobra/core/presetZip';
+import { parseReport, toMarkdown, type Report, type ReportFrame } from '@dobra/core/report';
+import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
 import { download } from './download';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';

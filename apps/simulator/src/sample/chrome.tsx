@@ -1,6 +1,6 @@
 // System chrome drawn on top of the app: status bar, Dynamic Island, home indicator, Live Activity.
-import type { Rect } from '@hinge/core/config/types';
-import type { Environment } from '@hinge/core/engine/environment';
+import type { Rect } from '@dobra/core/config/types';
+import type { Environment } from '@dobra/core/engine/environment';
 import { ImBag } from './illustrations';
 
 export function StatusIcons({ vertical = false }: { vertical?: boolean }) {

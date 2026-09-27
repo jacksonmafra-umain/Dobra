@@ -9,7 +9,7 @@ const doc: RestNode = {
     {
       id: '0:1', name: 'Screens', type: 'CANVAS',
       children: [
-        { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { hinge: { target: 'surface-duo-2/spanned/spanned/landscape' } } },
+        { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { dobra: { target: 'surface-duo-2/spanned/spanned/landscape' } } },
         { id: '1:2', name: 'Group', type: 'SECTION', children: [{ id: '1:3', name: 'Cover', type: 'FRAME', absoluteBoundingBox: box(2000, 0, 352, 339) }] },
         { id: '1:4', name: 'A rectangle', type: 'RECTANGLE', absoluteBoundingBox: box(0, 0, 10, 10) },
       ],

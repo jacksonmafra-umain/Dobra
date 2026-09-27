@@ -17,7 +17,7 @@ describe('tokenStore', () => {
     const store = tokenStore(storage);
     expect(store.read()).toBe('');
     store.remember('  figd_abc \n');
-    expect(storage.data.get('hinge.token')).toBe('figd_abc');
+    expect(storage.data.get('dobra.token')).toBe('figd_abc');
     store.forget();
     expect(storage.data.size).toBe(0);
     expect(store.read()).toBe('');

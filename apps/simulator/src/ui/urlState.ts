@@ -1,7 +1,7 @@
 // The whole simulator state lives in the URL so a specific cell can be linked in a ticket.
-import type { DeviceSpec, Orientation, Size } from '@hinge/core/config/types';
-import type { Environment, Selection } from '@hinge/core/engine/environment';
-import type { TextSettings } from '@hinge/core/engine/typography';
+import type { DeviceSpec, Orientation, Size } from '@dobra/core/config/types';
+import type { Environment, Selection } from '@dobra/core/engine/environment';
+import type { TextSettings } from '@dobra/core/engine/typography';
 import type { Zoom } from './DeviceFrame';
 import { baseMedia, type MediaOverrides } from './media';
 import type { OverlayToggles } from './Overlays';

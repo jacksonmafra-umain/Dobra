@@ -1,8 +1,8 @@
 // src/ui/media.test.ts
 import { describe, expect, it } from 'vitest';
-import { rawConfig as raw } from '@hinge/core/config/load';
-import { parseConfig } from '@hinge/core/config/schema';
-import { findDevice, resolveEnvironment, type Selection } from '@hinge/core/engine/environment';
+import { rawConfig as raw } from '@dobra/core/config/load';
+import { parseConfig } from '@dobra/core/config/schema';
+import { findDevice, resolveEnvironment, type Selection } from '@dobra/core/engine/environment';
 import { resolveMedia } from './media';
 
 const config = parseConfig(raw);

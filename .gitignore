@@ -5,4 +5,5 @@ matrix-out/
 *.tsbuildinfo
 .DS_Store
 # Build exports of the simulator. They are build output.
+/dobra-simulator-v*.html
 /size-class-simulator-v*.html

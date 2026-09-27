@@ -4,7 +4,7 @@ import { build } from 'esbuild';
 
 await build({
   entryPoints: ['src/main.ts'],
-  outfile: 'dist/hinge.mjs',
+  outfile: 'dist/dobra.mjs',
   platform: 'node',
   format: 'esm',
   target: 'node22',
@@ -12,4 +12,4 @@ await build({
   external: ['playwright', 'playwright-core'],
   banner: { js: '#!/usr/bin/env node' },
 });
-chmodSync('dist/hinge.mjs', 0o755);
+chmodSync('dist/dobra.mjs', 0o755);

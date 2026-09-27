@@ -1,10 +1,10 @@
-import type { GridRule, ScreenSpec, SimulatorConfig } from '@hinge/core/config/types';
-import { capitalize, type Environment } from '@hinge/core/engine/environment';
-import { foldThickness } from '@hinge/core/engine/folds';
-import type { Layout } from '@hinge/core/engine/layout';
-import { placeModal, type ModalKind } from '@hinge/core/engine/modal';
-import { formatSizeClass } from '@hinge/core/engine/sizeClass';
-import type { Finding } from '@hinge/core/engine/checks';
+import type { GridRule, ScreenSpec, SimulatorConfig } from '@dobra/core/config/types';
+import { capitalize, type Environment } from '@dobra/core/engine/environment';
+import { foldThickness } from '@dobra/core/engine/folds';
+import type { Layout } from '@dobra/core/engine/layout';
+import { placeModal, type ModalKind } from '@dobra/core/engine/modal';
+import { formatSizeClass } from '@dobra/core/engine/sizeClass';
+import type { Finding } from '@dobra/core/engine/checks';
 import type { Collision } from '../sample/collisions';
 import type { ResolvedMedia } from './media';
 

@@ -1,10 +1,10 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadConfig } from '@hinge/core/config/load';
-import catalogJson from '@hinge/core/catalog/catalog.json';
+import { loadConfig } from '@dobra/core/config/load';
+import catalogJson from '@dobra/core/catalog/catalog.json';
 
-describe('@hinge/core', () => {
+describe('@dobra/core', () => {
   it('serves the config JSON and a validated config', () => {
     expect(loadConfig().devices.length).toBe(catalogJson.devices.length);
   });

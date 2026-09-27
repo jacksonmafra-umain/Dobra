@@ -1,4 +1,4 @@
-import type { ConfigError } from '@hinge/core/config/schema';
+import type { ConfigError } from '@dobra/core/config/schema';
 
 /** Shown instead of the simulator when the catalog or app profile does not validate. */
 export function ConfigErrorPage({ error }: { error: ConfigError }) {

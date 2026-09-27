@@ -13,7 +13,7 @@ tabBar, screens). One schema file keeps both shapes: `catalogSchema` validates a
 returns the same `SimulatorConfig`, so the engine and the app do not change. New catalog facts
 come with small pure helpers (`categoryOf`, `postureKinds`, `mediaFacts`).
 
-**Tech Stack:** TypeScript 7, zod 4, Vitest 4, npm workspaces (`@hinge/core`, `@hinge/simulator`).
+**Tech Stack:** TypeScript 7, zod 4, Vitest 4, npm workspaces (`@dobra/core`, `@dobra/simulator`).
 
 **Spec:** `docs/superpowers/specs/2026-09-25-foldable-artboards-design.md` §2 (coverage decision),
 §3.1, §3.2 (`loadCatalog`, `Category`, `categoryOf`), §4, §12 slice 2. Device additions and the
@@ -144,7 +144,7 @@ describe('catalog and profile', () => {
   });
 });
 ```
-Run: `npm test -w @hinge/core -- src/catalog/catalog.test.ts` → FAIL (`./load` missing).
+Run: `npm test -w @dobra/core -- src/catalog/catalog.test.ts` → FAIL (`./load` missing).
 
 - [ ] **Step 3: Split the schema** in `packages/core/src/config/schema.ts`
   - Replace the single `configSchema = z.strictObject({...}).superRefine(fn)` with:
@@ -247,7 +247,7 @@ validation, so this is harmless.
 
 - [ ] **Step 5: Run the new tests**
 
-Run: `npm test -w @hinge/core -- src/catalog/catalog.test.ts` → PASS (4 tests).
+Run: `npm test -w @dobra/core -- src/catalog/catalog.test.ts` → PASS (4 tests).
 
 - [ ] **Step 6: Move every importer off the old file, then delete it**
 
@@ -259,10 +259,10 @@ For each hit:
   `import raw from '../config/simulator.config.json';` (or `'./simulator.config.json'`) with
   `import { rawConfig as raw } from '../config/load';` (or `'./load'`).
 - `apps/simulator/src/core.test.ts`: replace the JSON import with
-  `import catalogJson from '@hinge/core/catalog/catalog.json';` and compare
+  `import catalogJson from '@dobra/core/catalog/catalog.json';` and compare
   `loadConfig().devices.length` with `catalogJson.devices.length`.
 - `apps/simulator/src/sample/art.test.ts`: import `raw` from
-  `'@hinge/core/profiles/sample.profile.json'` (it only reads `raw.tabBar`).
+  `'@dobra/core/profiles/sample.profile.json'` (it only reads `raw.tabBar`).
 - Comments and UI strings that name the file (`ConfigErrorPage.tsx`, `environment.ts`
   "Unknown device … in simulator.config.json"): say `the catalog` or `the config` instead.
 
@@ -333,7 +333,7 @@ describe('categories', () => {
   });
 });
 ```
-Run: `npm test -w @hinge/core -- src/catalog/categories.test.ts` → FAIL.
+Run: `npm test -w @dobra/core -- src/catalog/categories.test.ts` → FAIL.
 
 - [ ] **Step 2: Implement**
 
@@ -508,7 +508,7 @@ it('rejects an unknown cover-screen policy', () => {
   expect(issuesOf(cfg).join('\n')).toMatch(/coverScreen\.policy/);
 });
 ```
-Run: `npm test -w @hinge/core` → FAIL on both.
+Run: `npm test -w @dobra/core` → FAIL on both.
 
 - [ ] **Step 2: Implement**
   - schema: `coverScreen: z.strictObject({ policy: z.enum(['user-granted', 'any-app', 'allow-list']), continuity: z.boolean(), note: z.string() }).optional(),`
@@ -718,11 +718,11 @@ git commit -m "Add default coverage requirements to the catalog and validate the
 
 ### Task 7: Issue, push and PR
 
-- [ ] **Step 1:** `gh issue create -R jacksonmafra-umain/SizeClassSimulator --title "Catalog schema: categories, posture kinds, cover policy, media facts and requirements" --label enhancement --label area:catalog --body "Slice 2a of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. Splits the config into catalog/catalog.json (devices, platforms, requirements) and profiles/sample.profile.json (the sample app); adds a category to every device, a kind to every posture, a cover-screen policy with continuity, media-query facts with category defaults, and validated coverage requirements. New devices and the Galaxy Z Fold size check follow in slice 2b."`
+- [ ] **Step 1:** `gh issue create -R jacksonmafra-umain/Dobra --title "Catalog schema: categories, posture kinds, cover policy, media facts and requirements" --label enhancement --label area:catalog --body "Slice 2a of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. Splits the config into catalog/catalog.json (devices, platforms, requirements) and profiles/sample.profile.json (the sample app); adds a category to every device, a kind to every posture, a cover-screen policy with continuity, media-query facts with category defaults, and validated coverage requirements. New devices and the Galaxy Z Fold size check follow in slice 2b."`
 - [ ] **Step 2:** `git push -u origin feat/catalog-schema`
 - [ ] **Step 3:** PR targeting `feat/android-window-states-clean`, labels `enhancement,area:catalog`,
   body `Closes #N`, Summary, Test plan (counts, typecheck, both builds, equivalence check). No
   assistant mention.
 - [ ] **Step 4:** Tell agent/01: the catalog now lives in `catalog/catalog.json` and the app
   profile in `profiles/sample.profile.json`; `class` became `category`; `coverScreen.userGranted`
-  became `policy` + `continuity`; `mediaFacts(d)` is in `@hinge/core/catalog/media`.
+  became `policy` + `continuity`; `mediaFacts(d)` is in `@dobra/core/catalog/media`.

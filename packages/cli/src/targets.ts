@@ -1,8 +1,8 @@
 // Which device targets a site check visits: explicit keys, else every target of the chosen
 // categories, else one representative device per required coverage cell.
-import type { Catalog } from '@hinge/core/config/schema';
-import { representativeTarget } from '@hinge/core/coverage';
-import { enumerateTargets, envConfigOf, isKnownTarget, parseTargetKey, targetKey, type Target } from '@hinge/core/targets';
+import type { Catalog } from '@dobra/core/config/schema';
+import { representativeTarget } from '@dobra/core/coverage';
+import { enumerateTargets, envConfigOf, isKnownTarget, parseTargetKey, targetKey, type Target } from '@dobra/core/targets';
 import type { CliOptions } from './args';
 
 export function chooseTargets(catalog: Catalog, opts: Pick<CliOptions, 'targets' | 'categories'>): Target[] {

@@ -1,6 +1,6 @@
 // The page's layout as GeoNodes, in document coordinates. The collector runs inside the page, so
 // the function passed to page.evaluate is self-contained: no imports inside it.
-import type { GeoNode } from '@hinge/core/geo';
+import type { GeoNode } from '@dobra/core/geo';
 import type { Page } from 'playwright';
 
 export interface CollectedLayout {

@@ -4,7 +4,7 @@
 
 **Goal:** A development Figma plugin (`packages/figma-plugin`) that creates tagged foldable
 artboards with hinge overlays and grids, tags existing frames, and shows a coverage matrix
-against the catalog's requirements — all driven by pure, tested modules in `@hinge/core`.
+against the catalog's requirements — all driven by pure, tested modules in `@dobra/core`.
 
 **Architecture:** Core gains four pure modules: `targets` (Target keys, enumeration, resolving a
 target to an Environment from the catalog alone), `presets` (a declarative `PresetFrame` per
@@ -26,8 +26,8 @@ bundles an app profile.
 - Manifest (spec §5.1): `editorType: ["figma", "dev"]`, `documentAccess: "dynamic-page"`,
   `networkAccess: { allowedDomains: ["none"] }`. Commands this slice: `presets`, `tag`,
   `coverage` (the checker's `adapt`/`check` commands and relaunch button arrive in slice 4).
-- Identity (spec §5.2): `setSharedPluginData('hinge', 'target', targetKey)` and
-  `('hinge', 'catalogVersion', catalog.version)`; human name
+- Identity (spec §5.2): `setSharedPluginData('dobra', 'target', targetKey)` and
+  `('dobra', 'catalogVersion', catalog.version)`; human name
   `Screen / <Device> · <display> · <posture> · <orientation>`.
 - Overlay (spec §5.2): a locked child frame named `⎔ hinge-overlay` holding the hinge (red, 20%
   opacity), safe zones, insets and reserved regions; toggled with `visible`.
@@ -137,7 +137,7 @@ describe('targets', () => {
   });
 });
 ```
-Run: `npm test -w @hinge/core -- src/targets.test.ts` → FAIL (`./targets` missing).
+Run: `npm test -w @dobra/core -- src/targets.test.ts` → FAIL (`./targets` missing).
 
 - [ ] **Step 2: Share the orientation logic** — create `config/orientations.ts`:
 
@@ -161,7 +161,7 @@ export function offeredOrientations(device: DeviceSpec, displayId: string, postu
 this module at runtime: `orientations.ts` imports types only (`import type`), so there is no
 cycle. In `schema.ts`'s `checkCatalog`, replace the inline `shapes` helper and the iOS branch of
 the offered-set loop with `offeredOrientations` (iOS poses keep using `p.orientations`, which is
-the pose's own list). Run `npm test -w @hinge/core -- src/catalog/requirements.test.ts` → PASS
+the pose's own list). Run `npm test -w @dobra/core -- src/catalog/requirements.test.ts` → PASS
 unchanged.
 
 - [ ] **Step 3: Narrow the engine's config type** — in `engine/environment.ts` add
@@ -411,7 +411,7 @@ Check `SafeArea`'s field names in `engine/environment.ts` before writing `insets
 exposes insets through `env.android` instead of `safeArea`, read them from where the Overlays
 component in the simulator reads them.
 
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck` → PASS.
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck` → PASS.
 - [ ] **Step 4: Commit**
 
 ```bash
@@ -488,7 +488,7 @@ export function toPluginJSON(frames: PresetFrame[]): string {
 Escape `&`, `<` and `>` in `p.name` for the `<title>` (a device name could contain `&`); add a
 test with a name containing `&` if any catalog name does, otherwise a unit test on the escaper.
 
-- [ ] **Step 3:** `npm test -w @hinge/core` → PASS. **Step 4: Commit**
+- [ ] **Step 3:** `npm test -w @dobra/core` → PASS. **Step 4: Commit**
 
 ```bash
 git add packages/core/src/presetSvg.ts packages/core/src/presetSvg.test.ts
@@ -599,7 +599,7 @@ Orientation is already covered: `enumerateTargets` lists landscape targets separ
 rotated frame matches the landscape target. If `resolveTarget` over all targets is slow in the
 test (hundreds of targets), memoise the sized list per `config` object with a `WeakMap`.
 
-- [ ] **Step 3:** `npm test -w @hinge/core` → PASS. **Step 4: Commit**
+- [ ] **Step 3:** `npm test -w @dobra/core` → PASS. **Step 4: Commit**
 
 ```bash
 git add packages/core/src/match.ts packages/core/src/match.test.ts
@@ -734,7 +734,7 @@ export function representativeTarget(catalog: Catalog, r: Requirement): Target |
 }
 ```
 
-- [ ] **Step 3:** `npm test -w @hinge/core` → PASS. **Step 4: Commit**
+- [ ] **Step 3:** `npm test -w @dobra/core` → PASS. **Step 4: Commit**
 
 ```bash
 git add packages/core/src/coverage.ts packages/core/src/coverage.test.ts
@@ -771,7 +771,7 @@ import manifest from '../manifest.json';
 describe('manifest', () => {
   it('is a network-free, dynamic-page plugin with the slice 3 commands', () => {
     expect(manifest).toMatchObject({
-      name: 'Hinge',
+      name: 'Dobra',
       api: '1.0.0',
       editorType: ['figma', 'dev'],
       main: 'dist/code.js',
@@ -806,14 +806,14 @@ describe.skipIf(!existsSync(dist('code.js')))('bundle', () => {
   });
 });
 ```
-Run: `npm test -w @hinge/figma-plugin` → FAIL (workspace missing).
+Run: `npm test -w @dobra/figma-plugin` → FAIL (workspace missing).
 
 - [ ] **Step 2: Package files**
 
 `packages/figma-plugin/package.json`:
 ```json
 {
-  "name": "@hinge/figma-plugin",
+  "name": "@dobra/figma-plugin",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -822,7 +822,7 @@ Run: `npm test -w @hinge/figma-plugin` → FAIL (workspace missing).
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.ui.json",
     "test": "vitest run"
   },
-  "dependencies": { "@hinge/core": "*", "react": "^19.3.0", "react-dom": "^19.3.0" },
+  "dependencies": { "@dobra/core": "*", "react": "^19.3.0", "react-dom": "^19.3.0" },
   "devDependencies": {
     "@figma/plugin-typings": "^1.139.0",
     "@types/node": "^26.6.2",
@@ -840,8 +840,8 @@ Run: `npm test -w @hinge/figma-plugin` → FAIL (workspace missing).
 `manifest.json`:
 ```json
 {
-  "name": "Hinge",
-  "id": "hinge-foldable-artboards-dev",
+  "name": "Dobra",
+  "id": "dobra-foldable-artboards-dev",
   "api": "1.0.0",
   "editorType": ["figma", "dev"],
   "main": "dist/code.js",
@@ -896,7 +896,7 @@ find it, and rename the output to `ui.html` (`build.rollupOptions.output` or a r
 - [ ] **Step 3: Minimal sources**
 
 `src/messages.ts` — the `PluginMsg` union from the Interfaces block, split into
-`ToMain` and `ToUi`, with `CoverageMatrix` imported as a type from `@hinge/core/coverage`.
+`ToMain` and `ToUi`, with `CoverageMatrix` imported as a type from `@dobra/core/coverage`.
 `src/api.ts` — `export type FigmaApi = Pick<PluginAPI, 'createFrame' | 'createRectangle' | 'currentPage' | 'viewport' | 'getNodeByIdAsync' | 'ui'>;`
 `src/code.ts`:
 ```ts
@@ -917,7 +917,7 @@ if (figma.command) void handle(figma, { type: figma.command === 'coverage' ? 'co
 `scan-tags` and `coverage` on open and render the replies as plain lists; Task 9 fills in the
 panels.
 
-- [ ] **Step 4:** `npm install && npm test -w @hinge/figma-plugin && npm run build -w @hinge/figma-plugin && npm run typecheck -w @hinge/figma-plugin`
+- [ ] **Step 4:** `npm install && npm test -w @dobra/figma-plugin && npm run build -w @dobra/figma-plugin && npm run typecheck -w @dobra/figma-plugin`
   Expected: manifest test PASS; build writes `dist/code.js` and `dist/ui.html`; the bundle test
   runs inside the build and PASSES; typecheck PASS. Add `packages/figma-plugin/dist/` is covered
   by the root `.gitignore` (`dist/`); confirm with `git status`.
@@ -936,7 +936,7 @@ git commit -m "Scaffold the Figma plugin with its manifest, message types and bu
 
 **Interfaces:**
 - Consumes: `PresetFrame`, `presetSpec` (Task 2), `FigmaApi` (Task 6).
-- Produces: `NAMESPACE = 'hinge'`, `OVERLAY_NAME = '⎔ hinge-overlay'`,
+- Produces: `NAMESPACE = 'dobra'`, `OVERLAY_NAME = '⎔ hinge-overlay'`,
   `applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: string): FrameNode`,
   `nextFreeX(api: FigmaApi, gap?: number): number`; `createFakeFigma(): FigmaApi & { page: FakeNode }`.
 
@@ -957,9 +957,9 @@ git commit -m "Scaffold the Figma plugin with its manifest, message types and bu
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { presetSpec } from '@hinge/core/presets';
-import { envConfigOf } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { presetSpec } from '@dobra/core/presets';
+import { envConfigOf } from '@dobra/core/targets';
 import { applyPreset, NAMESPACE, OVERLAY_NAME } from './presets';
 import { createFakeFigma } from './test/fakeFigma';
 
@@ -1002,15 +1002,15 @@ describe('applyPreset', () => {
   });
 });
 ```
-Run: `npm test -w @hinge/figma-plugin -- src/presets.test.ts` → FAIL.
+Run: `npm test -w @dobra/figma-plugin -- src/presets.test.ts` → FAIL.
 
 - [ ] **Step 3: Implement** `src/presets.ts`
 
 ```ts
-import type { PresetFrame } from '@hinge/core/presets';
+import type { PresetFrame } from '@dobra/core/presets';
 import type { FigmaApi } from './api';
 
-export const NAMESPACE = 'hinge';
+export const NAMESPACE = 'dobra';
 export const OVERLAY_NAME = '⎔ hinge-overlay';
 const GAP = 80;
 const RED = { r: 0.94, g: 0.27, b: 0.27 };
@@ -1078,7 +1078,7 @@ export function applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: strin
 `box` skips zero-size rects, so a zero-width crease only draws the `Crease`
 hairline — add a test for `pixel-9-pro-fold` open that expects one `Crease` child and no `Hinge`.
 
-- [ ] **Step 4:** `npm test -w @hinge/figma-plugin && npm run typecheck -w @hinge/figma-plugin` → PASS.
+- [ ] **Step 4:** `npm test -w @dobra/figma-plugin && npm run typecheck -w @dobra/figma-plugin` → PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
@@ -1100,8 +1100,8 @@ git commit -m "Create tagged artboards with hinge overlays and grids"
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { envConfigOf } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { envConfigOf } from '@dobra/core/targets';
 import { NAMESPACE } from './presets';
 import { applyTag, tagCandidates } from './tagging';
 import { createFakeFigma } from './test/fakeFigma';
@@ -1152,7 +1152,7 @@ Run → FAIL.
   `Frame <id> not found` when missing, rejects a key `parseTargetKey` cannot read, and writes
   both shared plugin data keys.
 
-- [ ] **Step 3:** `npm test -w @hinge/figma-plugin` → PASS. **Step 4: Commit**
+- [ ] **Step 3:** `npm test -w @dobra/figma-plugin` → PASS. **Step 4: Commit**
 
 ```bash
 git add packages/figma-plugin/src/tagging.ts packages/figma-plugin/src/tagging.test.ts
@@ -1243,7 +1243,7 @@ Run → FAIL.
   Keep the UI in plain React with CSS variables from Figma's theme (`themeColors: true` gives
   `--figma-color-*`).
 - [ ] **Step 4:** `npm test && npm run typecheck && npm run build` (root runs every workspace)
-  → PASS, and `npm run build -w @hinge/figma-plugin` → PASS including the bundle test.
+  → PASS, and `npm run build -w @dobra/figma-plugin` → PASS including the bundle test.
 - [ ] **Step 5: Commit** (two microcommits)
 
 ```bash
@@ -1255,10 +1255,10 @@ git commit -m "Add the plugin panels for artboards, tagging and coverage"
 
 ### Task 10: README, manual smoke test, issue and PR
 
-- [ ] **Step 1:** `packages/figma-plugin/README.md`: build (`npm run build -w @hinge/figma-plugin`),
+- [ ] **Step 1:** `packages/figma-plugin/README.md`: build (`npm run build -w @dobra/figma-plugin`),
   import (Figma desktop › Plugins › Development › Import plugin from manifest… ›
   `packages/figma-plugin/manifest.json`), the three commands, what the tag stores
-  (`hinge` / `target`, `catalogVersion`), and that the plugin makes no network requests.
+  (`dobra` / `target`, `catalogVersion`), and that the plugin makes no network requests.
 - [ ] **Step 2: Manual smoke test** — the Figma desktop connection is not available to the agent,
   so ask the user to import the plugin and run: Artboards → create Surface Duo 2 spanned and
   Galaxy Z Flip 7 cover; Tag frames on a hand-drawn 412×915 frame; Coverage → Create missing.
@@ -1266,7 +1266,7 @@ git commit -m "Add the plugin panels for artboards, tagging and coverage"
 - [ ] **Step 3:** Issue:
 
 ```bash
-gh issue create -R jacksonmafra-umain/SizeClassSimulator \
+gh issue create -R jacksonmafra-umain/Dobra \
   --title "Figma plugin: artboard presets, Tag frames and coverage" \
   --label enhancement --label area:plugin \
   --body "Slice 3 of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. A development plugin that creates tagged artboards with hinge overlays and grids, tags existing frames, and reports coverage against the catalog requirements. Core gains target keys, preset specs, SVG export, frame matching and coverage."

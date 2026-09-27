@@ -1,5 +1,5 @@
 {
-  "name": "@hinge/report",
+  "name": "@dobra/report",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hinge/core": "*",
+    "@dobra/core": "*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

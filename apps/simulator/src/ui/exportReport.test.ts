@@ -1,6 +1,6 @@
 // src/ui/exportReport.test.ts
 import { describe, expect, it } from 'vitest';
-import { parseReport } from '@hinge/core/report';
+import { parseReport } from '@dobra/core/report';
 import { exportable, reportFileName, simulatorReport, toGeoTree, type NodeRecord } from './exportReport';
 
 const r = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
@@ -48,6 +48,6 @@ describe('exportable', () => {
 
 describe('reportFileName', () => {
   it('names the file after the target key', () => {
-    expect(reportFileName(target)).toBe('hinge-report-pixel-9-pro-fold_inner_book_portrait.json');
+    expect(reportFileName(target)).toBe('dobra-report-pixel-9-pro-fold_inner_book_portrait.json');
   });
 });

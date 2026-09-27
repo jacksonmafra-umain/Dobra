@@ -217,7 +217,7 @@ In `ruleMatches`, after the orientation check:
 ```
 The fallback check (`Object.keys(m).length === 0`) needs no change: a media-keyed rule is not a fallback.
 
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck` → PASS (existing profile rules resolve the same:
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck` → PASS (existing profile rules resolve the same:
   the sample profile's layout tests stay green).
 - [ ] **Step 4: Commit**
 
@@ -292,7 +292,7 @@ function touchTarget({ env, placed, add }: Ctx) {
     // … unchanged from here
 ```
 Check `rectsOverlap` treats rects that only touch at an edge as not overlapping, and ledger what it does.
-- [ ] **Step 3:** `npm test -w @hinge/core && npm test -w @hinge/cli && npm run typecheck` → PASS. If a CLI or
+- [ ] **Step 3:** `npm test -w @dobra/core && npm test -w @dobra/cli && npm run typecheck` → PASS. If a CLI or
   report test expected `touch-target` on a desktop target, that expectation was the old behaviour:
   update it and ledger it.
 - [ ] **Step 4: Commit**
@@ -320,7 +320,7 @@ Use the catalog variable the file already defines. Run → FAIL (a type error in
 - [ ] **Step 2: Implement:** `kind: 'figma' | 'web' | 'simulator'` in the `Report` interface, and
   `kind: z.enum(['figma', 'web', 'simulator'])` in the schema. `buildReport` passes `source.kind` to
   `check()` as `Subject.source`, which already allows `'simulator'`.
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck` → PASS.
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck` → PASS.
 - [ ] **Step 4: Commit**
 
 ```bash

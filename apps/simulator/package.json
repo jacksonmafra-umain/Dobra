@@ -1,5 +1,5 @@
 {
-  "name": "@hinge/simulator",
+  "name": "@dobra/simulator",
   "private": true,
   "version": "0.5.0",
   "type": "module",
@@ -13,7 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@hinge/core": "*",
+    "@dobra/core": "*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
