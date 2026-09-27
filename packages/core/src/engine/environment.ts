@@ -1,4 +1,5 @@
 import type { BarAxis, DeviceSpec, Orientation, Platform, Rect, SafeArea, SimulatorConfig, Size } from '../config/types';
+import { DEFAULT_MEDIA, mediaFacts, type MediaFacts } from '../catalog/media';
 import { resolveAndroidDevice } from './android';
 import { resolveIosDevice } from './ios';
 import type { FoldFeature } from './folds';
@@ -38,6 +39,8 @@ export interface Selection {
   /** The app requests portrait (screenOrientation="portrait"). Defaults to the app manifest in the config. */
   appPortrait?: boolean;
   targetSdk?: number;
+  /** Media-query facts the user overrides (pointer, keyboard, …). Unset keys keep the device's value. */
+  media?: Partial<MediaFacts>;
 }
 
 export type NavMode = 'gesture' | 'three-button';
@@ -138,6 +141,8 @@ export interface Environment {
   cameraActive: boolean;
   liveActivity: boolean;
   android: AndroidDetails | null;
+  /** Media-query facts for this window: the device's (catalog/media.ts), then the selection's overrides. */
+  media: MediaFacts;
 }
 
 /** What resolving a window reads: platforms, devices and the app's manifest. The catalog plus DEFAULT_APP satisfies it. */
@@ -149,16 +154,24 @@ export function findDevice(config: EnvConfig, id: string): DeviceSpec {
   return device;
 }
 
+function withMedia(base: MediaFacts, override: Partial<MediaFacts> | undefined): MediaFacts {
+  const out: MediaFacts = { ...base };
+  for (const [k, v] of Object.entries(override ?? {})) if (v !== undefined) (out as unknown as Record<string, unknown>)[k] = v;
+  return out;
+}
+
 export function resolveEnvironment(config: EnvConfig, sel: Selection): Environment {
   if (sel.free) {
     const platform = sel.freePlatform ?? findDevice(config, sel.deviceId).platform;
-    return freeEnvironment(config, sel.free, platform);
+    // A free window has no device: it gets the phone defaults, touch first.
+    return { ...freeEnvironment(config, sel.free, platform), media: withMedia(DEFAULT_MEDIA.phone, sel.media) };
   }
   const device = findDevice(config, sel.deviceId);
-  return device.platform === 'ios' ? resolveIosDevice(config, device, sel) : resolveAndroidDevice(config, device, sel);
+  const env = device.platform === 'ios' ? resolveIosDevice(config, device, sel) : resolveAndroidDevice(config, device, sel);
+  return { ...env, media: withMedia(mediaFacts(device), sel.media) };
 }
 
-function freeEnvironment(config: EnvConfig, size: Size, platform: Platform): Environment {
+function freeEnvironment(config: EnvConfig, size: Size, platform: Platform): Omit<Environment, 'media'> {
   const profile = config.platforms[platform];
   let sizeClass: SizeClass;
   let barAxis: BarAxis | null = null;
