@@ -86,6 +86,22 @@
           ]
         }
       ]
+    },
+    {
+      "file": "05-text-at-40-percent.html",
+      "observed": "§8.2 #5",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/inner/open/portrait",
+          "expect": [
+            "min-legible-width",
+            "landscape-not-wide"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        }
+      ]
     }
   ],
   "transitions": []
