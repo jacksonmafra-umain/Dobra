@@ -174,3 +174,69 @@ describe('limits and errors', () => {
     expect(api.undoCommits).toBe(1);
   });
 });
+
+describe('review fixes', () => {
+  const sizeClasses = (n: number): VariableSpec => ({
+    collections: [
+      {
+        key: 'size-classes/android',
+        name: 'Dobra · Size classes · Android',
+        modes: Array.from({ length: n }, (_, i) => ({ key: `c${i}`, name: `C${i}` })),
+        variables: [{ key: 'layout/margin', name: 'layout/margin', type: 'FLOAT', scopes: ['GAP'], description: 'x', values: Object.fromEntries(Array.from({ length: n }, (_, i) => [`c${i}`, i])) }],
+      },
+    ],
+  });
+  const modeTotal = async (api: FakeFigma) => (await api.variables.getLocalVariableCollectionsAsync()).reduce((n, c) => n + c.modes.length, 0);
+
+  it('splits an existing collection that grows past the limit, without looping', async () => {
+    const api = createFakeFigma();
+    api.modeLimit = 4;
+    await applyVariables(api, sizeClasses(3), OFF);
+    const s = await applyVariables(api, sizeClasses(5), OFF);
+    expect(s.errors).toEqual([]);
+    const all = await api.variables.getLocalVariableCollectionsAsync();
+    expect(all.map((c) => c.modes.length)).toEqual([4, 1]);
+    expect(all.map((c) => c.name)).toEqual(['Dobra · Size classes · Android', 'Dobra · Size classes · Android 2']);
+    expect(await applyVariables(api, sizeClasses(5), OFF)).toMatchObject({ errors: [] });
+    expect(await modeTotal(api)).toBe(5);
+  });
+
+  it('never duplicates a mode when an existing device collection overflows', async () => {
+    const api = createFakeFigma();
+    api.modeLimit = 4;
+    await applyVariables(api, devices(3, ['phone', 'tablet']), OFF);
+    await applyVariables(api, devices(5, ['phone', 'tablet']), OFF);
+    await applyVariables(api, devices(5, ['phone', 'tablet']), OFF);
+    expect(await modeTotal(api)).toBe(5);
+  });
+
+  it('lists and removes device modes when every device is deselected', async () => {
+    const api = createFakeFigma();
+    await applyVariables(api, devices(2, ['phone']), OFF);
+    const none: VariableSpec = { collections: [{ ...devices(0, ['phone']).collections[0] }] };
+    expect((await applyVariables(api, none, OFF)).collections[0].stale).toEqual(['Target 0', 'Target 1']);
+    const s = await applyVariables(api, none, { overwrite: false, removeStale: true });
+    expect(s.collections[0].removed).toEqual(['Target 0']);
+    expect(s.warnings.join('\n')).toMatch(/needs at least one mode/);
+  });
+
+  it('does not create an empty collection', async () => {
+    const api = createFakeFigma();
+    await applyVariables(api, devices(0, ['phone']), OFF);
+    expect(await api.variables.getLocalVariableCollectionsAsync()).toEqual([]);
+  });
+
+  it('keeps using the category parts after a split, even for one category, and reports parts no longer selected', async () => {
+    const api = createFakeFigma();
+    api.modeLimit = 2;
+    const three: VariableSpec = {
+      collections: [{ ...devices(3, ['phone']).collections[0], modeCategory: { t0: 'phone', t1: 'phone', t2: 'tablet' } }],
+    };
+    await applyVariables(api, three, OFF);
+    const phones: VariableSpec = { collections: [{ ...devices(2, ['phone']).collections[0] }] };
+    const s = await applyVariables(api, phones, OFF);
+    const names = (await api.variables.getLocalVariableCollectionsAsync()).map((c) => c.name).sort();
+    expect(names).toEqual(['Dobra · Devices · Phone', 'Dobra · Devices · Tablet']);
+    expect(s.collections.find((c) => c.name === 'Dobra · Devices · Tablet')?.stale).toEqual(['Target 2']);
+  });
+});

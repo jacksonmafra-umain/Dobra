@@ -15,7 +15,12 @@ const EDIT_ACCESS = 'You need edit access to create variables';
 /** Figma refused another mode: the plan's limit per collection. */
 class ModeLimit extends Error {
   constructor(
+    /** Modes the collection held when Figma refused one more. */
     readonly limit: number,
+    /** How many of this spec's modes the collection now holds (and keeps). */
+    readonly fit: number,
+    /** The collection existed before this run, so it stays and keeps the modes that fit. */
+    readonly existed: boolean,
     message: string,
   ) {
     super(message);
@@ -67,16 +72,6 @@ async function applyCollection(
 ): Promise<CollectionSummary> {
   const isNew = !existing;
   const collection = existing ?? createCollection(api, spec, run, warnings);
-  const addMode = (name: string) => {
-    try {
-      return collection.addMode(name);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      // Any refusal once the collection holds a mode is treated as the plan's limit (spec §9 risk 4).
-      if (collection.modes.length >= 1) throw new ModeLimit(collection.modes.length, message);
-      throw e;
-    }
-  };
   const summary: CollectionSummary = {
     key: spec.key,
     name: collection.name,
@@ -94,15 +89,9 @@ async function applyCollection(
   const modeIds = readJson<Record<string, string>>(collection.getSharedPluginData(NAMESPACE, KEY.modes), {});
   const live = new Set(collection.modes.map((m) => m.modeId));
   for (const k of Object.keys(modeIds)) if (!live.has(modeIds[k])) delete modeIds[k];
-  spec.modes.forEach((m, i) => {
-    if (modeIds[m.key]) return;
-    if (isNew && i === 0) {
-      collection.renameMode(collection.modes[0].modeId, m.name);
-      modeIds[m.key] = collection.modes[0].modeId;
-    } else {
-      modeIds[m.key] = addMode(m.name);
-    }
-  });
+  const saveModes = () => collection.setSharedPluginData(NAMESPACE, KEY.modes, JSON.stringify(modeIds));
+
+  // Modes no longer selected go first, so removing them frees room for new ones.
   const wanted = new Set(spec.modes.map((m) => m.key));
   const nameOf = (modeId: string) => collection.modes.find((m) => m.modeId === modeId)?.name ?? modeId;
   for (const [k, modeId] of Object.entries(modeIds)) {
@@ -118,7 +107,25 @@ async function applyCollection(
       warnings.push(`${collection.name} needs at least one mode; kept ${name}`);
     }
   }
-  collection.setSharedPluginData(NAMESPACE, KEY.modes, JSON.stringify(modeIds));
+  spec.modes.forEach((m, i) => {
+    if (modeIds[m.key]) return;
+    if (isNew && i === 0) {
+      collection.renameMode(collection.modes[0].modeId, m.name);
+      modeIds[m.key] = collection.modes[0].modeId;
+      return;
+    }
+    try {
+      modeIds[m.key] = collection.addMode(m.name);
+    } catch (e) {
+      // Any refusal once the collection holds a mode is treated as the plan's limit (spec §9 risk 4).
+      // The modes added so far are kept and saved, so no mode is left without its key.
+      saveModes();
+      const message = e instanceof Error ? e.message : String(e);
+      if (collection.modes.length < 1) throw e;
+      throw new ModeLimit(collection.modes.length, spec.modes.filter((x) => modeIds[x.key]).length, !isNew, message);
+    }
+  });
+  saveModes();
 
   // Variables, by key.
   const byKey = new Map<string, Variable>();
@@ -136,7 +143,8 @@ async function applyCollection(
       summary.created++;
     }
     v.scopes = sv.scopes as VariableScope[];
-    if (v.description !== sv.description) v.description = sv.description;
+    // A collection with no selected modes carries no description worth keeping over the last one.
+    if (spec.modes.length && v.description !== sv.description) v.description = sv.description;
 
     const written = readJson<Record<string, VarValue>>(v.getSharedPluginData(NAMESPACE, KEY.written), {});
     let changed = false;
@@ -195,14 +203,14 @@ function byCategory(spec: SpecCollection): SpecCollection[] {
   return [...groups].map(([cat, keys]) => subset(spec, `${spec.key}/${cat}`, `${spec.name} · ${categoryLabel(cat)}`, keys));
 }
 
-/** Parts of at most `limit` modes: the first keeps the key and name, the rest are numbered from 2. */
-function chunks(spec: SpecCollection, limit: number): SpecCollection[] {
+/**
+ * The first `first` modes keep the key and name (the collection that already holds them); the rest go
+ * into parts of at most `limit` modes, numbered from 2.
+ */
+function chunks(spec: SpecCollection, first: number, limit: number): SpecCollection[] {
   const keys = spec.modes.map((m) => m.key);
-  const out: SpecCollection[] = [];
-  for (let i = 0; i < keys.length; i += limit) {
-    const n = i / limit + 1;
-    out.push(subset(spec, n === 1 ? spec.key : `${spec.key}/${n}`, n === 1 ? spec.name : `${spec.name} ${n}`, keys.slice(i, i + limit)));
-  }
+  const out = [subset(spec, spec.key, spec.name, keys.slice(0, first))];
+  for (let i = first, n = 2; i < keys.length; i += limit, n++) out.push(subset(spec, `${spec.key}/${n}`, `${spec.name} ${n}`, keys.slice(i, i + limit)));
   return out;
 }
 
@@ -227,11 +235,24 @@ export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: Va
     }
   };
 
+  const applied = new Set<string>();
+  /** Parts an earlier run split `base` into by category: `devices/phone`, not `devices/2`. */
+  const categoryParts = (base: string) =>
+    [...byKey.keys()].filter((k) => {
+      const rest = k.startsWith(`${base}/`) ? k.slice(base.length + 1) : '';
+      return rest && !rest.includes('/') && !/^\d+$/.test(rest);
+    });
+
   const apply = async (c: SpecCollection): Promise<void> => {
-    // A collection already split on an earlier run goes straight to its split form.
-    const splitBefore = [...byKey.keys()].some((k) => k.startsWith(`${c.key}/`));
-    if (!byKey.has(c.key) && splitBefore && canSplitByCategory(c)) {
-      for (const part of byCategory(c)) await apply(part);
+    applied.add(c.key);
+    // Nothing selected and nothing written before: don't create an empty collection.
+    if (!c.modes.length && !byKey.has(c.key)) return;
+    // A collection split by category on an earlier run keeps that form, even for one category now.
+    const earlier = c.modeCategory && !byKey.has(c.key) ? categoryParts(c.key) : [];
+    if (earlier.length) {
+      const parts = byCategory(c);
+      for (const key of earlier) if (!parts.some((p) => p.key === key)) parts.push(subset(c, key, byKey.get(key)!.name, []));
+      for (const part of parts) await apply(part);
       return;
     }
     try {
@@ -241,7 +262,9 @@ export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: Va
     } catch (e) {
       if (!(e instanceof ModeLimit)) throw e;
       await takeBack();
-      const parts = canSplitByCategory(c) ? byCategory(c) : chunks(c, e.limit);
+      if (e.fit === 0) throw new Error(`${c.name} is full: all ${e.limit} of its modes are no longer selected. Tick "Remove modes no longer selected" to make room.`);
+      // A new collection splits by category; one that existed keeps the modes that fit and continues in numbered parts.
+      const parts = !e.existed && canSplitByCategory(c) ? byCategory(c) : chunks(c, e.fit, e.limit);
       out.warnings.push(`${c.name}: ${e.message}; split into ${parts.length} collections`);
       for (const part of parts) await apply(part);
     }
@@ -250,6 +273,10 @@ export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: Va
   for (const c of spec.collections) {
     try {
       await apply(c);
+      // Parts of this collection from earlier runs that this run did not touch: report their modes as no longer selected.
+      for (const key of byKey.keys()) {
+        if ((key === c.key || key.startsWith(`${c.key}/`)) && !applied.has(key)) await apply(subset(c, key, byKey.get(key)!.name, []));
+      }
     } catch (e) {
       if (e instanceof NoEditAccess) {
         out.errors.push({ collection: '*', message: EDIT_ACCESS });
