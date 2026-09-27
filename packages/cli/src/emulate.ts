@@ -51,8 +51,9 @@ export function deviceProfile(config: EnvConfig, t: Target): DeviceProfile {
       : { orientation: 'horizontal', offset: f.rect.y, maskLength: f.rect.height }
     : null;
   return {
-    width: env.width,
-    height: env.height,
+    // Playwright and the DevTools protocol take whole CSS px; catalog sizes can be fractional.
+    width: Math.round(env.width),
+    height: Math.round(env.height),
     deviceScaleFactor,
     userAgent,
     isMobile: device.category !== 'desktop',
@@ -89,7 +90,8 @@ export async function openTarget(browser: Browser, profile: DeviceProfile): Prom
         height,
         deviceScaleFactor: profile.deviceScaleFactor,
         mobile: profile.isMobile,
-        ...(fold ? { displayFeature: fold } : {}),
+        // The protocol rejects fractional positions; the catalog gives some folds as 425.5 dp.
+        ...(fold ? { displayFeature: { orientation: fold.orientation, offset: Math.round(fold.offset), maskLength: Math.round(fold.maskLength) } } : {}),
       });
     },
   };
