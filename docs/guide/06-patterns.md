@@ -210,8 +210,12 @@ Added with the iOS part. iOS has no fold API, so the SwiftUI sketch covers compa
 ```css
 .stage { display: grid; min-height: 100dvh; grid-template-rows: 1fr auto; }
 @media (vertical-viewport-segments: 2) {
-  /* Tabletop: the top segment is y index 0, the bottom one is 0 1. */
+  /* Tabletop: the top segment is y index 0, the bottom one is 0 1. Segment values are in
+     viewport coordinates, so the stage must start at the viewport's top edge and be exactly
+     the viewport's height for its rows to line up with the fold. */
   .stage {
+    position: fixed;
+    inset: 0;
     grid-template-rows:
       env(viewport-segment-height 0 0)
       calc(env(viewport-segment-top 0 1) - env(viewport-segment-bottom 0 0))
