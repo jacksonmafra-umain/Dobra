@@ -67,3 +67,17 @@ describe('simulated system UI', () => {
     expect(rule(css, '.window-divider').get('background')).toBe('var(--dobra-muted)');
   });
 });
+
+describe('narrow windows', () => {
+  // Below 960 px the top bar wraps and can be taller than the window; the page must scroll as a
+  // whole, or the canvas and inspector get no height at all.
+  it('lets the whole page scroll instead of fixing the app to the window height', () => {
+    const css = read('./app.css').replace(/\/\*[\s\S]*?\*\//g, '');
+    const start = css.indexOf('@media (width<=960px) {');
+    expect(start).toBeGreaterThan(-1);
+    const block = css.slice(start, css.indexOf('\n}\n', start));
+    const app = new Map(declarations(block.slice(block.indexOf('.app {'), block.indexOf('}', block.indexOf('.app {')) + 1)));
+    expect(app.get('height')).toBe('auto');
+    expect(app.get('min-height')).toBe('100%');
+  });
+});

@@ -217,9 +217,13 @@ body {
   overflow-y: auto;
 }
 @media (width<=960px) {
+  .app {
+    height: auto;
+    min-height: 100%;
+  }
   .workspace {
+    flex: none;
     flex-direction: column;
-    overflow-y: auto;
   }
   .canvas {
     flex: none;
