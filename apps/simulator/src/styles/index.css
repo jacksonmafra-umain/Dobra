@@ -1,3 +1,5 @@
 @import "tailwindcss";
+@import "@dobra/brand/fonts.css";
+@import "@dobra/brand/tokens.css";
 @import "./sample-app.css";
 @import "./app.css";

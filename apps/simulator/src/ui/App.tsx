@@ -8,6 +8,7 @@ import type { ModalKind } from '@dobra/core/engine/modal';
 import type { TextSettings } from '@dobra/core/engine/typography';
 import { collisionsToFindings } from '@dobra/core/collisions';
 import type { Collision } from '../sample/collisions';
+import { applyPageTheme, logoFor } from './brand';
 import type { Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
 import { collectRecords, exportable, reportFileName, simulatorReport } from './exportReport';
@@ -99,6 +100,8 @@ export function App({ config }: { config: SimulatorConfig }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, vs]);
 
+  useEffect(() => applyPageTheme(document.documentElement, theme), [theme]);
+
   const toggleOverlay = (key: keyof OverlayToggles) => setOverlays((o) => ({ ...o, [key]: !o[key] }));
   const resizeFree = (w: number, h: number) => setSel((s) => ({ ...s, free: clampFree(w, h) }));
   const onOuter = env.pose?.display === 'outer';
@@ -111,7 +114,8 @@ export function App({ config }: { config: SimulatorConfig }) {
     <div className="app" data-theme={theme}>
       <header className="topbar">
         <h1 className="topbar__title">
-          Dobra Simulator <span className="tag">step 4</span>
+          <img className="topbar__logo" src={logoFor(theme)} alt="Dobra" />
+          <span className="tag">step 4</span>
           <span className="topbar__version" title="Version and build date of this copy">
             v{config.version} · {__BUILD_DATE__}
           </span>
@@ -392,7 +396,7 @@ export function App({ config }: { config: SimulatorConfig }) {
           </label>
           <div className="control">
             <span>Overlays</span>
-            <div className="seg">
+            <div className="seg seg--chips">
               <button aria-pressed={overlays.safeArea} onClick={() => toggleOverlay('safeArea')}>
                 Safe areas
               </button>
@@ -497,7 +501,7 @@ export function App({ config }: { config: SimulatorConfig }) {
           <div className="control">
             <span>Findings</span>
             <button
-              className="seg-single"
+              className="seg-single seg-single--accent"
               disabled={!canExport.ok}
               title={canExport.ok ? 'Download a Dobra Report JSON for the web report. It holds the shared geometry rules over what is on screen.' : canExport.reason}
               onClick={exportReport}

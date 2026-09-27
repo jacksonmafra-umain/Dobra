@@ -1,6 +1,7 @@
 import type { Environment } from '@dobra/core/engine/environment';
 import { foldThickness } from '@dobra/core/engine/folds';
 import type { Layout } from '@dobra/core/engine/layout';
+import { foldOverlayClass } from './brand';
 
 export interface OverlayToggles {
   safeArea: boolean;
@@ -51,7 +52,7 @@ export function Overlays({ env, layout, show }: { env: Environment; layout: Layo
             ))}
           {env.folds.map((fold, i) => (
             <div
-              className={`ov-fold ov-fold--${fold.axis}${fold.separating ? '' : ' ov-fold--flat'}`}
+              className={foldOverlayClass(fold)}
               style={{
                 left: fold.rect.x,
                 top: fold.rect.y,
