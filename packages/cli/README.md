@@ -33,7 +33,9 @@ Without `--targets` or `--category`, the check visits one representative device 
 required coverage cell in the catalog.
 
 The check waits for the `load` event plus `--wait`, never for network idle, so pages that poll
-or keep beacons open still finish.
+or keep beacons open still finish. If `load` has not fired after 30 s (one slow third-party
+resource), the page is checked as it is and the report notes it. A page whose script stops
+answering for 30 s is listed under **Could not load**.
 
 ## What is emulated
 
