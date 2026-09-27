@@ -78,7 +78,7 @@ cyan `#00F0FF` fails on white, so light uses a darker teal for text and strokes)
 | `--dobra-accent-2` | `#818CF8` | `#4F46E5` | Secondary controls, metadata, safe areas |
 | `--dobra-pass` | `#10B981` | `#047857` | Passing checks |
 | `--dobra-warn` | `#F59E0B` | `#B45309` | Warnings, clipping risk |
-| `--dobra-hinge` | `#EC4899` | `#BE185D` | Hinge occlusion, collisions, errors |
+| `--dobra-hinge` | `#F062A8` | `#BE185D` | Hinge occlusion, collisions, errors |
 | `--dobra-glow` | `0 0 12px rgb(0 240 255 / 0.35)` | `0 0 0 1px rgb(0 124 133 / 0.35)` | Fold guide |
 | `--dobra-shadow-2` | `0 8px 32px -4px rgb(0 0 0 / 0.6)` | `0 8px 24px -8px rgb(15 19 28 / 0.18)` | Level 2 |
 

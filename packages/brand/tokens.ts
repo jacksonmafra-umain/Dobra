@@ -24,7 +24,7 @@ export const tokens: { dark: ThemeTokens; light: ThemeTokens } = {
     'accent-2': '#818CF8',
     pass: '#10B981',
     warn: '#F59E0B',
-    hinge: '#EC4899',
+    hinge: '#F062A8',
     glow: '0 0 12px rgb(0 240 255 / 0.35)',
     'shadow-2': '0 8px 32px -4px rgb(0 0 0 / 0.6)',
   },

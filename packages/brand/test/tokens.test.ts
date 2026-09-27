@@ -53,6 +53,12 @@ describe.each(['dark', 'light'] as const)('contrast in %s', (theme) => {
     for (const name of TEXT_ACCENTS) expect(contrast(parseColor(t[name]), bg), name).toBeGreaterThanOrEqual(4.5);
   });
 
+  it('keeps text and every accent readable on Level 2 flyouts', () => {
+    const flyout = composite(parseColor(t.flyout), panel);
+    for (const name of ['text', 'muted', 'accent-2', ...TEXT_ACCENTS] as const)
+      expect(contrast(parseColor(t[name]), flyout), name).toBeGreaterThanOrEqual(4.5);
+  });
+
   it('keeps text on a fold-colored fill readable', () => {
     expect(contrast(parseColor(t['on-fold']), parseColor(t.fold))).toBeGreaterThanOrEqual(4.5);
   });

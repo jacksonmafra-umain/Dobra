@@ -18,7 +18,7 @@ Code without CSS reads the same values from `@dobra/brand/tokens`:
 
 ```ts
 import { tokens } from '@dobra/brand/tokens';
-tokens.dark.hinge; // '#EC4899'
+tokens.dark.hinge; // '#F062A8'
 ```
 
 ## Tokens
