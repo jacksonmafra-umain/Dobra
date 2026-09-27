@@ -6,10 +6,11 @@ import { kindOf } from '@dobra/core/coverage';
 import type { Finding } from '@dobra/core/engine/checks';
 import { presetSpec } from '@dobra/core/presets';
 import { check } from '@dobra/core/rules';
-import { resolveTarget, type Target } from '@dobra/core/targets';
+import { resolveTarget, targetKey, type Target } from '@dobra/core/targets';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';
 import { toGeo } from './geo';
+import { deviceModes } from './variables';
 import { decorate, nextFreeX, OVERLAY_NAME } from './presets';
 
 const GAP = 80;
@@ -118,6 +119,11 @@ export async function adaptFrame(
   for (const collection of await api.variables.getLocalVariableCollectionsAsync()) {
     const mode = collection.modes.find((m) => m.name.toLowerCase() === sizeClass.toLowerCase());
     if (mode) frame.setExplicitVariableModeForCollection(collection, mode.modeId);
+  }
+  // Dobra's device collections hold one mode per target: follow the device the frame was adapted to.
+  for (const { collection, modes } of await deviceModes(api)) {
+    const modeId = modes[targetKey(target)];
+    if (modeId) frame.setExplicitVariableModeForCollection(collection, modeId);
   }
 
   const subject = { source: 'figma' as const, ref: frame.id, targets: [target], confidence: 'tag' as const, width: frame.width, height: frame.height, root: await toGeo(frame) };

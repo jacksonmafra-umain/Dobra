@@ -63,7 +63,40 @@ export interface FakeCollection {
   modes: { modeId: string; name: string }[];
 }
 
-export type FakeFigma = FigmaApi & {
+/** A variable collection as the fake's own tests and helpers see it. */
+export interface FakeVariableCollection extends FakeCollection {
+  defaultModeId: string;
+  variableIds: string[];
+  addMode(name: string): string;
+  renameMode(modeId: string, name: string): void;
+  removeMode(modeId: string): void;
+  remove(): void;
+  setSharedPluginData(namespace: string, key: string, value: string): void;
+  getSharedPluginData(namespace: string, key: string): string;
+}
+
+export interface FakeVariable {
+  id: string;
+  name: string;
+  resolvedType: 'FLOAT' | 'BOOLEAN' | 'STRING' | 'COLOR';
+  scopes: string[];
+  description: string;
+  valuesByMode: Record<string, unknown>;
+  variableCollectionId: string;
+  setValueForMode(modeId: string, value: unknown): void;
+  remove(): void;
+  setSharedPluginData(namespace: string, key: string, value: string): void;
+  getSharedPluginData(namespace: string, key: string): string;
+}
+
+export type FakeFigma = Omit<FigmaApi, 'editorType'> & {
+  /** Writable here so tests can open the plugin in Dev Mode. */
+  editorType: FigmaApi['editorType'];
+  /** Modes a collection may hold before addMode throws, as a Figma plan does. */
+  modeLimit: number;
+  /** When true, creating a collection throws, as in a file without edit access. */
+  readOnly: boolean;
+  undoCommits: number;
   page: FakePage;
   addPage(): FakePage;
   zoomedTo: unknown;
@@ -81,6 +114,8 @@ function detach(child: FakeNode) {
 
 export function createFakeFigma(): FakeFigma {
   let next = 1;
+  let nextVar = 1;
+  const variables = new Map<string, FakeVariable>();
   const makePage = (): FakePage => {
     const pg: FakePage = {
       type: 'PAGE',
@@ -259,8 +294,79 @@ export function createFakeFigma(): FakeFigma {
         api.zoomedTo = nodes;
       },
     },
+    modeLimit: 40,
+    readOnly: false,
+    undoCommits: 0,
+    editorType: 'figma',
+    commitUndo() {
+      api.undoCommits++;
+    },
     variables: {
       getLocalVariableCollectionsAsync: async () => api.collections,
+      getVariableByIdAsync: async (id: string) => variables.get(id) ?? null,
+      createVariableCollection(name: string): FakeVariableCollection {
+        if (api.readOnly) throw new Error('Cannot write in read-only mode');
+        const data = new Map<string, string>();
+        const first = `m${nextVar++}`;
+        const c: FakeVariableCollection = {
+          id: `VariableCollectionId:${nextVar++}`,
+          name,
+          modes: [{ modeId: first, name: 'Mode 1' }],
+          defaultModeId: first,
+          variableIds: [],
+          addMode(modeName) {
+            if (c.modes.length >= api.modeLimit) throw new Error(`in addMode: Limited to ${api.modeLimit} modes only`);
+            const modeId = `m${nextVar++}`;
+            c.modes.push({ modeId, name: modeName });
+            return modeId;
+          },
+          renameMode(modeId, modeName) {
+            const m = c.modes.find((x) => x.modeId === modeId);
+            if (!m) throw new Error(`No mode ${modeId}`);
+            m.name = modeName;
+          },
+          removeMode(modeId) {
+            if (c.modes.length <= 1) throw new Error('in removeMode: A collection needs at least one mode');
+            c.modes = c.modes.filter((m) => m.modeId !== modeId);
+            if (c.defaultModeId === modeId) c.defaultModeId = c.modes[0].modeId;
+            for (const id of c.variableIds) delete variables.get(id)!.valuesByMode[modeId];
+          },
+          remove() {
+            for (const id of c.variableIds) variables.delete(id);
+            api.collections.splice(api.collections.indexOf(c), 1);
+          },
+          setSharedPluginData: (ns, key, value) => void data.set(`${ns}:${key}`, value),
+          getSharedPluginData: (ns, key) => data.get(`${ns}:${key}`) ?? '',
+        };
+        api.collections.push(c);
+        return c;
+      },
+      createVariable(name: string, collection: FakeVariableCollection, type: FakeVariable['resolvedType']): FakeVariable {
+        if (!['FLOAT', 'BOOLEAN', 'STRING', 'COLOR'].includes(type)) throw new Error('Unknown variable type');
+        const data = new Map<string, string>();
+        const v: FakeVariable = {
+          id: `VariableID:${nextVar++}`,
+          name,
+          resolvedType: type,
+          scopes: ['ALL_SCOPES'],
+          description: '',
+          valuesByMode: {},
+          variableCollectionId: collection.id,
+          setValueForMode(modeId, value) {
+            if (!collection.modes.some((m) => m.modeId === modeId)) throw new Error(`No mode ${modeId}`);
+            v.valuesByMode[modeId] = value;
+          },
+          remove() {
+            variables.delete(v.id);
+            collection.variableIds.splice(collection.variableIds.indexOf(v.id), 1);
+          },
+          setSharedPluginData: (ns, key, value) => void data.set(`${ns}:${key}`, value),
+          getSharedPluginData: (ns, key) => data.get(`${ns}:${key}`) ?? '',
+        };
+        variables.set(v.id, v);
+        collection.variableIds.push(v.id);
+        return v;
+      },
     },
     getNodeByIdAsync: async (id: string) => pages.map((pg) => find(id, pg.children)).find(Boolean) ?? null,
   };

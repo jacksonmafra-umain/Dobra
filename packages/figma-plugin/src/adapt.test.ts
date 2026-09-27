@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { targetKey } from '@dobra/core/targets';
+import { handle } from './handlers';
 import { adaptFrame } from './adapt';
 import { NAMESPACE, OVERLAY_NAME } from './presets';
 import { createFakeFigma, type FakeFigma } from './test/fakeFigma';
@@ -62,6 +64,14 @@ describe('adaptFrame', () => {
     api.collections = [{ id: 'c1', name: 'Layout', modes: [{ modeId: 'm1', name: 'Compact' }, { modeId: 'm2', name: 'Expanded' }] }];
     const { frame } = await adaptFrame(api, source(api).id, DUO, { split: false });
     expect((frame as unknown as { explicitModes: Record<string, string> }).explicitModes).toEqual({ c1: 'm2' });
+  });
+
+  it('switches the Dobra device collection to the adapted target', async () => {
+    const api = createFakeFigma();
+    await handle(api, { type: 'variables', platforms: [], keys: [targetKey(DUO)], devices: true, profile: null, overwrite: false, removeStale: false });
+    const devices = (await api.variables.getLocalVariableCollectionsAsync()).find((c) => c.name === 'Dobra · Devices')!;
+    const { frame } = await adaptFrame(api, source(api).id, DUO, { split: false });
+    expect((frame as unknown as { explicitModes: Record<string, string> }).explicitModes[devices.id]).toBe(devices.modes[0].modeId);
   });
 
   it('checks the adapted frame', async () => {

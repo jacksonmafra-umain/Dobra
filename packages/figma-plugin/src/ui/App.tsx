@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CoverageMatrix } from '@dobra/core/coverage';
 import type { AdaptResult, Command, FrameFindings, TagCandidate, ToMain, ToUi } from '../messages';
+import type { VariablesSummary } from '../variableTypes';
+import { summaryLines } from './variablesSummary';
 import './app.css';
 
 type Tab = Command;
@@ -13,11 +15,16 @@ const OPEN: Record<Tab, ToMain> = {
   coverage: { type: 'coverage' },
   check: { type: 'check', scope: 'selection' },
   adapt: { type: 'list-targets' },
+  variables: { type: 'list-targets' },
 };
-const TAB_LABEL: Record<Tab, string> = { presets: 'Artboards', tag: 'Tag frames', coverage: 'Coverage', check: 'Check', adapt: 'Adapt' };
+const TAB_LABEL: Record<Tab, string> = { presets: 'Artboards', tag: 'Tag frames', coverage: 'Coverage', check: 'Check', adapt: 'Adapt', variables: 'Variables' };
 
 export function App() {
   const [tab, setTab] = useState<Tab>('presets');
+  // The message listener is registered once; these refs let it read the current tab and state.
+  const tabRef = useRef<Tab>('presets');
+  tabRef.current = tab;
+  const variablesExistRef = useRef(false);
   const [targets, setTargets] = useState<Target[]>([]);
   const [candidates, setCandidates] = useState<TagCandidate[]>([]);
   const [matrix, setMatrix] = useState<CoverageMatrix | null>(null);
@@ -26,13 +33,29 @@ export function App() {
   const [selected, setSelected] = useState<{ id: string; name: string }[]>([]);
   const [adapted, setAdapted] = useState<AdaptResult[] | null>(null);
   const [notice, setNotice] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
+  const [variables, setVariables] = useState<{ summary: VariablesSummary; source: string } | null>(null);
+  const [variablesExist, setVariablesExistState] = useState(false);
+  const setVariablesExist = (v: boolean) => {
+    variablesExistRef.current = v;
+    setVariablesExistState(v);
+  };
+  const [picked, setPicked] = useState<string[] | null>(null);
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       const msg = e.data?.pluginMessage as ToUi | undefined;
       if (!msg) return;
       if (msg.command) setTab(msg.command);
-      if (msg.type === 'targets') setTargets(msg.items);
+      if (msg.type === 'targets') {
+        setTargets(msg.items);
+        if (msg.command === 'variables' || tabRef.current === 'variables') post({ type: 'variables-status' });
+      }
+      if (msg.type === 'variables-done') {
+        setVariables({ summary: msg.summary, source: msg.source });
+        setVariablesExist(msg.summary.collections.length > 0 || variablesExistRef.current);
+      }
+      if (msg.type === 'variables-status') setVariablesExist(msg.exists);
+      if (msg.type === 'targets-picked') setPicked(msg.keys);
       if (msg.type === 'tag-candidates') setCandidates(msg.frames);
       if (msg.type === 'coverage') setMatrix(msg.matrix);
       if (msg.type === 'findings') {
@@ -75,6 +98,7 @@ export function App() {
       {tab === 'coverage' && <Coverage matrix={matrix} />}
       {tab === 'check' && <Check frames={findings} visited={visited} />}
       {tab === 'adapt' && <Adapt targets={targets} selected={selected} results={adapted} />}
+      {tab === 'variables' && <Variables targets={targets} exists={variablesExist} result={variables} picked={picked} />}
     </main>
   );
 }
@@ -107,7 +131,7 @@ function useTargetPicker(targets: Target[]) {
       ))}
     </details>
   ));
-  return { checked, list };
+  return { checked, setChecked, list };
 }
 
 function Presets({ targets }: { targets: Target[] }) {
@@ -269,6 +293,95 @@ function Check({ frames, visited }: { frames: FrameFindings[] | null; visited: n
           </details>
         ))
       )}
+    </section>
+  );
+}
+
+const FOLDABLE = new Set(['foldable-book', 'foldable-flip', 'dual-screen', 'multi-fold']);
+
+function Variables({ targets, exists, result, picked }: { targets: Target[]; exists: boolean; result: { summary: VariablesSummary; source: string } | null; picked: string[] | null }) {
+  const { checked, setChecked, list } = useTargetPicker(targets);
+  const [sizeClasses, setSizeClasses] = useState(true);
+  const [platforms, setPlatforms] = useState<Set<'android' | 'ios'>>(new Set(['android', 'ios']));
+  const [devices, setDevices] = useState(true);
+  const [profile, setProfile] = useState('');
+  const [overwrite, setOverwrite] = useState(false);
+  const [removeStale, setRemoveStale] = useState(false);
+  useEffect(() => {
+    if (picked) setChecked(new Set(picked));
+  }, [picked]);
+
+  const keys = devices ? [...checked] : [];
+  // Devices on with nothing picked still runs, so an earlier run's device modes are listed (and removable).
+  const chosen = (sizeClasses ? platforms.size : 0) + (devices ? Math.max(keys.length, 1) : 0);
+  const togglePlatform = (p: 'android' | 'ios') =>
+    setPlatforms((prev) => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p);
+      else next.add(p);
+      return next;
+    });
+  const readFile = async (file: File) => setProfile(await file.text());
+
+  return (
+    <section>
+      <label className="row">
+        <input type="checkbox" checked={sizeClasses} onChange={(e) => setSizeClasses(e.target.checked)} /> Size classes
+      </label>
+      {sizeClasses && (
+        <div className="row">
+          {(['android', 'ios'] as const).map((p) => (
+            <label key={p} className="row">
+              <input type="checkbox" checked={platforms.has(p)} onChange={() => togglePlatform(p)} /> {p === 'android' ? 'Android' : 'iOS'}
+            </label>
+          ))}
+        </div>
+      )}
+      <label className="row">
+        <input type="checkbox" checked={devices} onChange={(e) => setDevices(e.target.checked)} /> Devices <span className="muted">({keys.length} mode{keys.length === 1 ? '' : 's'})</span>
+      </label>
+      {devices && (
+        <>
+          <div className="row">
+            <button onClick={() => post({ type: 'required-targets' })}>Required coverage</button>
+            <button onClick={() => setChecked(new Set(targets.filter((t) => FOLDABLE.has(t.category)).map((t) => t.key)))}>All foldables</button>
+            <button onClick={() => setChecked(new Set())}>Clear</button>
+          </div>
+          {list}
+        </>
+      )}
+      <details>
+        <summary>App profile (optional)</summary>
+        <textarea rows={4} placeholder="Paste a profile JSON, or pick a file" value={profile} onChange={(e) => setProfile(e.target.value)} />
+        <div className="row">
+          <input type="file" accept=".json,application/json" aria-label="Profile JSON" onChange={(e) => e.target.files?.[0] && readFile(e.target.files[0])} />
+          <button disabled={!profile} onClick={() => setProfile('')}>Clear profile</button>
+        </div>
+      </details>
+      <p className="muted">Values: {profile.trim() ? 'the pasted profile, then platform defaults' : 'platform defaults'}{result ? ` · last run: ${result.source}` : ''}</p>
+      <label className="row">
+        <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} /> Overwrite my edits
+      </label>
+      <label className="row">
+        <input type="checkbox" checked={removeStale} onChange={(e) => setRemoveStale(e.target.checked)} /> Remove modes no longer selected
+      </label>
+      <button
+        className="primary"
+        disabled={!chosen}
+        onClick={() =>
+          post({ type: 'variables', platforms: sizeClasses ? [...platforms] : [], keys, devices, profile: profile.trim() || null, overwrite, removeStale })
+        }
+      >
+        {exists ? 'Update variables' : 'Create variables'}
+      </button>
+      {result && (
+        <ul className="summary">
+          {summaryLines(result.summary).map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
+        </ul>
+      )}
+      <p className="muted">Bind width, padding, gap or grids to these variables, then pick a mode for the frame in the right panel. Adapt switches the modes for you.</p>
     </section>
   );
 }
