@@ -8,12 +8,11 @@ import type { ModalKind } from '@hinge/core/engine/modal';
 import type { TextSettings } from '@hinge/core/engine/typography';
 import { collisionsToFindings } from '@hinge/core/collisions';
 import type { Collision } from '../sample/collisions';
-import { AndroidChrome } from '../sample/androidChrome';
-import { Screen } from '../sample/Screen';
-import { DeviceFrame, type Zoom } from './DeviceFrame';
+import type { Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
 import { resolveMedia, type MediaOverrides } from './media';
-import { Overlays, type OverlayToggles } from './Overlays';
+import type { OverlayToggles } from './Overlays';
+import { Stage } from './Stage';
 import { clampFree, FREE_MAX, FREE_MIN, readUrlState, writeUrlState, type Theme } from './urlState';
 import { WhatChanged, type ChangeEntry } from './WhatChanged';
 
@@ -496,32 +495,26 @@ export function App({ config }: { config: SimulatorConfig }) {
       </header>
       <div className="workspace">
         <main className="canvas">
-          <DeviceFrame
+          <Stage
+            config={config}
             env={env}
+            layout={layout}
+            screen={screen}
+            theme={theme}
             zoom={zoom}
+            rtl={rtl}
+            overlays={overlays}
+            text={text}
+            modal={modal}
+            onCloseModal={() => setModal(null)}
+            onCollisions={setCollisions}
             onResize={sel.free ? resizeFree : undefined}
             onResizeWindow={
               env.window.mode === 'freeform'
                 ? (w, h) => setSel((s) => ({ ...s, windowSize: { width: Math.round(w), height: Math.round(h) } }))
                 : undefined
             }
-            displayChrome={<AndroidChrome env={env} />}
-            overlay={<Overlays env={env} layout={layout} show={overlays} />}
-          >
-            <div className="sample" data-theme={theme} style={{ position: 'absolute', inset: 0 }}>
-              <Screen
-                config={config}
-                env={env}
-                layout={layout}
-                screen={screen}
-                rtl={rtl}
-                modal={modal}
-                onCloseModal={() => setModal(null)}
-                onCollisions={setCollisions}
-                text={text}
-              />
-            </div>
-          </DeviceFrame>
+          />
         </main>
         <aside className="sidebar">
           <Inspector
