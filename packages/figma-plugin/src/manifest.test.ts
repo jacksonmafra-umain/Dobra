@@ -4,7 +4,7 @@ import manifest from '../manifest.json';
 describe('manifest', () => {
   it('is a network-free, dynamic-page plugin with its commands and a Re-check button', () => {
     expect(manifest).toMatchObject({
-      name: 'Hinge',
+      name: 'Dobra',
       api: '1.0.0',
       editorType: ['figma', 'dev'],
       main: 'dist/code.js',

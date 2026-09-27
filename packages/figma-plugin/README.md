@@ -1,4 +1,4 @@
-# Hinge — Figma plugin
+# Dobra — Figma plugin
 
 Artboards for foldable and dual-screen devices, straight from the device catalog in `@dobra/core`.
 
@@ -15,7 +15,7 @@ that the bundle carries the device catalog and no app profile.
 ## Import into Figma
 
 Figma desktop › Plugins › Development › Import plugin from manifest… › choose
-`packages/figma-plugin/manifest.json`. Run it from Plugins › Development › Hinge.
+`packages/figma-plugin/manifest.json`. Run it from Plugins › Development › Dobra.
 
 ## Commands
 
