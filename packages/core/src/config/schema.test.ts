@@ -53,6 +53,13 @@ describe('config schema', () => {
     expect(issuesOf(cfg).join('\n')).toMatch(/fallback/);
   });
 
+  it('reports a media-only rule after the fallback as never matching', () => {
+    const cfg = clone();
+    const fallback = cfg.layoutRules.find((r: { platform: string; match: object }) => r.platform === 'android' && Object.keys(r.match).length === 0);
+    cfg.layoutRules.push({ ...fallback, id: 'android-mouse', match: { pointer: 'fine' } });
+    expect(issuesOf(cfg)).toContainEqual(expect.stringContaining('Rule "android-mouse" comes after the android fallback, so it never matches'));
+  });
+
   it('ships no Figma file or frame ids', () => {
     const cfg = parseConfig(raw);
     expect('figmaFile' in cfg).toBe(false);
