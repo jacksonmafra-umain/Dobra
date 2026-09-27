@@ -67,6 +67,17 @@ describe('emulation', () => {
     expect(failed).toEqual([]);
   });
 
+  it('emulates a horizontal fold as two vertical segments', async () => {
+    const t = enumerateTargets(config).find((x) => deviceProfile(config, x).fold?.orientation === 'horizontal')!;
+    const profile = deviceProfile(config, t);
+    const { context, page, applyFold } = await openTarget(browser, profile);
+    await applyFold(profile.fold);
+    await page.goto(`${server.url}/segments.html`);
+    expect(await page.evaluate(() => matchMedia('(vertical-viewport-segments: 2)').matches)).toBe(true);
+    expect(await page.evaluate(() => matchMedia('(horizontal-viewport-segments: 2)').matches)).toBe(false);
+    await context.close();
+  });
+
   it('keeps one segment on a phone', async () => {
     const { context, page } = await openTarget(browser, deviceProfile(config, PIXEL));
     await page.goto(`${server.url}/segments.html`);
