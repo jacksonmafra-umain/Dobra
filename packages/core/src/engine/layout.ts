@@ -1,7 +1,9 @@
-import type { GridRule, HeroRule, LayoutRule, Rect, ScreenSpec, SimulatorConfig, TabBarRule } from '../config/types';
+import type { FlexFormRule, GridFormRule, GridRule, HeroRule, LayoutRule, ScreenSpec, SimulatorConfig, TabBarRule } from '../config/types';
 import { resolveBars, type BarLayout } from './bars';
 import type { Environment } from './environment';
 import { separatingFold, type FoldFeature } from './folds';
+import { resolveFlex, resolveTracks, type ResolvedItems } from './gridFlex';
+import { resolveScene, type SceneLayout } from './scenes';
 
 export type NavigationPattern = 'tab-bar' | 'ios-rail' | 'bar' | 'rail' | 'drawer';
 
@@ -26,10 +28,12 @@ export interface Layout {
   margin: { left: number; right: number };
   contentWidth: number;
   panes: number;
-  /** Pane rectangles in window coordinates. Split at the hinge when a fold separates the window. */
-  paneRects: Rect[];
+  /** Resolved pane strategy; its panes replace the old pane rectangles. */
+  scene: SceneLayout;
   hero: HeroRule;
   perRow: Record<string, number>;
+  /** Item widths per grid component, from its perRow, grid or flex form. The width checks read these. */
+  resolved: Record<string, ResolvedItems>;
   maxItemWidth: Record<string, number | null>;
   gap: Record<string, number>;
   tabItem: TabBarRule['item'];
@@ -127,27 +131,69 @@ export function resolveLayout(config: SimulatorConfig, env: Environment, screen:
   const perRow: Record<string, number> = {};
   const maxItemWidth: Record<string, number | null> = {};
   const gap: Record<string, number> = {};
+  const resolved: Record<string, ResolvedItems> = {};
   for (const [id, spec] of Object.entries(config.components)) {
     if (spec.kind !== 'grid') continue;
-    const c = rule.components[id] as GridRule;
+    const entry = rule.components[id] as GridRule | GridFormRule | FlexFormRule;
     const g = spec.gap ?? 0;
-    const fit = c.minItemWidth ? Math.max(1, Math.floor((contentWidth - foldGutter + g) / (c.minItemWidth + g))) : c.perRow;
-    perRow[id] = Math.min(c.perRow, fit);
-    maxItemWidth[id] = c.maxItemWidth ?? null;
+    const count = spec.items ?? 6;
+    if ('grid' in entry) {
+      const columnWidths = resolveTracks(entry.grid.columns, contentWidth, entry.grid.gap);
+      perRow[id] = columnWidths.length;
+      maxItemWidth[id] = null;
+      gap[id] = entry.grid.gap;
+      resolved[id] = {
+        form: 'grid',
+        columnWidths,
+        items: Array.from({ length: count }, (_, i) => ({ width: columnWidths[i % columnWidths.length] })),
+        lines: Math.ceil(count / columnWidths.length),
+        gap: entry.grid.gap,
+      };
+      continue;
+    }
+    if ('flex' in entry) {
+      const { widths, lines } = resolveFlex(entry.flex, contentWidth, count);
+      perRow[id] = Math.ceil(count / lines);
+      maxItemWidth[id] = null;
+      gap[id] = entry.flex.gap;
+      resolved[id] = { form: 'flex', columnWidths: [], items: widths.map((width) => ({ width })), lines, gap: entry.flex.gap };
+      continue;
+    }
+    const fit = entry.minItemWidth ? Math.max(1, Math.floor((contentWidth - foldGutter + g) / (entry.minItemWidth + g))) : entry.perRow;
+    perRow[id] = Math.min(entry.perRow, fit);
+    maxItemWidth[id] = entry.maxItemWidth ?? null;
     gap[id] = g;
+    const width = Math.min((contentWidth - g * (perRow[id] - 1)) / perRow[id], entry.maxItemWidth ?? Infinity);
+    resolved[id] = {
+      form: 'perRow',
+      columnWidths: Array(perRow[id]).fill(width),
+      items: Array.from({ length: count }, () => ({ width })),
+      lines: Math.ceil(count / perRow[id]),
+      gap: g,
+    };
   }
 
-  const panes = env.regions.length > 1 ? env.regions.length : rule.panes;
-  const paneRects = resolvePanes(env, margin, panes);
+  const content = { x: margin.left, y: 0, width: contentWidth, height: env.height };
+  // A screen without a scene keeps what its rule's pane count always meant.
+  const sceneId = screen.scene ?? (rule.panes > 1 ? 'two-pane' : 'single');
+  const scene = resolveScene({
+    id: sceneId,
+    spec: config.scenes?.[sceneId] ?? null,
+    content,
+    regions: env.regions.length > 1 ? env.regions : [],
+    forceSingle: rule.scene === 'single',
+    unit: env.unit,
+  });
 
   return {
     rule,
     margin,
     contentWidth,
-    panes,
-    paneRects,
+    panes: scene.panes.length,
+    scene,
     hero: rule.components.news_story_hero as HeroRule,
     perRow,
+    resolved,
     maxItemWidth,
     gap,
     tabItem: (rule.components.tab_bar_26 as TabBarRule).item,
@@ -160,14 +206,4 @@ export function resolveLayout(config: SimulatorConfig, env: Environment, screen:
     marginsBalanced,
     foldGutter: foldGutter || null,
   };
-}
-
-/** Panes follow the logical areas when a fold separates the window, otherwise split the content evenly. */
-function resolvePanes(env: Environment, margin: Layout['margin'], panes: number): Rect[] {
-  if (env.regions.length > 1) return env.regions;
-  const x = margin.left;
-  const width = env.width - margin.left - margin.right;
-  if (panes <= 1) return [{ x, y: 0, width, height: env.height }];
-  const w = width / panes;
-  return Array.from({ length: panes }, (_, i) => ({ x: x + i * w, y: 0, width: w, height: env.height }));
 }

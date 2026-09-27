@@ -67,59 +67,59 @@
   --elevation-raised: 0 0 8px 0 #0000004d;
 }
 .t-H0 {
-  font: 700 56px/62px var(--typeface-primary);
+  font: 700 var(--t-H0-size, 56px) / var(--t-H0-lh, 62px) var(--typeface-primary);
   letter-spacing: -1px;
 }
 .t-H1 {
-  font: 700 32px/35px var(--typeface-primary);
+  font: 700 var(--t-H1-size, 32px) / var(--t-H1-lh, 35px) var(--typeface-primary);
   letter-spacing: -0.6px;
 }
 .t-H2 {
-  font: 700 24px/26px var(--typeface-primary);
+  font: 700 var(--t-H2-size, 24px) / var(--t-H2-lh, 26px) var(--typeface-primary);
   letter-spacing: -0.5px;
 }
 .t-H3 {
-  font: 700 17px/19px var(--typeface-primary);
+  font: 700 var(--t-H3-size, 17px) / var(--t-H3-lh, 19px) var(--typeface-primary);
   letter-spacing: -0.3px;
 }
 .t-H4 {
-  font: 700 14px/16px var(--typeface-primary);
+  font: 700 var(--t-H4-size, 14px) / var(--t-H4-lh, 16px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-Paragraph-Medium-Regular {
-  font: 400 14px/18px var(--typeface-primary);
+  font: 400 var(--t-Paragraph-Medium-size, 14px) / var(--t-Paragraph-Medium-lh, 18px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-Paragraph-Medium-Bold {
-  font: 700 14px/18px var(--typeface-primary);
+  font: 700 var(--t-Paragraph-Medium-size, 14px) / var(--t-Paragraph-Medium-lh, 18px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-Paragraph-Small-Regular {
-  font: 400 12px/15px var(--typeface-primary);
+  font: 400 var(--t-Paragraph-Small-size, 12px) / var(--t-Paragraph-Small-lh, 15px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-Paragraph-Small-Bold {
-  font: 700 12px/15px var(--typeface-primary);
+  font: 700 var(--t-Paragraph-Small-size, 12px) / var(--t-Paragraph-Small-lh, 15px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-Paragraph-XSmall-Regular {
-  font: 400 10px/16px var(--typeface-primary);
+  font: 400 var(--t-Paragraph-XSmall-size, 10px) / var(--t-Paragraph-XSmall-lh, 16px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-Button {
-  font: 700 16px/19px var(--typeface-primary);
+  font: 700 var(--t-Button-size, 16px) / var(--t-Button-lh, 19px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-Badge {
-  font: 700 12px/16px var(--typeface-primary);
+  font: 700 var(--t-Badge-size, 12px) / var(--t-Badge-lh, 16px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-TabBar-Idle {
-  font: 400 11px/14px var(--typeface-primary);
+  font: 400 var(--t-TabBar-size, 11px) / var(--t-TabBar-lh, 14px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .t-TabBar-Selected {
-  font: 700 11px/14px var(--typeface-primary);
+  font: 700 var(--t-TabBar-size, 11px) / var(--t-TabBar-lh, 14px) var(--typeface-primary);
   letter-spacing: 0;
 }
 .tnum {
@@ -1613,4 +1613,84 @@
 .android-nav__button {
   width: 24px;
   text-align: center;
+}
+.keyboard {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 4px;
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--stroke-primary);
+}
+.keyboard__row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+.keyboard__row span {
+  flex: 0 1 34px;
+  display: grid;
+  place-items: center;
+  height: 40px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  font: 400 16px/1 system-ui, sans-serif;
+}
+.screen[data-bold] .t-Paragraph-Medium-Regular,
+.screen[data-bold] .t-Paragraph-Small-Regular,
+.screen[data-bold] .t-Paragraph-XSmall-Regular,
+.screen[data-bold] .t-TabBar-Idle {
+  font-weight: 700;
+}
+.screen[data-reduced-motion] *,
+.screen[data-reduced-motion] *::before,
+.screen[data-reduced-motion] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.modal-sheet {
+  animation: sheet-in 240ms ease-out;
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+.scene {
+  position: relative;
+  min-height: 100%;
+}
+.scene__pane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: auto;
+  border-inline-end: 1px solid var(--stroke-primary);
+}
+.scene__pane:only-child {
+  border: 0;
+}
+.scene__inner {
+  padding-inline: 12px;
+}
+.scene__spare {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 16px;
+  color: var(--fg-secondary);
+  text-align: center;
+}
+.empty-state {
+  color: var(--fg-secondary);
+}
+.rule-flex {
+  display: flex;
 }

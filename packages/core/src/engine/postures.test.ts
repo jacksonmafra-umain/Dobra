@@ -31,7 +31,7 @@ describe('androidx.window postures', () => {
     expect(env.regions.map((r) => r.width)).toEqual([425.5, 425.5]);
     const layout = resolveLayout(config, env, screen);
     expect(layout.panes).toBe(2);
-    expect(layout.paneRects[0].width).toBe(425.5);
+    expect(layout.scene.panes[0].rect.x + layout.scene.panes[0].rect.width).toBe(425.5);
   });
 
   it('turns the crease horizontal in tabletop and keeps a bottom bar', () => {

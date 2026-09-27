@@ -76,6 +76,10 @@ export function resolveIosDevice(config: SimulatorConfig, spec: DeviceSpec, sel:
   const trailingCamera = reservedRegions.some((r) => r.kind === 'camera' && r.rect.x > 0);
   const cameraRegion = spec2.barAxis === 'vertical' && trailingCamera ? (display.hardware.camera?.region ?? 0) : 0;
 
+  const keyboard = display.keyboard;
+  const ime = sel.ime && keyboard ? keyboard[orientation] : 0;
+  const safeArea = ime ? { ...spec2.safeArea, bottom: Math.max(spec2.safeArea.bottom, ime) } : spec2.safeArea;
+
   return {
     platform: 'ios',
     unit: profile.unit,
@@ -85,10 +89,14 @@ export function resolveIosDevice(config: SimulatorConfig, spec: DeviceSpec, sel:
     isFree: false,
     width,
     height,
+    display: { width, height },
+    window: { mode: 'fullscreen', rect: { x: 0, y: 0, width, height }, floating: false, captionBar: 0, other: null, divider: null },
+    ime,
+    notes: [],
     orientation,
     sizeClass: { system: 'uikit', ...spec2.sizeClass },
     barAxis: spec2.barAxis,
-    safeArea: spec2.safeArea,
+    safeArea,
     statusBar: spec2.statusBar,
     homeIndicator: display.homeIndicator,
     cornerRadius: display.cornerRadius,

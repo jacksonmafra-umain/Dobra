@@ -58,4 +58,22 @@ describe('config schema', () => {
     expect(cfg.screens.every((s) => s.figma === null && typeof s.source === 'string')).toBe(true);
     expect(JSON.stringify(cfg.sources)).not.toMatch(/node \d|FILE_KEY/);
   });
+
+  it('rejects a screen that names an unknown scene', () => {
+    const cfg = clone();
+    cfg.screens[0].scene = 'three-pane';
+    expect(issuesOf(cfg).join('\n')).toMatch(/screens\[0\]\.scene: Unknown scene "three-pane"/);
+  });
+  it('rejects a grid form on a component that does not allow it', () => {
+    const cfg = clone();
+    cfg.layoutRules[0].components.reward_card = { grid: { columns: [{ fr: 1 }], gap: 16 } };
+    expect(issuesOf(cfg).join('\n')).toMatch(/layoutRules\[0\]\.components\.reward_card: .*grid/);
+  });
+
+  it('rejects an empty track list', () => {
+    const cfg = clone();
+    const rule = cfg.layoutRules.find((r: { id: string }) => r.id === 'android-expanded');
+    rule.components.product_card = { grid: { columns: [], gap: 16 } };
+    expect(issuesOf(cfg).join('\n')).toMatch(/product_card/);
+  });
 });

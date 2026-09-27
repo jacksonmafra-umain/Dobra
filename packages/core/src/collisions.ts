@@ -1,6 +1,7 @@
 // Which elements sit in a fold or a reserved region. Pure geometry: callers measure elements
 // (DOM, Figma nodes, simulator layout) and pass rects in window coordinates.
 import type { Rect } from './config/types';
+import type { Finding, Target } from './engine/checks';
 import type { Environment } from './engine/environment';
 
 export interface CollisionZone {
@@ -53,4 +54,28 @@ export function findCollisions(subjects: CollisionSubject[], zones: CollisionZon
     if (zone) hits.push({ id: s.id, zone: zone.label });
   }
   return hits;
+}
+
+/** A collision as the simulator reports it: the region it sits in and a description of the element. */
+export interface CollisionReport {
+  region: string;
+  element: string;
+}
+
+/** Collision-checker results as Hinge hinge-content findings. */
+export function collisionsToFindings(collisions: CollisionReport[], target: Target, env: Environment): Finding[] {
+  return collisions.map((c) => {
+    const fold = c.region === 'Folding region' ? env.folds.find((f) => f.separating || f.occludes) : null;
+    const region = env.reservedRegions.find((r) => r.label === c.region);
+    return {
+      ruleId: 'hinge-content',
+      severity: 'error',
+      target,
+      nodeId: c.element,
+      rect: fold?.rect ?? region?.rect ?? { x: 0, y: 0, width: env.width, height: env.height },
+      message: `${c.element} sits in ${c.region.toLowerCase()}.`,
+      source: fold ? (env.platform === 'android' ? 'androidx-window' : 'estimated') : 'apple-device',
+      estimated: fold?.estimated ?? region?.estimated ?? false,
+    };
+  });
 }
