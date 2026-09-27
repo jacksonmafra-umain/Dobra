@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The fold-aware version of the failing pages. Side by side only from width, never from
+     orientation; one column per viewport segment when the window spans a fold or hinge, with the
+     hinge as the gap; the tab bar stays in flow in short windows; nothing has a fixed width; the
+     call to action is left-aligned in its column. It must not trigger any rule. On folded and
+     spanned targets it expects viewport-segment emulation. -->
+<title>Fold-aware layout</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 24px; margin: 0 0 12px; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  main { padding: 16px 16px 96px; }
+  main > section + section { margin-top: 16px; }
+  .cta { display: block; width: 200px; min-height: 48px; font: inherit; border: 0; border-radius: 24px; background: #c62828; color: #fff; }
+  nav { position: fixed; bottom: 0; left: 0; right: 0; height: 72px; display: flex; flex-direction: row; justify-content: space-around; align-items: center; background: #263238; }
+  nav button { min-width: 48px; min-height: 48px; font: inherit; color: #fff; background: none; border: 0; }
+
+  /* Side by side only when the window is wide. */
+  @media (min-width: 600px) {
+    main { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+    main > section + section { margin-top: 0; }
+  }
+  /* Spanned or folded: one column per segment, with the hinge as the gap. */
+  @media (horizontal-viewport-segments: 2) {
+    main {
+      display: grid;
+      grid-template-columns: env(viewport-segment-width 0 0, 1fr) env(viewport-segment-width 1 0, 1fr);
+      column-gap: calc(env(viewport-segment-left 1 0, 0px) - env(viewport-segment-right 0 0, 0px));
+      padding: 0 0 96px;
+    }
+    main > section { padding: 16px; }
+  }
+  /* Short windows keep the tab bar in flow, below the content. */
+  @media (max-height: 479px) {
+    main { padding-bottom: 16px; }
+    nav { position: static; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <h1>Breakfast is served all day</h1>
+    <p>Order ahead and pick up at the counter or at the drive-through, whenever suits you.</p>
+    <button class="cta" type="button">Order now</button>
+  </section>
+  <section>
+    <h2>Today's deals</h2>
+    <p>Two for one on breakfast wraps until eleven, at participating restaurants only.</p>
+    <p>Collect points with every order and trade them for free drinks and desserts.</p>
+  </section>
+</main>
+<nav>
+  <button type="button">Home</button>
+  <button type="button">Menu</button>
+  <button type="button">Deals</button>
+  <button type="button">More</button>
+</nav>
+</body>
+</html>
