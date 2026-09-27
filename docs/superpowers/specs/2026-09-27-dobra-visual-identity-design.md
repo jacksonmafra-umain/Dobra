@@ -46,7 +46,7 @@ CSS (§6):
 ```
 packages/brand/
   tokens.ts           the same color values for TypeScript (the plugin's main thread)
-  tokens.css          custom properties, dark on :root, light under [data-theme="light"]
+  tokens.css          custom properties, dark on :root and [data-theme="dark"], light under [data-theme="light"]
   fonts.css           @font-face for the three families, pointing at the bundled woff2 files
   fonts/              woff2 files copied from @fontsource at build time
   logo.svg            wordmark for dark backgrounds

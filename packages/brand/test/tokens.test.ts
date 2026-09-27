@@ -4,7 +4,7 @@ import { THEME_TOKENS, tokens } from '../tokens';
 import { composite, contrast, cssBlock, parseColor } from './css';
 
 const css = readFileSync(new URL('../tokens.css', import.meta.url), 'utf8');
-const themes = { dark: cssBlock(css, ':root'), light: cssBlock(css, "[data-theme='light']") };
+const themes = { dark: cssBlock(css, ":root, [data-theme='dark']"), light: cssBlock(css, "[data-theme='light']") };
 const shared = cssBlock(css, ':where(:root)');
 const TEXT_ACCENTS = ['fold', 'pass', 'warn', 'hinge'] as const;
 

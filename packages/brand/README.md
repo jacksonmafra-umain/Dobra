@@ -11,7 +11,8 @@ Dobra's design tokens, fonts, logo and icon. Every Dobra surface imports its loo
 body { background: var(--dobra-bg); color: var(--dobra-text); font: var(--dobra-type-body-md); }
 ```
 
-Dark is the default. Set `data-theme="light"` on any element to switch it and its children to light.
+Dark is the default. Set `data-theme="light"` or `data-theme="dark"` on any element to switch it and
+its children.
 The tokens do not read `prefers-color-scheme`; a surface that follows the system sets the attribute.
 
 Code without CSS reads the same values from `@dobra/brand/tokens`:

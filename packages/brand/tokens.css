@@ -1,7 +1,7 @@
-/* Dobra design tokens. Theme tokens: dark on :root, light under [data-theme='light'] on any
-   element. Shared tokens sit in :where(:root) so they never outrank a theme block.
-   tokens.ts mirrors the two theme blocks; a test keeps them equal. */
-:root {
+/* Dobra design tokens. Theme tokens: dark on :root and under [data-theme='dark'], light under
+   [data-theme='light'], on any element, so a subtree can switch either way. Shared tokens sit in
+   :where(:root) so they never outrank a theme block. tokens.ts mirrors the two theme blocks; a test keeps them equal. */
+:root, [data-theme='dark'] {
   color-scheme: dark;
   --dobra-bg: #0B0F17;
   --dobra-panel: rgb(17 24 39 / 0.85);
