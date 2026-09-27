@@ -1,0 +1,12 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<x-btn></x-btn>
+<script>
+  customElements.define('x-btn', class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' }).innerHTML =
+        '<button style="position:absolute;left:520px;top:200px;width:80px;height:48px">Shadow</button>';
+    }
+  });
+</script>

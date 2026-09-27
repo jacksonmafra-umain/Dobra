@@ -66,4 +66,26 @@ describe('collectLayout', () => {
     expect(hits('overflow-x')).toEqual([byName(root, 'wide')?.id]);
     expect(hits('overflow-x')).not.toContain(byName(root, 'wide picture')?.id);
   });
+
+  it('leaves out skip links, off-canvas drawers and visually hidden text', async () => {
+    await page.goto(`${server.url}/hidden.html`);
+    const { root } = await collectLayout(page);
+    const names = nodes(root).map((n) => n.name);
+    expect(names.some((n) => n.includes('Visible heading'))).toBe(true);
+    expect(names.filter((n) => /Skip to content|Menu item|screen readers/.test(n))).toEqual([]);
+  });
+
+  it('looks inside shadow roots', async () => {
+    await page.goto(`${server.url}/shadow.html`);
+    const { root } = await collectLayout(page);
+    expect(nodes(root).find((n) => n.name.includes('Shadow'))?.role).toBe('interactive');
+  });
+
+  it('places fixed elements where they show, even on a page loaded scrolled down', async () => {
+    await page.goto(`${server.url}/fixed.html`);
+    await page.evaluate(() => scrollTo(0, 800));
+    const { root } = await collectLayout(page);
+    expect(byName(root, 'panel')?.rect.y).toBeCloseTo(100, 0);
+    expect(byName(root, 'fab')?.role).toBe('interactive');
+  });
 });
