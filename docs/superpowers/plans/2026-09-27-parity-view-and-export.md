@@ -14,13 +14,13 @@
 
 - Scope is `apps/simulator` only. Do not edit `packages/core`, `apps/report` or `packages/figma-plugin`. If a core change is needed, open a labeled `area:core` issue and message agent/02.
 - Do not add fields to `Report`. Do not set `Report.notes`: slice 6 adds it for the CLI.
-- **Part B (the export, Tasks 4 and 5) is blocked until PR #22 merges.** `buildReport`, `Report`, `GeoNode`, `targetKey` and `loadCatalog`'s `Catalog` come from `packages/core/src/report.ts`, `geo.ts` and `targets.ts`, as they are on `origin/feat/web-report`. Part A (Tasks 1 to 3) can start now.
+- **Part B (the export, Tasks 4 and 5) is blocked until PR #22 merges and until the `area:core` issue from the media-facts plan's Task 0 lands. That issue adds `'simulator'` to `Report.source.kind`.** `buildReport`, `Report`, `GeoNode`, `targetKey` and `loadCatalog`'s `Catalog` come from `packages/core/src/report.ts`, `geo.ts` and `targets.ts`, as they are on `origin/feat/web-report`. Part A (Tasks 1 to 3) can start now.
 - iOS and Android are peer clients of the same spec. The parity view compares them; it does not present one as the reference for the other.
 - Use English throughout, microcommits, and no assistant mention in commits or PRs. Use one labeled issue per part (`enhancement`), on branch `feat/parity-view` for Part A and `feat/findings-export` for Part B, each from `main`, each with a PR that closes its issue.
 
 ## Rulings made while planning
 
-- **Source kind.** `Report.source.kind` is `'figma' | 'web'`, while `Subject.source` also allows `'simulator'`. The export uses `'web'`, with `ref` set to the simulator URL: the simulator is a web page, and the web report already renders `web` sources. If agent/02 wants a `simulator` kind, that needs a core issue, and this plan changes one constant. Cost if wrong: one constant, plus reports already exported carry `web`.
+- **Source kind.** The export uses `kind: 'simulator'`, with `ref` set to the simulator URL. `'web'` would mislabel it in the web report. agent/02 adds `'simulator'` to `Report.source.kind` in the core issue; `Subject.source` already has it in `geo.ts`. `'web'` is used only as a fallback, if that issue slips and the user wants the export sooner. The fallback is one constant, `SOURCE_KIND` in `exportReport.ts`.
 - **Which findings a Report holds.** `buildReport` runs core `check()` over the GeoNode tree, so the Report's findings are core's geometry rules. They are not the simulator's own `runLayoutChecks` list, which reads engine state such as scenes and window modes. The export dialog says this in one line. Folding `runLayoutChecks` findings into a Report would need a core change, since `buildReport` takes no findings.
 - **What can be exported.** Only catalog targets can be exported: the target must pass `isKnownTarget`, and the Android window must be full screen. Free resize, split, freeform, popup and PiP windows are not catalog frames, and `matchFrame` would report them as `frame-size-mismatch` or `none`. The Export button is disabled in those states, with the reason as its title.
 
@@ -266,7 +266,7 @@ git commit -m "Show iOS and Android side by side with a table of what differs"
 
 ---
 
-## Part B: Findings export (blocked until PR #22 merges)
+## Part B: Findings export (blocked on PR #22 and the core issue for the `simulator` source kind)
 
 Before starting, check that `main` has `packages/core/src/report.ts`, `geo.ts` and `targets.ts`, and re-read `buildReport` and `ReportInput`. If they changed since this plan, rule on the difference and ledger it.
 
@@ -311,7 +311,7 @@ describe('simulatorReport', () => {
   it('builds a Report that parses and names the target', () => {
     const report = simulatorReport(target, 'Pixel 9 Pro Fold · Home', 'http://localhost:5199/?device=pixel-9-pro-fold', 851, 883, records, new Date('2026-09-27T00:00:00Z'));
     expect(() => parseReport(report)).not.toThrow();
-    expect(report.source).toEqual({ kind: 'web', ref: 'http://localhost:5199/?device=pixel-9-pro-fold', name: 'Pixel 9 Pro Fold · Home' });
+    expect(report.source).toEqual({ kind: 'simulator', ref: 'http://localhost:5199/?device=pixel-9-pro-fold', name: 'Pixel 9 Pro Fold · Home' });
     expect(report.frames[0]).toMatchObject({ confidence: 'tag', targets: ['pixel-9-pro-fold/inner/book/portrait'] });
   });
   it('flags a CTA across the book hinge', () => {
@@ -359,6 +359,9 @@ export function toGeoTree(records: NodeRecord[]): GeoNode[] {
 
 const catalog = loadCatalog();
 
+/** 'web' only as a fallback while Report.source.kind lacks 'simulator'. */
+const SOURCE_KIND = 'simulator' as const;
+
 export function exportable(env: Environment, target: Target): { ok: true } | { ok: false; reason: string } {
   if (env.isFree) return { ok: false, reason: 'Free resize is not a catalog target.' };
   if (env.window && env.window.mode !== 'fullscreen') return { ok: false, reason: 'Only full screen windows match a catalog frame.' };
@@ -367,7 +370,7 @@ export function exportable(env: Environment, target: Target): { ok: true } | { o
 }
 
 export function simulatorReport(target: Target, label: string, url: string, width: number, height: number, records: NodeRecord[], now = new Date()): Report {
-  return buildReport(catalog, { kind: 'web', ref: url, name: label }, [
+  return buildReport(catalog, { kind: SOURCE_KIND, ref: url, name: label }, [
     { ref: targetKey(target), name: label, page: 'Simulator', width, height, tag: targetKey(target), root: toGeoTree(records) },
   ], now);
 }
