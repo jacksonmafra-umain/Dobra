@@ -19,6 +19,8 @@ export interface UrlState {
   text: TextSettings;
   /** Media-fact overrides; each key is left out when it follows the device. */
   media: MediaOverrides;
+  /** The other platform's device when comparing platforms side by side. */
+  vs?: string;
 }
 
 export const FREE_MIN: Size = { width: 280, height: 320 };
@@ -106,6 +108,7 @@ export function readUrlState(search = location.search): UrlState {
     overlays,
     text: { fontScale: Number(q.get('fs') ?? 1), bold: q.get('bold') === '1', reducedMotion: q.get('motion') === 'reduced' },
     media: readMedia(q),
+    vs: q.get('vs') ?? undefined,
   };
 }
 
@@ -146,6 +149,7 @@ export function writeUrlState(state: UrlState, env: Environment, device: DeviceS
     if (v === undefined || v === base[key]) continue;
     q.set(token, typeof v === 'boolean' ? (v ? '1' : '0') : v);
   }
+  if (state.vs) q.set('vs', state.vs);
   q.set('screen', state.screenId);
   q.set('theme', state.theme);
   q.set('zoom', state.zoom);

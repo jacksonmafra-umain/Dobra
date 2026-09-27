@@ -8,12 +8,13 @@ import type { ModalKind } from '@hinge/core/engine/modal';
 import type { TextSettings } from '@hinge/core/engine/typography';
 import { collisionsToFindings } from '@hinge/core/collisions';
 import type { Collision } from '../sample/collisions';
-import { AndroidChrome } from '../sample/androidChrome';
-import { Screen } from '../sample/Screen';
-import { DeviceFrame, type Zoom } from './DeviceFrame';
+import type { Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
 import { resolveMedia, type MediaOverrides } from './media';
-import { Overlays, type OverlayToggles } from './Overlays';
+import type { OverlayToggles } from './Overlays';
+import { counterpartOf, counterpartSelection, parityRows, validCounterpart } from './parity';
+import { ParityTable } from './ParityTable';
+import { Stage } from './Stage';
 import { clampFree, FREE_MAX, FREE_MIN, readUrlState, writeUrlState, type Theme } from './urlState';
 import { WhatChanged, type ChangeEntry } from './WhatChanged';
 
@@ -33,6 +34,8 @@ export function App({ config }: { config: SimulatorConfig }) {
   // Overrides stay when the device changes: a mouse on one tablet is a mouse on the next.
   const [mediaOverrides, setMediaOverrides] = useState<MediaOverrides>(initial.media);
   const [change, setChange] = useState<ChangeEntry | null>(null);
+  const [vsId, setVsId] = useState(() => validCounterpart(config, initial.selection.deviceId, initial.vs));
+  const [collisionsB, setCollisionsB] = useState<Collision[]>([]);
 
   const devices = config.devices.filter((d) => d.enabled);
   const screens = config.screens.filter((s) => s.enabled);
@@ -44,6 +47,17 @@ export function App({ config }: { config: SimulatorConfig }) {
   const target = targetOf(sel, env);
   const media = resolveMedia(device, env, mediaOverrides);
   const findings = [...runLayoutChecks(config, env, layout, screen, target), ...collisionsToFindings(collisions, target, env)];
+
+  // Comparing platforms: the counterpart follows side A's screen, state and orientation.
+  // A counterpart left on the same platform after a device change is replaced by the nearest peer.
+  const vs = vsId && !env.isFree ? (validCounterpart(config, sel.deviceId, vsId) ?? counterpartOf(config, device).id) : undefined;
+  const selB = vs ? counterpartSelection(config, sel, vs, env.orientation) : null;
+  const envB = selB ? resolveEnvironment(config, selB) : null;
+  const layoutB = envB ? resolveLayout(config, envB, screen) : null;
+  const findingsB =
+    selB && envB && layoutB
+      ? [...runLayoutChecks(config, envB, layoutB, screen, targetOf(selB, envB)), ...collisionsToFindings(collisionsB, targetOf(selB, envB), envB)]
+      : [];
 
   const previous = useRef<Snapshot | null>(null);
   const label = env.isFree
@@ -65,12 +79,12 @@ export function App({ config }: { config: SimulatorConfig }) {
 
   useEffect(() => {
     try {
-      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text, media: mediaOverrides }, env, device));
+      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text, media: mediaOverrides, vs }, env, device));
     } catch {
       // Sandboxed previews can refuse history access.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, mediaOverrides]);
+  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, mediaOverrides, vs]);
 
   const toggleOverlay = (key: keyof OverlayToggles) => setOverlays((o) => ({ ...o, [key]: !o[key] }));
   const resizeFree = (w: number, h: number) => setSel((s) => ({ ...s, free: clampFree(w, h) }));
@@ -116,6 +130,25 @@ export function App({ config }: { config: SimulatorConfig }) {
               ))}
             </select>
           </label>
+          <div className="control" hidden={!!sel.free}>
+            <span>Compare platforms</span>
+            <div className="seg">
+              <button aria-pressed={!!vs} onClick={() => setVsId(vs ? undefined : counterpartOf(config, device).id)}>
+                {vs ? 'On' : 'Off'}
+              </button>
+              {vs && (
+                <select aria-label="Compare with" value={vs} onChange={(e) => setVsId(e.target.value)}>
+                  {devices
+                    .filter((d) => d.platform !== device.platform)
+                    .map((d) => (
+                      <option value={d.id} key={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                </select>
+              )}
+            </div>
+          </div>
           {env.poses.length > 0 ? (
             <>
               <div className="control">
@@ -495,34 +528,82 @@ export function App({ config }: { config: SimulatorConfig }) {
         </div>
       </header>
       <div className="workspace">
-        <main className="canvas">
-          <DeviceFrame
+        {selB && envB && layoutB ? (
+          <main className="canvas canvas--parity">
+            <section className="parity-side" aria-label={env.deviceName}>
+              <h2 className="parity-side__title">{env.deviceName}</h2>
+              <div className="parity-side__stage">
+              <Stage
+                config={config}
+                env={env}
+                layout={layout}
+                screen={screen}
+                theme={theme}
+                zoom={zoom}
+                rtl={rtl}
+                overlays={overlays}
+                text={text}
+                modal={modal}
+                onCloseModal={() => setModal(null)}
+                onCollisions={setCollisions}
+                onResize={sel.free ? resizeFree : undefined}
+                onResizeWindow={
+                  env.window.mode === 'freeform'
+                    ? (w, h) => setSel((s) => ({ ...s, windowSize: { width: Math.round(w), height: Math.round(h) } }))
+                    : undefined
+                }
+              />
+              </div>
+            </section>
+            <section className="parity-side" aria-label={envB.deviceName}>
+              <h2 className="parity-side__title">{envB.deviceName}</h2>
+              <div className="parity-side__stage">
+                <Stage
+                  config={config}
+                  env={envB}
+                  layout={layoutB}
+                  screen={screen}
+                  theme={theme}
+                  zoom={zoom}
+                  rtl={rtl}
+                  overlays={overlays}
+                  text={text}
+                  modal={modal}
+                  onCloseModal={() => setModal(null)}
+                  onCollisions={setCollisionsB}
+                />
+              </div>
+            </section>
+            <ParityTable
+              a={env.deviceName}
+              b={envB.deviceName}
+              rows={parityRows({ env, layout, findings }, { env: envB, layout: layoutB, findings: findingsB })}
+            />
+          </main>
+        ) : (
+          <main className="canvas">
+          <Stage
+            config={config}
             env={env}
+            layout={layout}
+            screen={screen}
+            theme={theme}
             zoom={zoom}
+            rtl={rtl}
+            overlays={overlays}
+            text={text}
+            modal={modal}
+            onCloseModal={() => setModal(null)}
+            onCollisions={setCollisions}
             onResize={sel.free ? resizeFree : undefined}
             onResizeWindow={
               env.window.mode === 'freeform'
                 ? (w, h) => setSel((s) => ({ ...s, windowSize: { width: Math.round(w), height: Math.round(h) } }))
                 : undefined
             }
-            displayChrome={<AndroidChrome env={env} />}
-            overlay={<Overlays env={env} layout={layout} show={overlays} />}
-          >
-            <div className="sample" data-theme={theme} style={{ position: 'absolute', inset: 0 }}>
-              <Screen
-                config={config}
-                env={env}
-                layout={layout}
-                screen={screen}
-                rtl={rtl}
-                modal={modal}
-                onCloseModal={() => setModal(null)}
-                onCollisions={setCollisions}
-                text={text}
-              />
-            </div>
-          </DeviceFrame>
-        </main>
+          />
+          </main>
+        )}
         <aside className="sidebar">
           <Inspector
             config={config}
