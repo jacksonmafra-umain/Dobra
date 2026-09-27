@@ -10,6 +10,7 @@ import { collisionsToFindings } from '@hinge/core/collisions';
 import type { Collision } from '../sample/collisions';
 import type { Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
+import { collectRecords, exportable, reportFileName, simulatorReport } from './exportReport';
 import { resolveMedia, type MediaOverrides } from './media';
 import type { OverlayToggles } from './Overlays';
 import { counterpartOf, counterpartSelection, parityRows, validCounterpart } from './parity';
@@ -34,6 +35,7 @@ export function App({ config }: { config: SimulatorConfig }) {
   const [change, setChange] = useState<ChangeEntry | null>(null);
   const [vsId, setVsId] = useState(() => validCounterpart(config, initial.selection.deviceId, initial.vs));
   const [collisionsB, setCollisionsB] = useState<Collision[]>([]);
+  const sampleHost = useRef<HTMLDivElement>(null);
 
   const devices = config.devices.filter((d) => d.enabled);
   const screens = config.screens.filter((s) => s.enabled);
@@ -44,6 +46,16 @@ export function App({ config }: { config: SimulatorConfig }) {
   const layout = resolveLayout(config, env, screen);
   const target = targetOf(sel, env);
   const media = resolveMedia(device, env);
+  const canExport = exportable(env, target);
+  const exportReport = () => {
+    const host = sampleHost.current;
+    if (!host || !canExport.ok) return;
+    const report = simulatorReport(target, `${env.deviceName} · ${screen.name}`, location.href, env.width, env.height, collectRecords(host, env));
+    const url = URL.createObjectURL(new Blob([`${JSON.stringify(report, null, 2)}\n`], { type: 'application/json' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: reportFileName(target) });
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   // Overrides live in the selection, so they reach core's rule matching and stay when the device
   // changes: a mouse on one tablet is a mouse on the next.
   const setMediaOverrides = (f: (o: MediaOverrides) => MediaOverrides | undefined) => setSel((s) => ({ ...s, media: f(s.media ?? {}) }));
@@ -483,6 +495,17 @@ export function App({ config }: { config: SimulatorConfig }) {
             </div>
           )}
           <div className="control">
+            <span>Findings</span>
+            <button
+              className="seg-single"
+              disabled={!canExport.ok}
+              title={canExport.ok ? 'Download a Hinge Report JSON for the web report. It holds the shared geometry rules over what is on screen.' : canExport.reason}
+              onClick={exportReport}
+            >
+              Export report
+            </button>
+          </div>
+          <div className="control">
             <span>Present</span>
             <div className="seg">
               <button aria-pressed={modal === 'alert'} onClick={() => setModal((m) => (m === 'alert' ? null : 'alert'))}>
@@ -547,6 +570,7 @@ export function App({ config }: { config: SimulatorConfig }) {
                 modal={modal}
                 onCloseModal={() => setModal(null)}
                 onCollisions={setCollisions}
+                hostRef={sampleHost}
                 onResize={sel.free ? resizeFree : undefined}
                 onResizeWindow={
                   env.window.mode === 'freeform'
@@ -596,6 +620,7 @@ export function App({ config }: { config: SimulatorConfig }) {
             modal={modal}
             onCloseModal={() => setModal(null)}
             onCollisions={setCollisions}
+            hostRef={sampleHost}
             onResize={sel.free ? resizeFree : undefined}
             onResizeWindow={
               env.window.mode === 'freeform'
