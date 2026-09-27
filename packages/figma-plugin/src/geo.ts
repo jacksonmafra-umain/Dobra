@@ -1,14 +1,10 @@
 // Figma nodes → the core geometry tree. Rects are relative to the frame being checked.
+import { CHROME_NAME, INTERACTIVE_NAME, MIN_CONTROL_SIDE } from '@hinge/core/figmaRest';
 import type { GeoNode, GeoRole } from '@hinge/core/geo';
 import { OVERLAY_NAME } from './presets';
 
-/** Layer names treated as tappable. Edit to match a design system's naming. */
-export const INTERACTIVE_NAME = /\b(button|btn|cta|link|chip|tab(?! ?bar)|toggle|switch|checkbox|radio|input|field|fab|card)\b/i;
-/** Layer names treated as system or app chrome. */
-export const CHROME_NAME = /\b(nav(igation)?|tab ?bar|tool ?bar|app ?bar|bottom ?bar|status ?bar|header|footer)\b/i;
-
-/** Instances smaller than this on either side are icons, dividers or badges, not controls. */
-const MIN_CONTROL_SIDE = 32;
+/** The name patterns live in core so the plugin and the web report classify layers alike. */
+export { CHROME_NAME, INTERACTIVE_NAME };
 
 export function roleOf(node: SceneNode): GeoRole {
   if (node.type === 'TEXT') return 'text';
