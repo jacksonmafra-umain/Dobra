@@ -15,7 +15,14 @@
 - Everything lives under `examples/sites/`. Do not touch `packages/cli`, `packages/core` or the root `package.json` and `package-lock.json`.
 - Every page is self-contained: no external fonts, scripts or images. Use inline SVG, or CSS boxes for media.
 - Pages are there to trigger rules deterministically. Each failing page contains its one failure. Every other element is sized to stay clear of the other rules: text blocks at least 200 px wide, interactive elements at least 48×48 px, nothing wider than the viewport, and nothing on a hinge.
-- Thresholds come from core rules on `origin/feat/figma-plugin-checker` (`packages/core/src/rules.ts`). A side-by-side layout needs 600. A window is short below 480. Text is legible from 200 px when it has at least 20 characters. Each failure sits well past its threshold, so a small threshold change does not flip the result.
+- Thresholds come from core rules on `origin/feat/figma-plugin-checker` (`packages/core/src/rules.ts`). A side-by-side layout needs 600. A window is short below 480. Text is legible from 200 px when it has at least 20 characters. All three thresholds are estimated values. Each failure sits well past its threshold, so a small threshold change does not flip the result.
+- Write the pages for the slice-6 collector (`collectLayout`), which reads only these:
+  - **Side by side:** a real container. `display: flex` with `flex-direction: row`, or `display: grid`, gives `layout: 'horizontal'`. Floats and inline-block columns are invisible to it.
+  - **Text:** `h1`–`h6`, `p`, `li`, `label`, `dt`, `dd`, `td`, `th`, `figcaption` and `blockquote` with non-empty text. `chars` is the text length, so text meant to trip `min-legible-width` needs at least 20 characters of real copy in a `p`.
+  - **Chrome:** `header`, `nav`, `footer`, their ARIA roles, or `position: fixed`/`sticky`.
+  - **Interactive:** `a[href]`, `button`, inputs and the matching ARIA roles.
+  - **Media:** `img`, `video`, `picture`, `canvas`, `svg` and `iframe`. A styled `div` is a container, not media, so the `.media` boxes on page 01 count as panes' children, not panes.
+  - **Coordinates:** the collector uses document coordinates. A fixed bar only overlaps content as it does on screen when the page does not scroll.
 - Use English throughout, microcommits, and no assistant mention in commits or PRs. Work from a labeled issue (`enhancement`, `area:cli`), on branch `feat/fixture-sites` from `main`, with a PR that closes the issue.
 
 ## Targets used
@@ -96,7 +103,9 @@ for (const k of keys) {
 }'
 ```
 
-Expected: four lines ending in `ok`. After PR #22 merges, repeat with `isKnownTarget(envConfigOf(loadCatalog()), parseTargetKey(k))` in a scratch Vitest file (not committed).
+Expected: four lines ending in `ok`.
+
+Then, before committing any `expected.json` entry, check the keys against core's `enumerateTargets(envConfigOf(loadCatalog())).map(targetKey)`. `targets.ts` is not on `main` until #22 merges. Until then, run a scratch Vitest file in a temporary worktree of `origin/feat/web-report`, and remove the worktree afterwards. Nothing from that check is committed. Expected: all four keys are in the list.
 
 - [ ] **Step 3: Commit**
 
@@ -166,7 +175,7 @@ In `expected.json`, add `checks: [{ target: "galaxy-z-flip-7/cover/closed/landsc
 
 The header's flex children are not `container` or `media` with at least half the row height, so this page must not trigger `landscape-not-wide`; say so with `forbid`. In `expected.json`, add `expect: ["min-legible-width"], forbid: ["landscape-not-wide","overflow-x","hinge-content"]` on the cover target.
 
-- [ ] **Step 3: `03-floating-tab-bar.html`.** A `nav` with `position: fixed; bottom: 12px; left: 12px; right: 12px; height: 64px`, holding four `button`s (each 48 px or larger), floats over a scrolling `main` whose paragraphs pass under it. On a 339 tall window, content at y ≈ 263–327 sits under the bar. Use four paragraphs of 3 lines each so content reaches below y=263 without scrolling.
+- [ ] **Step 3: `03-floating-tab-bar.html`.** A `nav` with `position: fixed; bottom: 12px; left: 12px; right: 12px; height: 64px`, holding four `button`s (each 48 px or larger), floats over a scrolling `main` whose paragraphs pass under it. On a 339 tall window, content at y ≈ 263–327 sits under the bar. Keep the page to one viewport height, so document coordinates match the screen. Use `main { height: 100vh; }`, with four short paragraphs that together reach past y=263 but end above 339. Check that `document.documentElement.scrollHeight === innerHeight` at 352 × 339.
 
 In `expected.json`, add `expect: ["chrome-overlap"], forbid: ["overflow-x","touch-target"]` on the cover target, plus a second check on `galaxy-z-flip-7/inner/open/portrait` with `forbid: ["chrome-overlap"]`: the window is 880 tall, so the rule does not apply there.
 
@@ -207,7 +216,7 @@ git commit -m "Add a fixture page with a fixed-width banner wider than the cover
 - Create: `examples/sites/05-text-at-40-percent.html`, `06-hinge-content.html`
 - Modify: `examples/sites/expected.json`
 
-- [ ] **Step 1: `05-text-at-40-percent.html`.** A list-detail layout that splits 60/40 from `@media (min-width: 340px)`, a breakpoint tuned on a large phone. On the Flip's 360 inner display, the 40% detail pane is 144 wide, and its `p` (over 20 characters) breaks there. Both panes are `section`s with `min-height: 100vh`. Set no `orientation` query.
+- [ ] **Step 1: `05-text-at-40-percent.html`.** A list-detail layout that splits 60/40 from `@media (min-width: 340px)`, a breakpoint tuned on a large phone. On the Flip's 360 inner display, the 40% detail pane is 144 wide, and its `p` (over 20 characters) breaks there. Both panes are `section`s with `min-height: 100vh`, inside a `main` with `display: flex; flex-direction: row`. The detail pane's copy is a `p` of at least 20 characters of real text. Set no `orientation` query.
 
 The window is 360 < 600, and both panes are at least 30% of the width, so `landscape-not-wide` fires too. That is correct: the side-by-side split is the cause, and the broken text is the symptom observed in §8.2 #5. Add `expect: ["min-legible-width", "landscape-not-wide"], forbid: ["overflow-x"]` on `galaxy-z-flip-7/inner/open/portrait`.
 
@@ -288,7 +297,7 @@ nav { position: fixed; bottom: 0; left: 0; right: 0; }
 - Each tab button is at least 48.
 - The page expects the CLI's segment emulation on folded and spanned targets (spec §7, step 2). With two segments, each column is exactly one segment, and the hinge is the gap. Without emulation, the `min-width: 600px` fallback gives two equal columns. On the Duo that is (1100 − 48) / 2 = 526 each, so column 1 spans 16–542 and its text would cross the 537–563 hinge. Emulation is therefore required for this page's `forbid: ["hinge-content"]`, and `expected.json` says so in its `$comment`. Left-align the CTA (200 wide, x 16–216) so it is clear either way.
 
-- [ ] **Step 2: Add the expectations.** Add a check for every target in the table above, each with `expect: []` and `forbid: ["landscape-not-wide","min-legible-width","chrome-overlap","hinge-content","overflow-x","touch-target"]`. Also add a transition from the Flip cover to the Flip inner with `forbid: ["resize-vs-reload"]`. The `transitions` entries therefore also take `forbid`; update the format's `$comment`.
+- [ ] **Step 2: Add the expectations.** The Duo check's `forbid` includes `hinge-content` on purpose: it catches a regression in the CLI's segment emulation. Add a check for every target in the table above, each with `expect: []` and `forbid: ["landscape-not-wide","min-legible-width","chrome-overlap","hinge-content","overflow-x","touch-target"]`. Also add a transition from the Flip cover to the Flip inner with `forbid: ["resize-vs-reload"]`. The `transitions` entries therefore also take `forbid`; update the format's `$comment`.
 - [ ] **Step 3: Verify in a browser** at each target size, with and without segment emulation.
   - Column widths: at least 200.
   - With segment emulation, column 1's right edge is at or left of the hinge (537 on the Duo, about 425 on the Pixel 9 Pro Fold). Without it, only the CTA is clear, as expected.
