@@ -135,20 +135,31 @@ function overflowX({ subject, placed, add }: Ctx) {
   }
 }
 
-const spans = (a: number, al: number, b: number, bl: number) => a < b + bl && a + al > b;
-
 /**
- * A node whose rect misses some clipping ancestor entirely is cropped out of view. A scrolling frame
- * only crops across its scroll axis: content further along it scrolls into view.
+ * A node is cropped out of view when the region its clipping ancestors leave visible, taken together,
+ * misses it. A scrolling frame only crops across its scroll axis: content further along it scrolls
+ * into view. A zero-size control is visible when it lies within that region, edges included.
  */
 function croppedAway(p: Placed, byNode: Map<GeoNode, Placed>): boolean {
   const r = p.node.rect;
+  let x0 = r.x;
+  let x1 = r.x + r.width;
+  let y0 = r.y;
+  let y1 = r.y + r.height;
   for (let up = p.parent; up; up = byNode.get(up)?.parent ?? null) {
     if (!up.clips) continue;
     const c = up.rect;
-    const visible =
-      up.scrollAxis === 'y' ? spans(r.x, r.width, c.x, c.width) : up.scrollAxis === 'x' ? spans(r.y, r.height, c.y, c.height) : rectsOverlap(r, c);
-    if (!visible) return true;
+    if (up.scrollAxis !== 'x') {
+      x0 = Math.max(x0, c.x);
+      x1 = Math.min(x1, c.x + c.width);
+    }
+    if (up.scrollAxis !== 'y') {
+      y0 = Math.max(y0, c.y);
+      y1 = Math.min(y1, c.y + c.height);
+    }
+    // A span with length is hidden once nothing of it is left; a point only once it falls outside.
+    const hidden = (lo: number, hi: number, length: number) => (length > 0 ? hi <= lo : hi < lo);
+    if (hidden(x0, x1, r.width) || hidden(y0, y1, r.height)) return true;
   }
   return false;
 }
