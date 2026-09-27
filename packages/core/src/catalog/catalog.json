@@ -11,7 +11,8 @@
     "device-spec": "Manufacturer device specification (pixels and default density); dp derived as px / density",
     "observed": "Observed on hardware or an emulator while testing an Android app",
     "microsoft-learn": "Microsoft Learn, Surface Duo screen dimensions: learn.microsoft.com/en-us/previous-versions/dual-screen/android/surface-duo-dimensions",
-    "android-studio-avd": "Android Studio device definitions (AOSP sdklib devices/nexus.xml)"
+    "android-studio-avd": "Android Studio device definitions (AOSP sdklib devices/nexus.xml)",
+    "apple-hig": "Apple Human Interface Guidelines, Layout (developer.apple.com/design/human-interface-guidelines/layout) and UIKit system layout margins"
   },
   "platforms": {
     "ios": {
@@ -4474,5 +4475,103 @@
       "orientation": "portrait",
       "level": "required"
     }
-  ]
+  ],
+  "layoutDefaults": {
+    "$comment": "Page layout per size class when no app profile says otherwise. Values follow Material 3's layout guidance (margins 16/24 dp, one pane below expanded) and the earlier Material column grid; iOS follows UIKit's system margins. None could be confirmed against a published table for this catalog, so every field is marked estimated until checked. Breakpoints come from platforms.android.sizeClasses.",
+    "android": {
+      "compact": {
+        "margin": 16,
+        "gutter": 16,
+        "columns": 4,
+        "panes": 1,
+        "source": "material3",
+        "estimated": [
+          "margin",
+          "gutter",
+          "columns",
+          "panes"
+        ]
+      },
+      "medium": {
+        "margin": 24,
+        "gutter": 16,
+        "columns": 8,
+        "panes": 1,
+        "source": "material3",
+        "estimated": [
+          "margin",
+          "gutter",
+          "columns",
+          "panes"
+        ]
+      },
+      "expanded": {
+        "margin": 24,
+        "gutter": 24,
+        "columns": 12,
+        "panes": 2,
+        "source": "material3",
+        "estimated": [
+          "margin",
+          "gutter",
+          "columns",
+          "panes"
+        ]
+      },
+      "large": {
+        "margin": 24,
+        "gutter": 24,
+        "columns": 12,
+        "panes": 2,
+        "source": "material3",
+        "estimated": [
+          "margin",
+          "gutter",
+          "columns",
+          "panes"
+        ]
+      },
+      "extraLarge": {
+        "margin": 24,
+        "gutter": 24,
+        "columns": 12,
+        "panes": 2,
+        "source": "material3",
+        "estimated": [
+          "margin",
+          "gutter",
+          "columns",
+          "panes"
+        ]
+      }
+    },
+    "ios": {
+      "compact": {
+        "margin": 16,
+        "gutter": 16,
+        "columns": 4,
+        "panes": 1,
+        "source": "apple-hig",
+        "estimated": [
+          "margin",
+          "gutter",
+          "columns",
+          "panes"
+        ]
+      },
+      "regular": {
+        "margin": 20,
+        "gutter": 20,
+        "columns": 8,
+        "panes": 2,
+        "source": "apple-hig",
+        "estimated": [
+          "margin",
+          "gutter",
+          "columns",
+          "panes"
+        ]
+      }
+    }
+  }
 }

@@ -419,12 +419,28 @@ const requirement = z.strictObject({
   note: z.string().optional(),
 });
 
+/** Page layout for one size class when no app profile says otherwise. */
+const layoutDefault = z.strictObject({
+  margin: nonNeg,
+  gutter: nonNeg,
+  columns: z.number().int().positive(),
+  panes: z.number().int().positive(),
+  source: sourceRef,
+  /** Fields the source does not publish (or that could not be confirmed) for this class. */
+  estimated: z.array(z.enum(['margin', 'gutter', 'columns', 'panes'])),
+});
+
 const catalogShape = {
     version: z.string(),
     sources: z.record(z.string(), z.string()),
     platforms: z.strictObject({ ios: iosProfile, android: androidProfile }),
     devices: z.array(z.discriminatedUnion('platform', [iosDevice, androidDevice])).min(1),
   requirements: z.array(requirement).min(1),
+  /** Page layout per size class when no app profile says otherwise (Material 3, Apple). */
+  layoutDefaults: z.strictObject({
+    android: z.record(z.string(), layoutDefault),
+    ios: z.strictObject({ compact: layoutDefault, regular: layoutDefault }),
+  }),
 };
 
 const profileShape = {
@@ -485,6 +501,13 @@ function checkers(cfg: { sources: Record<string, string>; platforms: { android: 
 function checkCatalog(cfg: CatalogShape, issue: Issue) {
   const { checkSource, unique, android, widthIds, heightIds, checkClasses } = checkers(cfg, issue);
   unique(cfg.devices.map((d) => d.id), 'devices');
+
+  for (const id of widthIds) if (!cfg.layoutDefaults.android[id]) issue(['layoutDefaults', 'android'], `Missing default for ${id}`);
+  for (const [id, d] of Object.entries(cfg.layoutDefaults.android)) {
+    if (!widthIds.has(id)) issue(['layoutDefaults', 'android', id], `Unknown width class ${id}`);
+    checkSource(d.source, ['layoutDefaults', 'android', id, 'source']);
+  }
+  for (const id of ['compact', 'regular'] as const) checkSource(cfg.layoutDefaults.ios[id].source, ['layoutDefaults', 'ios', id, 'source']);
 
   checkSource(android.sizeClasses.source, ['platforms', 'android', 'sizeClasses', 'source']);
   android.navigation.rules.forEach((r, i) => checkSource(r.source, ['platforms', 'android', 'navigation', 'rules', i, 'source']));
