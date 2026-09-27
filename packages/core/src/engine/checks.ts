@@ -1,5 +1,5 @@
 // src/engine/checks.ts
-// Layout checks that need no DOM. Findings use the Hinge shape and rule ids so the simulator, the
+// Layout checks that need no DOM. Findings use the Dobra shape and rule ids so the simulator, the
 // Figma plugin and the CLI report the same thing.
 import type { HeroRule, Orientation, Rect, ScreenSpec, SimulatorConfig } from '../config/types';
 import type { Environment, Selection } from './environment';
