@@ -17,6 +17,23 @@
           ]
         }
       ]
+    },
+    {
+      "file": "02-narrow-card.html",
+      "observed": "§8.2 #2",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "min-legible-width"
+          ],
+          "forbid": [
+            "landscape-not-wide",
+            "overflow-x",
+            "hinge-content"
+          ]
+        }
+      ]
     }
   ],
   "transitions": []
