@@ -333,12 +333,24 @@ Added with the iOS part.
 ```
 
 ```css
-dialog { max-inline-size: min(100vw - 2rem, 32rem); }
+dialog { box-sizing: border-box; max-inline-size: min(100% - 2rem, 32rem); }
 @media (width < 600px) {
-  dialog { margin-block-end: 0; inline-size: 100%; max-inline-size: none; }   /* sheet */
+  dialog:modal {                                                    /* sheet */
+    margin-block-end: 0;
+    margin-inline: 0;
+    inline-size: 100%;
+    max-inline-size: none;
+    padding-block-end: max(1em, env(safe-area-inset-bottom));
+  }
 }
 ```
 
+- **Why these properties:** the browser's own styles give a modal dialog `position: fixed`,
+  `inset-block: 0`, `margin: auto`, `padding: 1em` and a border. Setting `margin-block-end: 0`
+  pins it to the bottom, and `box-sizing: border-box` with zero inline margins keeps
+  `inline-size: 100%` from overflowing
+  ([WHATWG HTML: rendering](https://html.spec.whatwg.org/multipage/rendering.html)). A non-modal
+  dialog is positioned absolutely, so the sheet rule targets `:modal` only.
 - **`<dialog>`:** Baseline widely available since March 2022; `showModal()` opens it modally
   ([MDN: dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog)).
 - **The `popover` attribute:** Baseline 2024, newly available since April 2024
