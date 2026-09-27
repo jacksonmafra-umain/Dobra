@@ -12,7 +12,9 @@ export type RuleId =
   | 'tabletop-controls'
   | 'touch-target'
   | 'chrome-overlap'
-  | 'hinge-content';
+  | 'hinge-content'
+  | 'overflow-x'
+  | 'frame-size-mismatch';
 
 export interface Target {
   deviceId: string;

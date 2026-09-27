@@ -67,4 +67,83 @@ describe('plugin handlers', () => {
     expect(await handle(api, { type: 'create-missing' })).toMatchObject({ type: 'created', frameIds: [] });
     expect(await handle(api, { type: 'scan-tags' })).toMatchObject({ type: 'tag-candidates', frames: [] });
   });
+
+  it('checks the page and groups findings per frame', async () => {
+    const api = createFakeFigma();
+    await handle(api, { type: 'create-presets', keys: ['surface-duo-2/spanned/spanned/landscape'] });
+    const frame = api.currentPage.children[0] as FrameNode;
+    const button = api.createFrame();
+    button.name = 'Buy button';
+    button.resize(80, 48);
+    frame.appendChild(button);
+    button.x = 530;
+    button.y = 300;
+    const reply = await handle(api, { type: 'check', scope: 'page' });
+    if (reply?.type !== 'findings') throw new Error('findings expected');
+    expect(reply.frames[0].findings.map((f) => [f.ruleId, f.nodeId])).toContainEqual(['hinge-content', button.id]);
+  });
+
+  it('checks only the artboards the selection is in', async () => {
+    const api = createFakeFigma();
+    await handle(api, { type: 'create-presets', keys: ['pixel-9/main/-/portrait', 'pixel-9/main/-/landscape'] });
+    const second = api.currentPage.children[1] as FrameNode;
+    const inner = api.createFrame();
+    second.appendChild(inner);
+    api.currentPage.selection = [inner];
+    const reply = await handle(api, { type: 'check', scope: 'selection' });
+    if (reply?.type !== 'findings') throw new Error('findings expected');
+    expect(reply.frames.map((f) => f.frameId)).toEqual([second.id]);
+  });
+
+  it('falls back to the page when nothing is selected', async () => {
+    const api = createFakeFigma();
+    await handle(api, { type: 'create-presets', keys: ['pixel-9/main/-/portrait', 'pixel-9/main/-/landscape'] });
+    api.currentPage.selection = [];
+    const reply = await handle(api, { type: 'check', scope: 'selection' });
+    if (reply?.type !== 'findings') throw new Error('findings expected');
+    expect(reply.frames).toHaveLength(2);
+  });
+
+  it('selects and zooms to a node', async () => {
+    const api = createFakeFigma();
+    const f = api.createFrame();
+    await handle(api, { type: 'select-node', nodeId: f.id });
+    expect(api.currentPage.selection).toEqual([f]);
+    expect(api.zoomedTo).toEqual([f]);
+  });
+
+  it('sets a Re-check button on created presets', async () => {
+    const api = createFakeFigma();
+    await handle(api, { type: 'create-presets', keys: ['pixel-9/main/-/portrait'] });
+    expect((api.currentPage.children[0] as unknown as { relaunch: unknown }).relaunch).toEqual({ check: '' });
+  });
+
+  it('adapts the chosen frame to each target', async () => {
+    const api = createFakeFigma();
+    const src = api.createFrame();
+    src.resize(411, 923);
+    const reply = await handle(api, { type: 'adapt', frameId: src.id, keys: ['surface-duo-2/spanned/spanned/landscape', 'pixel-tablet/main/-/landscape'], split: true });
+    if (reply?.type !== 'adapted') throw new Error('adapted expected');
+    expect(reply.results.map((r) => r.key)).toEqual(['surface-duo-2/spanned/spanned/landscape', 'pixel-tablet/main/-/landscape']);
+    expect(reply.results.every((r) => r.frameId !== src.id && r.plan)).toBe(true);
+    expect(reply.results[1].plan.splitNote).toMatch(/does not separate/);
+  });
+
+  it('refuses an unknown key before adapting anything', async () => {
+    const api = createFakeFigma();
+    const src = api.createFrame();
+    const reply = await handle(api, { type: 'adapt', frameId: src.id, keys: ['pixel-9/main/-/portrait', 'nope/x/-/portrait'], split: false });
+    expect(reply).toMatchObject({ type: 'error' });
+    expect(api.currentPage.children).toHaveLength(1);
+  });
+
+  it('switches page before selecting a node found on another page', async () => {
+    const api = createFakeFigma();
+    const other = api.addPage();
+    const f = api.createFrame();
+    other.appendChild(f as never);
+    await handle(api, { type: 'select-node', nodeId: f.id });
+    expect(api.currentPage).toBe(other);
+    expect(api.currentPage.selection).toEqual([f]);
+  });
 });

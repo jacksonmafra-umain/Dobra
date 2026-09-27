@@ -27,17 +27,14 @@ function box(api: FigmaApi, parent: FrameNode, name: string, r: Box, color: RGB,
   rect.fills = [{ type: 'SOLID', color, opacity }];
 }
 
-export function applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: string): FrameNode {
-  const x = nextFreeX(api);
-  const frame = api.createFrame();
-  frame.name = p.name;
-  frame.resize(p.width, p.height);
-  frame.x = x;
-  frame.y = 0;
+/** Makes a frame an artboard for a preset: tag, relaunch button, grids and a fresh locked overlay. */
+export function decorate(api: FigmaApi, frame: FrameNode, p: PresetFrame, catalogVersion: string): void {
+  frame.children.find((c) => c.name === OVERLAY_NAME)?.remove();
   frame.cornerRadius = p.cornerRadius;
   frame.clipsContent = true;
   frame.setSharedPluginData(NAMESPACE, 'target', p.key);
   frame.setSharedPluginData(NAMESPACE, 'catalogVersion', catalogVersion);
+  frame.setRelaunchData({ check: '' });
   const grids: LayoutGrid[] = [
     { pattern: 'COLUMNS', alignment: 'STRETCH', count: p.grid.columns, gutterSize: p.grid.gutter, offset: p.grid.margin, visible: true, color: { ...BLUE, a: 0.08 } },
   ];
@@ -75,6 +72,8 @@ export function applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: strin
   overlay.fills = [];
   overlay.clipsContent = false;
   frame.appendChild(overlay);
+  // In an auto-layout frame the overlay must not join the flow, or it lands below the content.
+  if (frame.layoutMode !== 'NONE') overlay.layoutPositioning = 'ABSOLUTE';
   overlay.x = 0;
   overlay.y = 0;
   overlay.constraints = { horizontal: 'STRETCH', vertical: 'STRETCH' };
@@ -93,5 +92,15 @@ export function applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: strin
     else if (h.rect.height === 0) box(api, overlay, 'Crease', { ...h.rect, y: h.rect.y - 0.5, height: 1 }, RED, 0.5);
   }
   overlay.locked = true;
+}
+
+export function applyPreset(api: FigmaApi, p: PresetFrame, catalogVersion: string): FrameNode {
+  const x = nextFreeX(api);
+  const frame = api.createFrame();
+  frame.name = p.name;
+  frame.resize(p.width, p.height);
+  frame.x = x;
+  frame.y = 0;
+  decorate(api, frame, p, catalogVersion);
   return frame;
 }

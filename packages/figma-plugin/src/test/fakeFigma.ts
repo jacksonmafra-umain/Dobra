@@ -2,7 +2,7 @@
 // Figma's: created on the current page, re-parented by appendChild, shared plugin data defaults to ''.
 import type { FigmaApi } from '../api';
 
-type NodeType = 'FRAME' | 'RECTANGLE' | 'SECTION' | 'GROUP';
+type NodeType = 'FRAME' | 'RECTANGLE' | 'SECTION' | 'GROUP' | 'TEXT' | 'INSTANCE';
 
 export interface FakeNode {
   id: string;
@@ -20,9 +20,30 @@ export interface FakeNode {
   layoutGrids: unknown[];
   cornerRadius: number;
   clipsContent: boolean;
-  constraints: unknown;
+  constraints: { horizontal: string; vertical: string };
+  overflowDirection: 'NONE' | 'HORIZONTAL' | 'VERTICAL' | 'BOTH';
+  layoutMode: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
+  itemSpacing: number;
+  layoutGrow: number;
+  layoutPositioning: 'AUTO' | 'ABSOLUTE';
+  primaryAxisSizingMode: string;
+  counterAxisSizingMode: string;
+  characters: string;
+  fontSize: number;
+  componentProperties: Record<string, { type: string; value: string | boolean }>;
+  variantOptions: Record<string, string[]>;
+  relaunch: Record<string, string> | null;
+  explicitModes: Record<string, string>;
+  readonly absoluteBoundingBox: { x: number; y: number; width: number; height: number };
   resize(width: number, height: number): void;
   appendChild(child: FakeNode): void;
+  insertChild(index: number, child: FakeNode): void;
+  clone(): FakeNode;
+  remove(): void;
+  setProperties(props: Record<string, string | boolean>): void;
+  getMainComponentAsync(): Promise<{ parent: { type: 'COMPONENT_SET'; componentPropertyDefinitions: Record<string, { type: 'VARIANT'; variantOptions: string[] }> } } | null>;
+  setRelaunchData(data: Record<string, string>): void;
+  setExplicitVariableModeForCollection(collection: { id: string }, modeId: string): void;
   setSharedPluginData(namespace: string, key: string, value: string): void;
   getSharedPluginData(namespace: string, key: string): string;
 }
@@ -32,46 +53,83 @@ export interface FakePage {
   children: FakeNode[];
   selection: FakeNode[];
   appendChild(child: FakeNode): void;
+  insertChild(index: number, child: FakeNode): void;
   findAllWithCriteria(criteria: { types?: NodeType[]; sharedPluginData?: { namespace: string; keys?: string[] } }): FakeNode[];
 }
+
+export interface FakeCollection {
+  id: string;
+  name: string;
+  modes: { modeId: string; name: string }[];
+}
+
+export type FakeFigma = FigmaApi & {
+  page: FakePage;
+  addPage(): FakePage;
+  zoomedTo: unknown;
+  collections: FakeCollection[];
+  container(type: 'SECTION' | 'GROUP'): FakeNode;
+  createText(): FakeNode;
+  createInstance(): FakeNode;
+};
 
 function detach(child: FakeNode) {
   const parent = child.parent;
   if (parent) parent.children.splice(parent.children.indexOf(child), 1);
+  child.parent = null;
 }
 
-export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknown; container(type: 'SECTION' | 'GROUP'): FakeNode } {
+export function createFakeFigma(): FakeFigma {
   let next = 1;
-  const page: FakePage = {
-    type: 'PAGE',
-    children: [],
-    selection: [],
-    appendChild(child) {
-      detach(child);
-      child.parent = page;
-      page.children.push(child);
-    },
-    findAllWithCriteria({ types, sharedPluginData }) {
-      const out: FakeNode[] = [];
-      const walk = (nodes: FakeNode[]) => {
-        for (const n of nodes) {
-          const typeOk = !types || types.includes(n.type);
-          const dataOk = !sharedPluginData || (sharedPluginData.keys ?? []).every((k) => n.getSharedPluginData(sharedPluginData.namespace, k) !== '');
-          if (typeOk && dataOk) out.push(n);
-          walk(n.children);
-        }
-      };
-      walk(page.children);
-      return out;
-    },
+  const makePage = (): FakePage => {
+    const pg: FakePage = {
+      type: 'PAGE',
+      children: [],
+      selection: [],
+      appendChild(child) {
+        detach(child);
+        child.parent = pg;
+        pg.children.push(child);
+      },
+      insertChild(index, child) {
+        detach(child);
+        child.parent = pg;
+        pg.children.splice(index, 0, child);
+      },
+      findAllWithCriteria({ types, sharedPluginData }) {
+        const out: FakeNode[] = [];
+        const walk = (nodes: FakeNode[]) => {
+          for (const n of nodes) {
+            const typeOk = !types || types.includes(n.type);
+            const dataOk = !sharedPluginData || (sharedPluginData.keys ?? []).every((k) => n.getSharedPluginData(sharedPluginData.namespace, k) !== '');
+            if (typeOk && dataOk) out.push(n);
+            walk(n.children);
+          }
+        };
+        walk(pg.children);
+        return out;
+      },
+    };
+    return pg;
+  };
+  const page = makePage();
+  const pages: FakePage[] = [page];
+
+  const DEFAULT_NAME: Record<NodeType, string> = {
+    FRAME: 'Frame',
+    RECTANGLE: 'Rectangle',
+    SECTION: 'Section',
+    GROUP: 'Group',
+    TEXT: 'Text',
+    INSTANCE: 'Instance',
   };
 
-  const make = (type: NodeType): FakeNode => {
+  const make = (type: NodeType, append = true): FakeNode => {
     const data = new Map<string, string>();
     const node: FakeNode = {
       id: `1:${next++}`,
       type,
-      name: type === 'FRAME' ? 'Frame' : type === 'RECTANGLE' ? 'Rectangle' : type === 'SECTION' ? 'Section' : 'Group',
+      name: DEFAULT_NAME[type],
       x: 0,
       y: 0,
       width: 100,
@@ -85,6 +143,30 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
       cornerRadius: 0,
       clipsContent: false,
       constraints: { horizontal: 'MIN', vertical: 'MIN' },
+      overflowDirection: 'NONE',
+      layoutMode: 'NONE',
+      itemSpacing: 0,
+      layoutGrow: 0,
+      layoutPositioning: 'AUTO',
+      primaryAxisSizingMode: 'FIXED',
+      counterAxisSizingMode: 'FIXED',
+      characters: '',
+      fontSize: 12,
+      componentProperties: {},
+      variantOptions: {},
+      relaunch: null,
+      explicitModes: {},
+      get absoluteBoundingBox() {
+        let x = node.x;
+        let y = node.y;
+        let up = node.parent;
+        while (up && up.type !== 'PAGE') {
+          x += up.x;
+          y += up.y;
+          up = up.parent;
+        }
+        return { x, y, width: node.width, height: node.height };
+      },
       resize(width, height) {
         node.width = width;
         node.height = height;
@@ -94,6 +176,42 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
         child.parent = node;
         node.children.push(child);
       },
+      insertChild(index, child) {
+        detach(child);
+        child.parent = node;
+        node.children.splice(index, 0, child);
+      },
+      clone() {
+        const copy = make(node.type, false);
+        const { id: _id, parent: _p, children, absoluteBoundingBox: _a, ...rest } = node as FakeNode & Record<string, unknown>;
+        for (const [k, v] of Object.entries(rest)) {
+          if (typeof v !== 'function') (copy as unknown as Record<string, unknown>)[k] = structuredClone(v);
+        }
+        for (const [k, v] of data) copy.setSharedPluginData(k.split(':')[0], k.split(':').slice(1).join(':'), v);
+        for (const c of children) copy.appendChild(c.clone());
+        const parent = node.parent;
+        if (parent) parent.appendChild(copy);
+        return copy;
+      },
+      remove() {
+        detach(node);
+      },
+      setProperties(props) {
+        for (const [k, value] of Object.entries(props)) {
+          if (node.componentProperties[k]) node.componentProperties[k] = { ...node.componentProperties[k], value };
+        }
+      },
+      async getMainComponentAsync() {
+        if (node.type !== 'INSTANCE') return null;
+        const defs = Object.fromEntries(Object.entries(node.variantOptions).map(([k, v]) => [k, { type: 'VARIANT' as const, variantOptions: v }]));
+        return { parent: { type: 'COMPONENT_SET' as const, componentPropertyDefinitions: defs } };
+      },
+      setRelaunchData(d) {
+        node.relaunch = d;
+      },
+      setExplicitVariableModeForCollection(collection, modeId) {
+        node.explicitModes[collection.id] = modeId;
+      },
       setSharedPluginData(ns, key, value) {
         data.set(`${ns}:${key}`, value);
       },
@@ -101,7 +219,7 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
         return data.get(`${ns}:${key}`) ?? '';
       },
     };
-    page.appendChild(node);
+    if (append) api.currentPage.appendChild(node);
     return node;
   };
 
@@ -117,9 +235,23 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
   const api = {
     page,
     zoomedTo: null as unknown,
+    collections: [] as FakeCollection[],
     currentPage: page,
+    root: { children: pages },
+    addPage: () => {
+      const pg = makePage();
+      pages.push(pg);
+      return pg;
+    },
+    setCurrentPageAsync: async (pg: FakePage) => {
+      api.currentPage = pg;
+    },
+    skipInvisibleInstanceChildren: false,
+    loadAllPagesAsync: async () => {},
     createFrame: () => make('FRAME'),
     createRectangle: () => make('RECTANGLE'),
+    createText: () => make('TEXT'),
+    createInstance: () => make('INSTANCE'),
     /** Test-only: a Section or Group to move frames into. */
     container: (type: 'SECTION' | 'GROUP') => make(type),
     viewport: {
@@ -127,7 +259,10 @@ export function createFakeFigma(): FigmaApi & { page: FakePage; zoomedTo: unknow
         api.zoomedTo = nodes;
       },
     },
-    getNodeByIdAsync: async (id: string) => find(id, page.children),
+    variables: {
+      getLocalVariableCollectionsAsync: async () => api.collections,
+    },
+    getNodeByIdAsync: async (id: string) => pages.map((pg) => find(id, pg.children)).find(Boolean) ?? null,
   };
-  return api as unknown as FigmaApi & { page: FakePage; zoomedTo: unknown; container(type: 'SECTION' | 'GROUP'): FakeNode };
+  return api as unknown as FakeFigma;
 }
