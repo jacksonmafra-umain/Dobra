@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Finish Android window states and add scenes, Grid/FlexBox layout forms and checks that emit Hinge findings, without changing how existing rules resolve.
+**Goal:** Finish Android window states and add scenes, Grid/FlexBox layout forms and checks that emit Dobra findings, without changing how existing rules resolve.
 
 **Architecture:** Every new capability is a pure engine module in `src/engine` (window placement, typography, scenes, grid/flex resolution, checks) with table tests, wired into `resolveEnvironment` / `resolveLayout`, then rendered by the sample app. The config schema grows only optional fields; existing rules keep their `perRow` form.
 
@@ -17,12 +17,12 @@
 - Android layout values are in dp, type in sp; iOS in pt. UI labels use `env.unit` / `env.typeUnit`, never a literal "pt".
 - Existing layout rules resolve exactly as before (all current tests keep passing unchanged).
 - No brand strings anywhere: the repo is de-branded, and the brand scan from the de-branding slice must stay empty.
-- Findings use the Hinge shape: `{ ruleId, severity: 'error' | 'warn' | 'info', target, nodeId, rect, message, source, estimated }`.
-- Hinge rule ids only: `landscape-not-wide`, `min-legible-width`, `pane-split`, `tabletop-controls`, `touch-target`, `chrome-overlap`, `hinge-content`.
-- New devices, cover-screen `policy`/`continuity` and media-fact schema fields are added by Hinge's Catalog slice, not here (Task 11 waits for it).
+- Findings use the Dobra shape: `{ ruleId, severity: 'error' | 'warn' | 'info', target, nodeId, rect, message, source, estimated }`.
+- Dobra rule ids only: `landscape-not-wide`, `min-legible-width`, `pane-split`, `tabletop-controls`, `touch-target`, `chrome-overlap`, `hinge-content`.
+- New devices, cover-screen `policy`/`continuity` and media-fact schema fields are added by Dobra's Catalog slice, not here (Task 11 waits for it).
 - Microcommits in English, no assistant attribution, one focused change per commit, every commit builds (`npx tsc -b`) and passes `npx vitest run`.
 - Stage files by name. Never `git add -A`: the untracked legacy export `*-simulator-v0.4.0-*.html` and `CLAUDE.md` must not be committed.
-- Hinge slice 1 moves `src/engine` and `src/config` to `packages/core/src`. If it has landed when you start a task, rebase first and use the new paths; imports keep working through its shims.
+- Dobra slice 1 moves `src/engine` and `src/config` to `packages/core/src`. If it has landed when you start a task, rebase first and use the new paths; imports keep working through its shims.
 
 ## Review Focus
 
@@ -46,7 +46,7 @@
 | `packages/core/src/engine/typography.ts` (create) | sp/pt → px with Android's non-linear font scaling; CSS variables per type style |
 | `packages/core/src/engine/scenes.ts` (create) | Scene resolution: single, list-detail, two-pane, supporting-pane, hinge splits, fallback |
 | `packages/core/src/engine/gridFlex.ts` (create) | Grid track and FlexBox resolution to item widths |
-| `packages/core/src/engine/checks.ts` (create) | Layout checks emitting Hinge findings |
+| `packages/core/src/engine/checks.ts` (create) | Layout checks emitting Dobra findings |
 | `packages/core/src/engine/fixtures/observed.ts` (create) | Config variants that reproduce observed failures #1, #2, #5 |
 | `packages/core/src/engine/layout.ts` (modify) | Scene and grid/flex integration; `Layout.scene`, `Layout.resolved` |
 | `packages/core/src/config/schema.ts` (modify) | Optional `scenes`, screen `scene`, rule `scene`, grid/flex component forms, registry `forms` and `items` |
@@ -2171,7 +2171,7 @@ git commit -m "Render grid and flex forms and add a Products sample screen"
 
 ---
 
-### Task 9: Layout checks emitting Hinge findings, with observed-failure fixtures
+### Task 9: Layout checks emitting Dobra findings, with observed-failure fixtures
 
 **Files:**
 - Create: `packages/core/src/engine/checks.ts`
@@ -2307,7 +2307,7 @@ Expected: FAIL with "Failed to resolve import './checks'"
 
 ```ts
 // packages/core/src/engine/checks.ts
-// Layout checks that need no DOM. Findings use the Hinge shape and rule ids so the simulator, the
+// Layout checks that need no DOM. Findings use the Dobra shape and rule ids so the simulator, the
 // Figma plugin and the CLI report the same thing.
 import type { HeroRule, Orientation, Rect, ScreenSpec, SimulatorConfig } from '../config/types';
 import type { Environment, Selection } from './environment';
@@ -2553,7 +2553,7 @@ Append to `src/sample/collisions.ts`:
 ```ts
 import type { Finding, Target } from '../engine/checks';
 
-/** The DOM collision checker's results as Hinge hinge-content findings. */
+/** The DOM collision checker's results as Dobra hinge-content findings. */
 export function collisionsToFindings(collisions: Collision[], target: Target, env: Environment): Finding[] {
   return collisions.map((c) => {
     const fold = c.region === 'Folding region' ? env.folds.find((f) => f.separating || f.occludes) : null;
@@ -2614,9 +2614,9 @@ git commit -m "List layout and hinge findings in the inspector"
 
 ---
 
-### Task 11: Media-fact consumers (starts after Hinge's Catalog slice merges)
+### Task 11: Media-fact consumers (starts after Dobra's Catalog slice merges)
 
-**Precondition:** Hinge's Catalog slice has merged and the schema has per-device `pointerPrecision`, `keyboardKind`, `viewingDistance`, `hasCamera`, `hasMicrophone` (names as agreed in the spec, §3.3). Rebase this branch onto it first. If the Catalog slice uses different field names or nests them (for example under `media`), use its names everywhere below and keep the URL keys and behaviour the same.
+**Precondition:** Dobra's Catalog slice has merged and the schema has per-device `pointerPrecision`, `keyboardKind`, `viewingDistance`, `hasCamera`, `hasMicrophone` (names as agreed in the spec, §3.3). Rebase this branch onto it first. If the Catalog slice uses different field names or nests them (for example under `media`), use its names everywhere below and keep the URL keys and behaviour the same.
 
 **Files:**
 - Modify: `packages/core/src/engine/environment.ts` (`Selection.media`, `Environment.media`)
@@ -2772,5 +2772,5 @@ git commit -m "Show and override media facts in the inspector, controls and URL"
 
 ## Self-review notes
 
-- Spec §3 (devices, cover policy, media schema) is delivered by Hinge's Catalog slice; Task 11 consumes it. §4 scenes → Tasks 5–6. §5 Grid/FlexBox → Tasks 7–8. §6 checks → Tasks 9–10 (`touch-target` in Task 11 because it needs pointer precision). §7 validation → schema steps in Tasks 5 and 8. §8 fixtures #1, #2, #5 → Task 9. §9 window states → Tasks 1–4.
+- Spec §3 (devices, cover policy, media schema) is delivered by Dobra's Catalog slice; Task 11 consumes it. §4 scenes → Tasks 5–6. §5 Grid/FlexBox → Tasks 7–8. §6 checks → Tasks 9–10 (`touch-target` in Task 11 because it needs pointer precision). §7 validation → schema steps in Tasks 5 and 8. §8 fixtures #1, #2, #5 → Task 9. §9 window states → Tasks 1–4.
 - Types used across tasks: `WindowPlacement` (T1→T2, T3), `EnvNote` (T2→T3), `SceneLayout` (T5→T6, T9), `ResolvedItems` (T7→T8, T9), `Finding`/`Target` (T9→T10, T11), `MediaFacts` (T11).

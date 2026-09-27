@@ -9,7 +9,7 @@ a presets download and a report export for tickets.
 **Architecture:** Core gains three pure modules: `figmaRest` (Figma REST JSON → frames and
 `GeoNode` trees, the same mapping the plugin uses), `report` (a validated `Report` shape built
 from frames by the same `matchFrame`, `check` and `coverage`, plus Markdown), and `presetZip` (a
-ZIP of SVG presets and plugin JSON). A new app, `apps/report` (`@hinge/report`), holds a small
+ZIP of SVG presets and plugin JSON). A new app, `apps/report` (`@dobra/report`), holds a small
 Figma client (token in memory only, typed errors, batched calls, per-version cache) and the
 React page.
 
@@ -30,7 +30,7 @@ adapter), §6 (web app), §9 (error handling and token), §11 risk 1 (rate limit
 - Token (spec §9): kept in memory (sessionStorage only when the user opts in), never written to
   URL state, logs or error messages; redacted in the fetch wrapper. If `api.figma.com` refuses a
   browser request (CORS/network), the error says so and suggests a local proxy on `127.0.0.1`.
-- Frames are identified by the `hinge/target` shared plugin data, then name, then size (spec §2,
+- Frames are identified by the `dobra/target` shared plugin data, then name, then size (spec §2,
   §8.1) — the same `matchFrame` as the plugin.
 - `core` stays free of React and the DOM. Commits in English, microcommits, never mention the
   assistant. Never push to or merge into `main`; the PR closes a labeled issue
@@ -86,7 +86,7 @@ export interface RestNode {                          // the subset of Figma's RE
 export interface RestFrame { id: string; name: string; page: string; width: number; height: number; tag: string }
 export function parseFileKey(url: string): string | null;            // figma.com/file|design/<key>/…
 export function frameCandidates(document: RestNode): RestFrame[];    // top-level frames, and frames inside sections
-export function tagOf(node: RestNode): string;                       // sharedPluginData.hinge.target or ''
+export function tagOf(node: RestNode): string;                       // sharedPluginData.dobra.target or ''
 export function restToGeo(frame: RestNode): GeoNode[];               // children of a frame, frame-relative
 export const OVERLAY_NAME = '⎔ hinge-overlay';                       // re-exported for both adapters
 ```
@@ -105,7 +105,7 @@ const doc: RestNode = {
     {
       id: '0:1', name: 'Screens', type: 'CANVAS',
       children: [
-        { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { hinge: { target: 'surface-duo-2/spanned/spanned/landscape' } } },
+        { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { dobra: { target: 'surface-duo-2/spanned/spanned/landscape' } } },
         { id: '1:2', name: 'Group', type: 'SECTION', children: [{ id: '1:3', name: 'Cover', type: 'FRAME', absoluteBoundingBox: box(2000, 0, 352, 339) }] },
         { id: '1:4', name: 'A rectangle', type: 'RECTANGLE', absoluteBoundingBox: box(0, 0, 10, 10) },
       ],
@@ -147,7 +147,7 @@ describe('Figma REST adapter', () => {
   });
 });
 ```
-Run: `npm test -w @hinge/core -- src/figmaRest.test.ts` → FAIL.
+Run: `npm test -w @dobra/core -- src/figmaRest.test.ts` → FAIL.
 
 - [ ] **Step 2: Implement** `figmaRest.ts`. Roles follow the plugin's rules exactly (text by type;
   chrome by `CHROME_NAME`; interactive by `INTERACTIVE_NAME`, or an `INSTANCE` whose shorter side
@@ -200,7 +200,7 @@ export function parseFileKey(url: string): string | null {
 }
 
 export function tagOf(node: RestNode): string {
-  return node.sharedPluginData?.hinge?.target ?? '';
+  return node.sharedPluginData?.dobra?.target ?? '';
 }
 
 export function frameCandidates(document: RestNode): RestFrame[] {
@@ -486,7 +486,7 @@ If `formatPath` is not exported from `config/schema.ts`, export it there (it alr
 module function). `present` needs an explicit type: `const present: PresentFrame[] = []` with
 `PresentFrame` imported from `./coverage`.
 
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck -w @hinge/core` → PASS.
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck -w @dobra/core` → PASS.
   **Step 4: Commit**
 
 ```bash
@@ -524,7 +524,7 @@ describe('presetZip', () => {
   });
 });
 ```
-Run (after `npm install fflate@^0.8.3 -w @hinge/core`) → FAIL.
+Run (after `npm install fflate@^0.8.3 -w @dobra/core`) → FAIL.
 
 - [ ] **Step 2: Implement**
 
@@ -543,8 +543,8 @@ export function presetZip(config: EnvConfig, targets: Target[]): Uint8Array {
   return zipSync(files, { level: 6 });
 }
 ```
-- [ ] **Step 3:** `npm test -w @hinge/core && npm run typecheck -w @hinge/core` → PASS. Check
-  `fflate` does not reach the plugin bundle: `npm run build -w @hinge/figma-plugin` and
+- [ ] **Step 3:** `npm test -w @dobra/core && npm run typecheck -w @dobra/core` → PASS. Check
+  `fflate` does not reach the plugin bundle: `npm run build -w @dobra/figma-plugin` and
   `grep -c zipSync packages/figma-plugin/dist/code.js` → `0` (the plugin does not import
   `presetZip`). **Step 4: Commit**
 
@@ -581,7 +581,7 @@ export function redact(text: string, token: string): string;
 `apps/report/package.json`:
 ```json
 {
-  "name": "@hinge/report",
+  "name": "@dobra/report",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -591,7 +591,7 @@ export function redact(text: string, token: string): string;
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "dependencies": { "@hinge/core": "*", "react": "^19.3.0", "react-dom": "^19.3.0" },
+  "dependencies": { "@dobra/core": "*", "react": "^19.3.0", "react-dom": "^19.3.0" },
   "devDependencies": {
     "@types/node": "^26.6.2",
     "@types/react": "^19.3.0",
@@ -607,8 +607,8 @@ export function redact(text: string, token: string): string;
 `vite.config.ts`: React + `viteSingleFile()`, `base: './'`, `build.outDir: 'dist'` (one HTML file
 the team can open or host anywhere). `tsconfig.json`: DOM libs, `jsx: react-jsx`, `types: ['vite/client', 'node']`,
 `include: ['src', 'vite.config.ts', 'vitest.config.ts']`. `vitest.config.ts`: node environment,
-`src/**/*.test.ts`. Root scripts: `"dev:report": "npm run dev -w @hinge/report --"`,
-`"build:report": "npm run build -w @hinge/report"`.
+`src/**/*.test.ts`. Root scripts: `"dev:report": "npm run dev -w @dobra/report --"`,
+`"build:report": "npm run build -w @dobra/report"`.
 
 - [ ] **Step 2: Failing client test** `figmaClient.test.ts`
 
@@ -671,7 +671,7 @@ describe('Figma client', () => {
   });
 });
 ```
-Run: `npm install && npm test -w @hinge/report` → FAIL.
+Run: `npm install && npm test -w @dobra/report` → FAIL.
 
 - [ ] **Step 3: Implement** `figmaClient.ts`: base `https://api.figma.com/v1`; `request(path)`
   wraps `fetchImpl` in `try/catch` — a thrown error becomes
@@ -689,13 +689,13 @@ Run: `npm install && npm test -w @hinge/report` → FAIL.
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import type { RestNode } from '@hinge/core/figmaRest';
+import type { RestNode } from '@dobra/core/figmaRest';
 import type { FigmaClient } from './figmaClient';
 import { FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
 
 const box = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
-const home: RestNode = { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { hinge: { target: 'surface-duo-2/spanned/spanned/landscape' } }, children: [] };
+const home: RestNode = { id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756), sharedPluginData: { dobra: { target: 'surface-duo-2/spanned/spanned/landscape' } }, children: [] };
 const cover: RestNode = { id: '1:3', name: 'Cover', type: 'FRAME', absoluteBoundingBox: box(2000, 0, 352, 339), children: [] };
 const document: RestNode = { id: '0:0', name: 'Document', type: 'DOCUMENT', children: [{ id: '0:1', name: 'Screens', type: 'CANVAS', children: [home, cover] }] };
 
@@ -742,9 +742,9 @@ Run → FAIL.
 
 ```ts
 // Figma file → foldable check report, with thumbnails. Nodes and thumbnails are cached per file version.
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { frameCandidates, parseFileKey, restToGeo } from '@hinge/core/figmaRest';
-import { buildReport, type Report } from '@hinge/core/report';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { frameCandidates, parseFileKey, restToGeo } from '@dobra/core/figmaRest';
+import { buildReport, type Report } from '@dobra/core/report';
 import type { FigmaClient } from './figmaClient';
 
 const catalog = loadCatalog();
@@ -772,7 +772,7 @@ export async function loadFigmaReport(client: FigmaClient, url: string): Promise
 }
 ```
 
-- [ ] **Step 6:** `npm test -w @hinge/report && npm run typecheck -w @hinge/report` → PASS.
+- [ ] **Step 6:** `npm test -w @dobra/report && npm run typecheck -w @dobra/report` → PASS.
   **Step 7: Commit** (two microcommits: package + client; orchestration)
 
 ```bash
@@ -791,7 +791,7 @@ git commit -m "Load a Figma file into a foldable check report, cached per versio
 
 - [ ] **Step 1: Page** — `ReportApp.tsx`:
   - **Input:** a Figma URL field, a password-type token field with a "Remember for this tab"
-    checkbox (sessionStorage key `hinge.token`, read in a `try/catch`, only written when checked),
+    checkbox (sessionStorage key `dobra.token`, read in a `try/catch`, only written when checked),
     a "Check file" button; and a drop zone / file input for a CLI JSON report (`parseReport`).
     The token lives in React state only; it is never put in the URL, `console`, or an error.
   - **Summary:** file name, version, generated time, counts per severity.
@@ -808,7 +808,7 @@ git commit -m "Load a Figma file into a foldable check report, cached per versio
     via `Blob` + object URL, revoked after click.
   - **Errors:** a banner with the `FigmaError` message (already redacted), and for 429 the wait.
   Styles in `report.css` with light/dark tokens on `:root` (`prefers-color-scheme`).
-- [ ] **Step 2:** `npm run build -w @hinge/report && npm test && npm run typecheck` → PASS.
+- [ ] **Step 2:** `npm run build -w @dobra/report && npm test && npm run typecheck` → PASS.
 - [ ] **Step 3: Browser check** — `npm run dev:report -- --port 4751 --strictPort`, open it in the
   built-in browser, load a report JSON built from the Task 2 fixture through the file input
   (write the fixture to the scratchpad and set it on the input with a `DataTransfer` in
@@ -830,7 +830,7 @@ git commit -m "Add the web report page with coverage, findings, thumbnails and d
 - [ ] **Step 2:** Issue:
 
 ```bash
-gh issue create -R jacksonmafra-umain/SizeClassSimulator \
+gh issue create -R jacksonmafra-umain/Dobra \
   --title "Web report: coverage and findings for a Figma file" --label enhancement --label area:web \
   --body "Slice 5 of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. A read-only web report: paste a Figma file URL and a personal access token (or drop a CLI JSON report) to see coverage, findings per frame with thumbnails and overlays, and download presets or the report."
 ```

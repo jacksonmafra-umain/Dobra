@@ -118,7 +118,7 @@ ledger the choice.
 - Modify: `packages/core/src/catalog/catalog.json` (sources, a new device, requirements)
 
 **Interfaces:**
-- Consumes: `loadCatalog()` (`@hinge/core/catalog/load`), `resolveEnvironment(config, selection)`
+- Consumes: `loadCatalog()` (`@dobra/core/catalog/load`), `resolveEnvironment(config, selection)`
   and `loadConfig()` from core; read `engine/environment.ts` for the exact `Selection` fields
   (`deviceId`, `displayId`/`poseId`, `rotation`) before writing the environment assertion.
 - Produces: device `surface-duo-2` (android, `dual-screen`) with displays `single` and `spanned`,
@@ -177,7 +177,7 @@ spanned (see `engine/postures.test.ts` for how existing tests build a selection 
 engine uses for split regions — check `Environment` in `engine/environment.ts`) to be two rects
 537 dp wide.
 
-Run: `npm test -w @hinge/core -- src/catalog/devices.test.ts` → FAIL (`No device "surface-duo-2"`).
+Run: `npm test -w @dobra/core -- src/catalog/devices.test.ts` → FAIL (`No device "surface-duo-2"`).
 If "explains every estimated device and display" also fails on devices that already exist, add a
 one-sentence `$note` to each flagged entry saying which value is unconfirmed (read its sizes and
 sources to write it), in a separate commit before Step 2, and ledger the list.
@@ -610,7 +610,7 @@ git commit -m "Add the iPhone mini, Plus and Air sizes and the current iPads"
 - [ ] **Step 1:** Issue:
 
 ```bash
-gh issue create -R jacksonmafra-umain/SizeClassSimulator \
+gh issue create -R jacksonmafra-umain/Dobra \
   --title "Catalog devices: Surface Duo 2, foldables, Galaxy S25, iPhones and iPads" \
   --label enhancement --label area:catalog \
   --body "Slice 2b of docs/superpowers/specs/2026-09-25-foldable-artboards-design.md. Adds the devices the catalog was missing, with a source for every value and unpublished densities marked estimated; confirms the Galaxy Z Fold 7 sizes; adds dual-screen coverage requirements now that the Surface Duo 2 is in."

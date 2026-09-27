@@ -2,7 +2,7 @@
 
 Date: 2026-09-25
 Status: approved in conversation, pending written-spec review
-Aligned with: `2026-09-25-foldable-artboards-design.md` (Hinge), branch `docs/foldable-artboards-spec`
+Aligned with: `2026-09-25-foldable-artboards-design.md` (Dobra), branch `docs/foldable-artboards-spec`
 
 ## 1. Goal
 
@@ -24,7 +24,7 @@ for 2026". The PhoneArena roundup was not readable (bot check) and is not used.
 - A screen that declares `list-detail` splits at the hinge in book and tabletop, and falls back to one
   pane with a stated reason when the minimum widths do not fit.
 - Grid and FlexBox entries resolve to the same item widths in Node tests and in the rendered page.
-- Three observed failures reproduce as fixtures and raise Hinge findings with the expected rule ids.
+- Three observed failures reproduce as fixtures and raise Dobra findings with the expected rule ids.
 - Every new number has a `source`; guesses are `estimated: true`.
 
 ### Non-goals
@@ -39,14 +39,14 @@ for 2026". The PhoneArena roundup was not readable (bot check) and is not used.
 |---|---|
 | Approach | Additive: the existing rule model stays; `grid`, `flex` and `scenes` are optional additions |
 | Vocabulary | Primitives are platform-neutral and cite Compose on Android and HIG / SwiftUI on iOS |
-| Device categories | Hinge `category` values: `phone`, `foldable-book`, `foldable-flip`, `dual-screen`, `multi-fold`, `tablet`, plus `desktop` (agreed with Hinge). Replaces the current `class` field |
-| Device list and fields | Hinge's Catalog slice (2) owns the new devices, the cover-screen `policy`/`continuity` fields and the media-fact schema fields (§3). This branch contributes the entries and consumes the fields; it does not add them to the schema |
-| Findings | Hinge `Finding` shape and rule ids; no parallel check vocabulary |
-| Target key | Hinge key with the derived orientation, plus optional `rotation` for Android |
-| Branding | The repo is de-branded by Hinge slice 0 (history rewrite). This work continues on the rewritten branch; nothing here names the former brand |
-| Location | New modules in `src/engine`; Hinge slice 1 moves them to `packages/core` |
+| Device categories | Dobra `category` values: `phone`, `foldable-book`, `foldable-flip`, `dual-screen`, `multi-fold`, `tablet`, plus `desktop` (agreed with Dobra). Replaces the current `class` field |
+| Device list and fields | Dobra's Catalog slice (2) owns the new devices, the cover-screen `policy`/`continuity` fields and the media-fact schema fields (§3). This branch contributes the entries and consumes the fields; it does not add them to the schema |
+| Findings | Dobra `Finding` shape and rule ids; no parallel check vocabulary |
+| Target key | Dobra key with the derived orientation, plus optional `rotation` for Android |
+| Branding | The repo is de-branded by Dobra slice 0 (history rewrite). This work continues on the rewritten branch; nothing here names the former brand |
+| Location | New modules in `src/engine`; Dobra slice 1 moves them to `packages/core` |
 
-## 3. Devices and device facts (delivered by Hinge's Catalog slice)
+## 3. Devices and device facts (delivered by Dobra's Catalog slice)
 
 Everything in this section lands in the Catalog slice. This branch reads the fields once that slice
 merges: the inspector, URL state, rule matching and checks in §4–§6.
@@ -60,7 +60,7 @@ merges: the inspector, URL state, rule matching and checks in §4–§6.
 | Motorola Razr Ultra (2026) | foldable-flip | inner 2992×1224 px, 7.0"; density assumed 3.0 → 408×997 dp; cover 4.0", size unknown | PCMag (px), estimated |
 | Oppo Find N6 | foldable-book | named without specs; every value estimated with a note | estimated |
 
-Razr+ is the older Razr Ultra line; Hinge adds at most one older Razr+ if its size differs.
+Razr+ is the older Razr Ultra line; Dobra adds at most one older Razr+ if its size differs.
 
 ### 3.2 Cover-screen policy
 
@@ -149,7 +149,7 @@ product list and `flex` for shortcuts.
 
 ## 6. Checks
 
-The simulator emits Hinge `Finding`s (`ruleId`, `severity`, `target`, `nodeId`, `rect`, `message`,
+The simulator emits Dobra `Finding`s (`ruleId`, `severity`, `target`, `nodeId`, `rect`, `message`,
 `source`, `estimated`). This work feeds:
 
 | Rule id | Fed by |
@@ -160,7 +160,7 @@ The simulator emits Hinge `Finding`s (`ruleId`, `severity`, `target`, `nodeId`, 
 | `tabletop-controls` | scene roles in tabletop posture |
 | `touch-target` | `pointerPrecision` and platform minimums (48 dp / 44 pt) |
 | `chrome-overlap` | floating navigation bar against short windows (threshold estimated) |
-| `hinge-content` | existing collision checker, via Hinge's `findCollisions` once extracted |
+| `hinge-content` | existing collision checker, via Dobra's `findCollisions` once extracted |
 
 ## 7. Error handling
 
@@ -176,11 +176,11 @@ and cover-screen policies outside the enum.
   wrapping line breaks, justify.
 - Media facts: defaults per category, overrides, rule matching.
 - Fixtures for observed failures #1 (side-by-side on the 352 dp Flip cover), #2 (141 dp card) and
-  #5 (text at 40% pane width) asserting Hinge rule ids, severity and source.
+  #5 (text at 40% pane width) asserting Dobra rule ids, severity and source.
 
 ## 9. Delivery
 
-Branch `feat/android-window-states-clean`, rebased onto `chore/remove-brand` (Hinge slice 0). It gets its
+Branch `feat/android-window-states-clean`, rebased onto `chore/remove-brand` (Dobra slice 0). It gets its
 own issue and a PR against that base; the pre-rewrite local branch is never pushed.
 Microcommits in this order, each buildable:
 
@@ -189,10 +189,10 @@ Microcommits in this order, each buildable:
 2. Scenes.
 3. Grid and FlexBox forms.
 4. Media-fact consumers: inspector, URL (`ptr`, `kbd`, `dist`, `cam`, `mic`), overrides and rule
-   matching. Starts after Hinge's Catalog slice adds the fields.
-5. Checks emitting Hinge findings.
+   matching. Starts after Dobra's Catalog slice adds the fields.
+5. Checks emitting Dobra findings.
 
-New devices, cover policy and media-fact schema fields land through Hinge's Catalog slice.
+New devices, cover policy and media-fact schema fields land through Dobra's Catalog slice.
 
 ## 10. Risks
 
@@ -200,5 +200,5 @@ New devices, cover policy and media-fact schema fields land through Hinge's Cata
    own primitive names and cites the Compose APIs, so a rename touches docs, not data.
 2. Most new device numbers are estimated from pixels and an assumed density; they stay flagged
    until checked with `adb shell wm size` / `wm density`.
-3. Ordering with Hinge slices 0–2: step 4 waits for the Catalog slice, and this branch must not
+3. Ordering with Dobra slices 0–2: step 4 waits for the Catalog slice, and this branch must not
    duplicate its schema fields.

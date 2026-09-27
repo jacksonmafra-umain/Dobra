@@ -4,9 +4,9 @@
 
 **Goal:** Show every device's media-query facts in the simulator, let the user override them per device, and keep the overrides in the URL.
 
-**Architecture:** The catalog already stores the facts (`media` block, category defaults), and `mediaFacts(d)` in `@hinge/core/catalog/media` resolves them. The simulator adds one small module (`ui/media.ts`) that layers the user's overrides on top and derives `windowPosture` from the resolved folds. `UrlState` gets a `media` field, `App` gets a Media control group, and `Inspector` gets a Media row. Nothing in `packages/core` changes.
+**Architecture:** The catalog already stores the facts (`media` block, category defaults), and `mediaFacts(d)` in `@dobra/core/catalog/media` resolves them. The simulator adds one small module (`ui/media.ts`) that layers the user's overrides on top and derives `windowPosture` from the resolved folds. `UrlState` gets a `media` field, `App` gets a Media control group, and `Inspector` gets a Media row. Nothing in `packages/core` changes.
 
-**Tech Stack:** TypeScript, React 19, Vitest; `@hinge/core` read-only.
+**Tech Stack:** TypeScript, React 19, Vitest; `@dobra/core` read-only.
 
 **Spec:** `docs/superpowers/specs/2026-09-25-android-adaptive-model-design.md` §3.3 and delivery step 4. This plan replaces Task 11 of `docs/superpowers/plans/2026-09-25-android-adaptive-model.md`, which assumed fields that the Catalog slice named differently.
 
@@ -62,7 +62,7 @@ Owner: agent/02, after slice 6. It touches the RuleId union that slice 6 also ed
 - Test: `apps/simulator/src/ui/media.test.ts`
 
 **Interfaces:**
-- Consumes: `mediaFacts(d: DeviceSpec): MediaFacts` and `DEFAULT_MEDIA` from `@hinge/core/catalog/media`; `Environment.folds: FoldFeature[]`; `findDevice(config, id)`.
+- Consumes: `mediaFacts(d: DeviceSpec): MediaFacts` and `DEFAULT_MEDIA` from `@dobra/core/catalog/media`; `Environment.folds: FoldFeature[]`; `findDevice(config, id)`.
 - Produces:
   - `type MediaOverrides = Partial<MediaFacts>`
   - `type WindowPosture = 'Flat' | 'Book' | 'Tabletop'`
@@ -74,9 +74,9 @@ Owner: agent/02, after slice 6. It touches the RuleId union that slice 6 also ed
 ```ts
 // apps/simulator/src/ui/media.test.ts
 import { describe, expect, it } from 'vitest';
-import { rawConfig as raw } from '@hinge/core/config/load';
-import { parseConfig } from '@hinge/core/config/schema';
-import { findDevice, resolveEnvironment, type Selection } from '@hinge/core/engine/environment';
+import { rawConfig as raw } from '@dobra/core/config/load';
+import { parseConfig } from '@dobra/core/config/schema';
+import { findDevice, resolveEnvironment, type Selection } from '@dobra/core/engine/environment';
 import { resolveMedia } from './media';
 
 const config = parseConfig(raw);
@@ -108,7 +108,7 @@ describe('resolveMedia', () => {
 
 - [ ] **Step 2: Run it and watch it fail**
 
-Run: `npm test -w @hinge/simulator -- src/ui/media.test.ts`
+Run: `npm test -w @dobra/simulator -- src/ui/media.test.ts`
 Expected: FAIL, `Cannot find module './media'`.
 
 - [ ] **Step 3: Implement**
@@ -116,9 +116,9 @@ Expected: FAIL, `Cannot find module './media'`.
 ```ts
 // apps/simulator/src/ui/media.ts
 // The simulator's view of a device's media-query facts: the catalog value, then the user's override.
-import { mediaFacts, type MediaFacts } from '@hinge/core/catalog/media';
-import type { DeviceSpec } from '@hinge/core/config/types';
-import type { Environment } from '@hinge/core/engine/environment';
+import { mediaFacts, type MediaFacts } from '@dobra/core/catalog/media';
+import type { DeviceSpec } from '@dobra/core/config/types';
+import type { Environment } from '@dobra/core/engine/environment';
 
 export type MediaOverrides = Partial<MediaFacts>;
 export type WindowPosture = 'Flat' | 'Book' | 'Tabletop';
@@ -149,7 +149,7 @@ The `estimated` flag is true only when the device has no `media` block. A block 
 
 - [ ] **Step 4: Run and pass**
 
-Run: `npm test -w @hinge/simulator -- src/ui/media.test.ts`
+Run: `npm test -w @dobra/simulator -- src/ui/media.test.ts`
 Expected: PASS, 5/5.
 
 - [ ] **Step 5: Commit**
@@ -195,7 +195,7 @@ Import `findDevice` next to `resolveEnvironment`. Update the three existing `wri
 
 - [ ] **Step 2: Run and fail**
 
-Run: `npm test -w @hinge/simulator -- src/ui/urlState.test.ts`
+Run: `npm test -w @dobra/simulator -- src/ui/urlState.test.ts`
 Expected: FAIL; `state.media` is undefined.
 
 - [ ] **Step 3: Implement**
@@ -203,8 +203,8 @@ Expected: FAIL; `state.media` is undefined.
 In `urlState.ts`:
 
 ```ts
-import { mediaFacts } from '@hinge/core/catalog/media';
-import type { DeviceSpec } from '@hinge/core/config/types';
+import { mediaFacts } from '@dobra/core/catalog/media';
+import type { DeviceSpec } from '@dobra/core/config/types';
 import type { MediaOverrides } from './media';
 
 const pick = <T extends string>(v: string | null, values: readonly T[]): T | undefined => values.find((x) => x === v);
@@ -237,7 +237,7 @@ Add `media: MediaOverrides` to `UrlState` and `media: readMedia(q)` to the objec
 
 - [ ] **Step 4: Run and pass**
 
-Run: `npm test -w @hinge/simulator -- src/ui/urlState.test.ts`
+Run: `npm test -w @dobra/simulator -- src/ui/urlState.test.ts`
 Expected: PASS, 7/7. `npm run typecheck` fails in `App.tsx` on the new `writeUrlState` argument; Task 3 fixes it in the same PR. To keep this commit buildable, pass `device` in `App.tsx`'s one `writeUrlState` call in this commit, and add `media: {}` to the object literal there.
 
 - [ ] **Step 5: Commit**
@@ -282,7 +282,7 @@ describe('formatMedia', () => {
 
 - [ ] **Step 2: Run and fail**
 
-Run: `npm test -w @hinge/simulator -- src/ui/Inspector.test.tsx`
+Run: `npm test -w @dobra/simulator -- src/ui/Inspector.test.tsx`
 Expected: FAIL, `formatMedia` is not exported.
 
 - [ ] **Step 3: Implement**
