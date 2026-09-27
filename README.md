@@ -9,6 +9,7 @@ dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.
 | --- | --- | --- |
 | Simulator (`apps/simulator`) | Renders devices, postures and window states, plus scenes and Grid/FlexBox layouts. Runs collision and rule checks, shows and overrides media facts, compares iOS and Android side by side, and exports the current screen's findings as a report JSON for the web report | Merged |
 | Core (`packages/core`) | Holds the device catalog, targets, the layout engine, the geometry rules, frame matching, coverage, reports and resize transitions | Merged |
+| Brand (`packages/brand`) | Design tokens for dark and light, the bundled fonts, the logo and the icon | Merged |
 | Figma plugin (`packages/figma-plugin`) | Artboard presets with hinge overlays, Tag frames, coverage, a checker, and Adapt & flag | Merged |
 | Web report (`apps/report`) | Shows a Figma file's coverage and findings | Merged |
 | CLI (`packages/cli`) | Checks websites with fold emulation | Merged |
@@ -20,6 +21,7 @@ This is an npm workspaces monorepo:
 - `packages/core`: `@dobra/core`, in pure TypeScript with no DOM and no React. It holds the catalog
   (`src/catalog/catalog.json`), the sample profile (`src/profiles/sample.profile.json`), the engine
   and the checks.
+- `packages/brand`: `@dobra/brand`, the design tokens, fonts, logo and icon every surface imports. See its [README](packages/brand/README.md).
 - `packages/figma-plugin`: the Figma plugin. See its [README](packages/figma-plugin/README.md) for how to build and load it.
 - `packages/cli`: `@dobra/cli`, the `dobra check site` command (Playwright and Chromium). See its [README](packages/cli/README.md).
 - `apps/simulator`: `@dobra/simulator`, built with Vite, React and Tailwind.
