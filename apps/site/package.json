@@ -12,6 +12,7 @@
     "test:dist": "vitest run --config vitest.dist.config.ts"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.1",
     "@astrojs/sitemap": "^3.7.4",
     "@dobra/brand": "*",
     "astro": "^7.3.5"

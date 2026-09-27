@@ -1,4 +1,5 @@
 // The Dobra site: landing page and guide, static output, deployed to Vercel.
+import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import { rehypeHeadingAnchors } from './src/markdown/anchors';
@@ -13,7 +14,11 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [sitemap()],
   markdown: {
-    remarkPlugins: [remarkGuideLinks, remarkGlossaryTable, remarkUnverifiedCallout, remarkSourcesBlock],
-    rehypePlugins: [rehypeHeadingAnchors],
+    // Astro 7 defaults to the Sätteri processor; the guide's plugins are remark/rehype, so the site
+    // uses the unified processor from @astrojs/markdown-remark.
+    processor: unified({
+      remarkPlugins: [remarkGuideLinks, remarkGlossaryTable, remarkUnverifiedCallout, remarkSourcesBlock],
+      rehypePlugins: [rehypeHeadingAnchors],
+    }),
   },
 });
