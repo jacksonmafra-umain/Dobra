@@ -12,7 +12,7 @@ import { AndroidChrome } from '../sample/androidChrome';
 import { Screen } from '../sample/Screen';
 import { DeviceFrame, type Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
-import { resolveMedia } from './media';
+import { resolveMedia, type MediaOverrides } from './media';
 import { Overlays, type OverlayToggles } from './Overlays';
 import { clampFree, FREE_MAX, FREE_MIN, readUrlState, writeUrlState, type Theme } from './urlState';
 import { WhatChanged, type ChangeEntry } from './WhatChanged';
@@ -30,6 +30,8 @@ export function App({ config }: { config: SimulatorConfig }) {
   const [rtl, setRtl] = useState(initial.rtl);
   const [overlays, setOverlays] = useState<OverlayToggles>(initial.overlays);
   const [text, setText] = useState<TextSettings>(initial.text);
+  // Overrides stay when the device changes: a mouse on one tablet is a mouse on the next.
+  const [mediaOverrides, setMediaOverrides] = useState<MediaOverrides>(initial.media);
   const [change, setChange] = useState<ChangeEntry | null>(null);
 
   const devices = config.devices.filter((d) => d.enabled);
@@ -40,7 +42,7 @@ export function App({ config }: { config: SimulatorConfig }) {
   const env = resolveEnvironment(config, sel);
   const layout = resolveLayout(config, env, screen);
   const target = targetOf(sel, env);
-  const media = resolveMedia(device, env, {});
+  const media = resolveMedia(device, env, mediaOverrides);
   const findings = [...runLayoutChecks(config, env, layout, screen, target), ...collisionsToFindings(collisions, target, env)];
 
   const previous = useRef<Snapshot | null>(null);
@@ -63,12 +65,12 @@ export function App({ config }: { config: SimulatorConfig }) {
 
   useEffect(() => {
     try {
-      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text, media: {} }, env, device));
+      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text, media: mediaOverrides }, env, device));
     } catch {
       // Sandboxed previews can refuse history access.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text]);
+  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, mediaOverrides]);
 
   const toggleOverlay = (key: keyof OverlayToggles) => setOverlays((o) => ({ ...o, [key]: !o[key] }));
   const resizeFree = (w: number, h: number) => setSel((s) => ({ ...s, free: clampFree(w, h) }));
@@ -397,6 +399,55 @@ export function App({ config }: { config: SimulatorConfig }) {
               {sel.ime ? 'Shown' : 'Hidden'}
             </button>
           </div>
+          <div className="control">
+            <span>Pointer</span>
+            <div className="seg">
+              {(['coarse', 'fine'] as const).map((v) => (
+                <button key={v} aria-pressed={media.pointer === v} onClick={() => setMediaOverrides((o) => ({ ...o, pointer: v }))}>
+                  {v === 'coarse' ? 'Coarse' : 'Fine'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="control">
+            <span>Keyboard kind</span>
+            <div className="seg">
+              {(['virtual', 'physical'] as const).map((v) => (
+                <button key={v} aria-pressed={media.keyboard === v} onClick={() => setMediaOverrides((o) => ({ ...o, keyboard: v }))}>
+                  {v === 'virtual' ? 'Virtual' : 'Physical'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="control">
+            <span>Distance</span>
+            <div className="seg">
+              {(['near', 'medium', 'far'] as const).map((v) => (
+                <button key={v} aria-pressed={media.viewingDistance === v} onClick={() => setMediaOverrides((o) => ({ ...o, viewingDistance: v }))}>
+                  {v[0].toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="control">
+            <span>Sensors</span>
+            <div className="seg">
+              <button aria-pressed={media.hasCamera} onClick={() => setMediaOverrides((o) => ({ ...o, hasCamera: !media.hasCamera }))}>
+                Camera
+              </button>
+              <button aria-pressed={media.hasMicrophone} onClick={() => setMediaOverrides((o) => ({ ...o, hasMicrophone: !media.hasMicrophone }))}>
+                Mic
+              </button>
+            </div>
+          </div>
+          {media.overridden.length > 0 && (
+            <div className="control">
+              <span>Media</span>
+              <button className="seg-single" onClick={() => setMediaOverrides({})}>
+                Reset
+              </button>
+            </div>
+          )}
           <div className="control">
             <span>Present</span>
             <div className="seg">
