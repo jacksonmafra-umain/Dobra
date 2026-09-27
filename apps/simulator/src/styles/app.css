@@ -674,13 +674,13 @@ body {
   position: absolute;
   display: grid;
   place-items: center;
-  background: repeating-linear-gradient(45deg, var(--ui-surface) 0 8px, var(--ui-flyout) 8px 16px);
+  background: repeating-linear-gradient(45deg, var(--dobra-border-strong) 0 8px, var(--dobra-field) 8px 16px);
   color: var(--ui-muted);
   font: var(--dobra-type-label-lg);
 }
 .window-divider {
   position: absolute;
-  background: var(--dobra-bg);
+  background: var(--dobra-muted);
 }
 .caption-bar {
   position: absolute;

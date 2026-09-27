@@ -47,3 +47,23 @@ describe('simulator page', () => {
     expect(html).toContain('<link rel="icon" type="image/png" sizes="32x32" href="../../packages/brand/png/favicon-32.png" />');
   });
 });
+
+// The declarations of the first rule whose selector is exactly `selector`.
+function rule(css: string, selector: string): Map<string, string> {
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const start = clean.search(new RegExp(`(^|\\n)${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{`));
+  if (start < 0) throw new Error(`No rule for ${selector}`);
+  const open = clean.indexOf('{', start);
+  return new Map(declarations(clean.slice(open + 1, clean.indexOf('}', open))));
+}
+
+describe('simulated system UI', () => {
+  // The other app in split screen and the divider are drawn by the simulated OS. They must stand
+  // out from the screen behind them in both themes, so they use the strong border, never the
+  // translucent panel tones or the canvas color; the divider uses muted text, which reads in both themes.
+  it('draws the other app and the split divider in a tone that contrasts with the screen', () => {
+    const css = read('./app.css');
+    expect(rule(css, '.window-other').get('background')).toMatch(/var\(--dobra-border-strong\)/);
+    expect(rule(css, '.window-divider').get('background')).toBe('var(--dobra-muted)');
+  });
+});
