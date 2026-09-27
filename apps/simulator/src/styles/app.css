@@ -591,3 +591,52 @@ body {
   color: #fafafa;
   font: 600 12px/1 system-ui, sans-serif;
 }
+/* Comparing platforms: two stages side by side, then the table of what differs. */
+.canvas--parity {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: auto;
+}
+.parity-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 360px;
+}
+.parity-side__title {
+  margin: 12px 16px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ui-muted);
+}
+.parity-side__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.parity-table {
+  grid-column: 1 / -1;
+  margin: 0 16px 16px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.parity-table th,
+.parity-table td {
+  padding: 6px 10px;
+  border-top: 1px solid var(--ui-border);
+  text-align: left;
+  vertical-align: top;
+}
+.parity-table thead th {
+  border-top: 0;
+  color: var(--ui-muted);
+  font-weight: 600;
+}
+.parity-table tr[data-differs] td {
+  color: var(--ui-text);
+  font-weight: 600;
+}
+.parity-table tr:not([data-differs]) td {
+  color: var(--ui-muted);
+}
