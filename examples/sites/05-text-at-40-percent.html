@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- §8.2 #5: text that fits at full width breaks at 40% pane width. The list-detail split was
+     tuned on a large phone (min-width: 340px), so on the Flip's 360 dp inner display the detail
+     pane is 144 dp. The side-by-side split in a window under 600 dp is the cause, so
+     landscape-not-wide is expected too. -->
+<title>Text in a 40 percent pane</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.4 system-ui, sans-serif; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { padding: 12px 0; border-bottom: 1px solid #cfd8dc; }
+  section { min-height: 100vh; }
+  @media (min-width: 340px) {
+    main { display: flex; flex-direction: row; }
+    .list { flex: 0 0 60%; }
+    .detail { flex: 0 0 40%; background: #eceff1; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section class="list">
+    <h2>Restaurants</h2>
+    <ul>
+      <li>Main Street, open until midnight</li>
+      <li>Station Road, open around the clock</li>
+      <li>Harbour Front, drive-through only</li>
+    </ul>
+  </section>
+  <section class="detail">
+    <h2>Main Street</h2>
+    <p>Open every day from six in the morning until midnight, with a drive-through and parking.</p>
+  </section>
+</main>
+</body>
+</html>

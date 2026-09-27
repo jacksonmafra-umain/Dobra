@@ -1,0 +1,205 @@
+{
+  "$comment": "What the website checks must find on each page. expect: rule ids that must appear on that target. forbid: rule ids that must not. Rule ids outside both lists are not asserted. Transitions go from the cover display to the inner display of the same device without a reload, and take expect and forbid too. Checks on folded or spanned targets assume viewport-segment emulation; the good.html check on the Duo forbids hinge-content to catch a regression in it.",
+  "pages": [
+    {
+      "file": "01-orientation-side-by-side.html",
+      "observed": "§8.2 #1",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "landscape-not-wide"
+          ],
+          "forbid": [
+            "hinge-content",
+            "overflow-x",
+            "chrome-overlap"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "02-narrow-card.html",
+      "observed": "§8.2 #2",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "min-legible-width"
+          ],
+          "forbid": [
+            "landscape-not-wide",
+            "overflow-x",
+            "hinge-content"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "03-floating-tab-bar.html",
+      "observed": "§8.2 #3",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "chrome-overlap"
+          ],
+          "forbid": [
+            "overflow-x",
+            "touch-target"
+          ]
+        },
+        {
+          "target": "galaxy-z-flip-7/inner/open/portrait",
+          "expect": [],
+          "forbid": [
+            "chrome-overlap"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "07-overflow-x.html",
+      "observed": "fixed-width content",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "overflow-x"
+          ],
+          "forbid": []
+        },
+        {
+          "target": "galaxy-z-flip-7/inner/open/portrait",
+          "expect": [
+            "overflow-x"
+          ],
+          "forbid": []
+        },
+        {
+          "target": "pixel-9-pro-fold/inner/book/portrait",
+          "expect": [
+            "hinge-content"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "05-text-at-40-percent.html",
+      "observed": "§8.2 #5",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/inner/open/portrait",
+          "expect": [
+            "min-legible-width",
+            "landscape-not-wide"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "06-hinge-content.html",
+      "observed": "content on the hinge",
+      "checks": [
+        {
+          "target": "surface-duo-2/spanned/spanned/landscape",
+          "expect": [
+            "hinge-content"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        },
+        {
+          "target": "pixel-9-pro-fold/inner/book/portrait",
+          "expect": [
+            "hinge-content"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "good.html",
+      "observed": "fold-aware pattern",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [],
+          "forbid": [
+            "landscape-not-wide",
+            "min-legible-width",
+            "chrome-overlap",
+            "hinge-content",
+            "overflow-x",
+            "touch-target"
+          ]
+        },
+        {
+          "target": "galaxy-z-flip-7/inner/open/portrait",
+          "expect": [],
+          "forbid": [
+            "landscape-not-wide",
+            "min-legible-width",
+            "chrome-overlap",
+            "hinge-content",
+            "overflow-x",
+            "touch-target"
+          ]
+        },
+        {
+          "target": "pixel-9-pro-fold/inner/book/portrait",
+          "expect": [],
+          "forbid": [
+            "landscape-not-wide",
+            "min-legible-width",
+            "chrome-overlap",
+            "hinge-content",
+            "overflow-x",
+            "touch-target"
+          ]
+        },
+        {
+          "target": "surface-duo-2/spanned/spanned/landscape",
+          "expect": [],
+          "forbid": [
+            "landscape-not-wide",
+            "min-legible-width",
+            "chrome-overlap",
+            "hinge-content",
+            "overflow-x",
+            "touch-target"
+          ]
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "file": "08-resize-vs-reload.html",
+      "from": "galaxy-z-flip-7/cover/closed/landscape",
+      "to": "galaxy-z-flip-7/inner/open/portrait",
+      "expect": [
+        "resize-vs-reload"
+      ],
+      "forbid": []
+    },
+    {
+      "file": "good.html",
+      "from": "galaxy-z-flip-7/cover/closed/landscape",
+      "to": "galaxy-z-flip-7/inner/open/portrait",
+      "expect": [],
+      "forbid": [
+        "resize-vs-reload"
+      ]
+    }
+  ]
+}

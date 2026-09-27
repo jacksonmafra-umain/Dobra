@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- §8.2 #2: three landscape branches stack up (side margins, a split header, a compact card
+     variant) and leave the card at about 141 dp in a 352 dp window. -->
+<title>Narrow card from stacked landscape branches</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  .card { border: 2px solid #90a4ae; border-radius: 12px; }
+  .card p { margin: 0; }
+  @media (orientation: landscape) {
+    body { padding: 0 24px; }
+    header { display: flex; flex-direction: row; }
+    header > * { flex: 0 0 60%; }
+    header > *:last-child { flex-basis: 40%; }
+    .card { width: calc((100vw - 48px) * 0.45 + 4px); }
+  }
+</style>
+</head>
+<body>
+<header><h1>Order</h1><span>Pickup</span></header>
+<main>
+  <p>Your order is ready for pickup at the counter.</p>
+  <article class="card"><p>Double cheeseburger meal, large fries and a drink</p></article>
+</main>
+</body>
+</html>

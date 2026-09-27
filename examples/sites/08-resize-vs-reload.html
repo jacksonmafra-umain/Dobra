@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The layout is picked once, from innerWidth on load, with no resize listener and no media
+     query. Loaded on the 352 dp Flip cover it is "compact" (one column of cards). Unfolded to the
+     360 dp inner display without a reload it stays compact, while a fresh load there renders
+     "wide" (a 2 × 2 card grid). The 2 × 2 grid keeps each card under half the grid's height, so
+     the wide layout does not read as side-by-side panes. -->
+<title>Layout picked only on load</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.4 system-ui, sans-serif; }
+  main { padding: 16px; }
+  p { margin: 0 0 16px; }
+  h3 { font-size: 16px; margin: 8px 0 0; }
+  .cards { display: flex; flex-direction: column; gap: 16px; }
+  body[data-layout='wide'] .cards,
+  body[data-layout='two'] .cards { display: grid; grid-template-columns: 1fr 1fr; }
+  .card { padding: 12px; border: 1px solid #cfd8dc; border-radius: 12px; }
+  .card svg { display: block; width: 100%; height: 72px; }
+  button { min-width: 48px; min-height: 48px; margin-top: 16px; font: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <p>Pick a category to see what is on the menu today.</p>
+  <div class="cards">
+    <article class="card"><svg viewBox="0 0 10 6" preserveAspectRatio="none" aria-hidden="true"><rect width="10" height="6" fill="#ffe082"/></svg><h3>Burgers</h3></article>
+    <article class="card"><svg viewBox="0 0 10 6" preserveAspectRatio="none" aria-hidden="true"><rect width="10" height="6" fill="#c5e1a5"/></svg><h3>Salads</h3></article>
+    <article class="card"><svg viewBox="0 0 10 6" preserveAspectRatio="none" aria-hidden="true"><rect width="10" height="6" fill="#b3e5fc"/></svg><h3>Drinks</h3></article>
+    <article class="card"><svg viewBox="0 0 10 6" preserveAspectRatio="none" aria-hidden="true"><rect width="10" height="6" fill="#f8bbd0"/></svg><h3>Desserts</h3></article>
+  </div>
+  <button type="button">See the full menu</button>
+</main>
+<script>document.body.dataset.layout = innerWidth >= 600 ? 'two' : innerWidth >= 356 ? 'wide' : 'compact';</script>
+</body>
+</html>

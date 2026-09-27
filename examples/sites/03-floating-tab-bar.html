@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- §8.2 #3: a floating tab bar covers content in a 339 dp tall window (Flip cover). The page
+     stays one viewport tall so document coordinates match the screen. -->
+<title>Floating tab bar in a short window</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.4 system-ui, sans-serif; }
+  main { height: 100vh; overflow: hidden; padding: 16px; }
+  p { margin: 0 0 12px; }
+  nav { position: fixed; bottom: 12px; left: 12px; right: 12px; height: 64px; display: flex; flex-direction: row; justify-content: space-around; align-items: center; background: #263238; border-radius: 32px; }
+  nav button { min-width: 48px; min-height: 48px; font: inherit; color: #fff; background: none; border: 0; }
+</style>
+</head>
+<body>
+<main>
+  <p>Welcome back. Your usual order is one tap away, and today's deals are listed below.</p>
+  <p>Two for one on breakfast wraps until eleven, at participating restaurants only.</p>
+  <p>Collect points with every order and trade them for free drinks and desserts.</p>
+  <p>Order ahead and skip the line: pick up at the counter or at the drive-through.</p>
+  <p>New this week: a spicy chicken sandwich with pickles and a fresh brioche bun.</p>
+</main>
+<nav>
+  <button type="button">Home</button>
+  <button type="button">Menu</button>
+  <button type="button">Deals</button>
+  <button type="button">More</button>
+</nav>
+</body>
+</html>
