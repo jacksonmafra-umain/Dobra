@@ -111,7 +111,7 @@ export function App({ config }: { config: SimulatorConfig }) {
     <div className="app" data-theme={theme}>
       <header className="topbar">
         <h1 className="topbar__title">
-          Size-Class Simulator <span className="tag">step 4</span>
+          Dobra Simulator <span className="tag">step 4</span>
           <span className="topbar__version" title="Version and build date of this copy">
             v{config.version} · {__BUILD_DATE__}
           </span>
@@ -499,7 +499,7 @@ export function App({ config }: { config: SimulatorConfig }) {
             <button
               className="seg-single"
               disabled={!canExport.ok}
-              title={canExport.ok ? 'Download a Hinge Report JSON for the web report. It holds the shared geometry rules over what is on screen.' : canExport.reason}
+              title={canExport.ok ? 'Download a Dobra Report JSON for the web report. It holds the shared geometry rules over what is on screen.' : canExport.reason}
               onClick={exportReport}
             >
               Export report

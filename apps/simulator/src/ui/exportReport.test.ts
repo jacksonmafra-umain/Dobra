@@ -48,6 +48,6 @@ describe('exportable', () => {
 
 describe('reportFileName', () => {
   it('names the file after the target key', () => {
-    expect(reportFileName(target)).toBe('hinge-report-pixel-9-pro-fold_inner_book_portrait.json');
+    expect(reportFileName(target)).toBe('dobra-report-pixel-9-pro-fold_inner_book_portrait.json');
   });
 });

@@ -1,4 +1,4 @@
-// Turns the rendered sample screen into a Hinge Report that the web report can open. The findings
+// Turns the rendered sample screen into a Dobra Report that the web report can open. The findings
 // come from core's geometry rules over what is on screen, not from the simulator's own layout checks.
 import { loadCatalog } from '@dobra/core/catalog/load';
 import type { Rect } from '@dobra/core/config/types';
@@ -52,7 +52,7 @@ export function simulatorReport(target: Target, label: string, url: string, widt
   return buildReport(catalog, { kind: 'simulator', ref: url, name: label }, [{ ref: key, name: label, page: 'Simulator', width, height, tag: key, root: toGeoTree(records) }], now);
 }
 
-export const reportFileName = (target: Target) => `hinge-report-${targetKey(target).replaceAll('/', '_')}.json`;
+export const reportFileName = (target: Target) => `dobra-report-${targetKey(target).replaceAll('/', '_')}.json`;
 
 // The element and role rules match the CLI's collector (packages/cli/src/collect.ts), so a screen
 // in the simulator and the same page in the CLI become the same geometry.
