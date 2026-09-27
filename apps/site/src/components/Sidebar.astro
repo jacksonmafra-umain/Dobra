@@ -1,0 +1,34 @@
+---
+interface Page {
+  href: string;
+  title: string;
+  sections: { slug: string; text: string }[];
+}
+interface Props {
+  pages: Page[];
+  current: string;
+}
+const { pages, current } = Astro.props;
+---
+<nav class="sidebar" aria-label="Guide">
+  <ol>
+    {
+      pages.map((p) => (
+        <li>
+          <a href={p.href} aria-current={p.href === current ? 'page' : undefined}>
+            {p.title}
+          </a>
+          {p.href === current && p.sections.length > 0 && (
+            <ol class="sidebar__sections">
+              {p.sections.map((s) => (
+                <li>
+                  <a href={`#${s.slug}`}>{s.text}</a>
+                </li>
+              ))}
+            </ol>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
