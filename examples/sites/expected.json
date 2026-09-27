@@ -102,6 +102,30 @@
           ]
         }
       ]
+    },
+    {
+      "file": "06-hinge-content.html",
+      "observed": "content on the hinge",
+      "checks": [
+        {
+          "target": "surface-duo-2/spanned/spanned/landscape",
+          "expect": [
+            "hinge-content"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        },
+        {
+          "target": "pixel-9-pro-fold/inner/book/portrait",
+          "expect": [
+            "hinge-content"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        }
+      ]
     }
   ],
   "transitions": []
