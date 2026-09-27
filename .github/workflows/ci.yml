@@ -1,0 +1,48 @@
+# Runs on every pull request and on main: install, type-check, test (including the CLI's
+# Chromium browser tests and the example-site acceptance checks) and build every workspace.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: npm
+
+      - run: npm ci
+
+      # The CLI's tests drive Chromium through Playwright; install the build the lockfile pins.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Chromium for Playwright
+        run: npm exec -w @dobra/cli -- playwright install --with-deps chromium
+
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Build
+        run: |
+          npm run build
+          npm run build:report
+          npm run build:cli
+          npm run build -w @dobra/figma-plugin
