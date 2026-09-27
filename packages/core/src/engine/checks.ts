@@ -14,7 +14,8 @@ export type RuleId =
   | 'chrome-overlap'
   | 'hinge-content'
   | 'overflow-x'
-  | 'frame-size-mismatch';
+  | 'frame-size-mismatch'
+  | 'resize-vs-reload';
 
 export interface Target {
   deviceId: string;
