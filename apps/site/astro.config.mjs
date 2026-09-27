@@ -15,6 +15,8 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [sitemap()],
   markdown: {
+    // Both Shiki themes are emitted as CSS variables; site.css picks one per data-theme.
+    shikiConfig: { themes: { light: 'github-light', dark: 'github-dark' }, defaultColor: false },
     // Astro 7 defaults to the Sätteri processor; the guide's plugins are remark/rehype, so the site
     // uses the unified processor from @astrojs/markdown-remark.
     processor: unified({
