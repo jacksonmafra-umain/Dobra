@@ -61,6 +61,14 @@ The CLI adds one more:
   load at that size. Three or more elements that sit more than 4 px apart mean the page only lays
   itself out on load. Both thresholds are estimated.
 
+## Known limits
+
+- A horizontal fold (tabletop) does not flag content that scrolls with the page, since it moves
+  past the crease. Fixed elements and pages that do not scroll are still checked.
+- Pages zoomed out to fit content wider than the window (which `overflow-x` already reports) get
+  approximate hinge positions.
+- Iframes are treated as media and not entered.
+
 ## Exit codes
 
 | Code | Meaning |
