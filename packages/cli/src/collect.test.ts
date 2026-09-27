@@ -65,6 +65,12 @@ describe('collectLayout', () => {
     expect(truncated).toBe(true);
   });
 
+  it('collects a page nested far deeper than real sites', async () => {
+    await page.goto(`${server.url}/wordy.html`);
+    const { root } = await collectLayout(page);
+    expect(nodes(root).length).toBeGreaterThan(2000);
+  });
+
   it('feeds the shared rules: the hinge, a wide element, but not a clipped image', async () => {
     await page.goto(`${server.url}/layout.html`);
     const { root } = await collectLayout(page);

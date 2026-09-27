@@ -13,7 +13,8 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
   // Under mobile emulation Chrome widens the layout viewport to wide content, so the window width
   // comes from the emulated viewport, not innerWidth.
   const viewport = page.viewportSize() ?? (await page.evaluate(() => ({ width: innerWidth, height: innerHeight })));
-  return page.evaluate(
+  // The tree goes back as JSON text: Playwright refuses results nested deeper than about 100 references.
+  const json = await page.evaluate(
     ({ limit, width }) => {
       const TEXT = 'h1,h2,h3,h4,h5,h6,p,li,label,dt,dd,td,th,figcaption,blockquote';
       const INTERACTIVE =
@@ -127,8 +128,9 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
         layout: 'vertical',
         children: content,
       };
-      return { root: [doc, ...fixed], scrollWidth: document.documentElement.scrollWidth, truncated };
+      return JSON.stringify({ root: [doc, ...fixed], scrollWidth: document.documentElement.scrollWidth, truncated });
     },
     { limit: cap, width: viewport.width },
   );
+  return JSON.parse(json) as CollectedLayout;
 }
