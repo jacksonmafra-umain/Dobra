@@ -1,10 +1,9 @@
 // The whole simulator state lives in the URL so a specific cell can be linked in a ticket.
-import { mediaFacts } from '@hinge/core/catalog/media';
 import type { DeviceSpec, Orientation, Size } from '@hinge/core/config/types';
 import type { Environment, Selection } from '@hinge/core/engine/environment';
 import type { TextSettings } from '@hinge/core/engine/typography';
 import type { Zoom } from './DeviceFrame';
-import type { MediaOverrides } from './media';
+import { baseMedia, type MediaOverrides } from './media';
 import type { OverlayToggles } from './Overlays';
 
 export type Theme = 'light' | 'dark';
@@ -17,8 +16,6 @@ export interface UrlState {
   rtl: boolean;
   overlays: OverlayToggles;
   text: TextSettings;
-  /** Media-fact overrides; each key is left out when it follows the device. */
-  media: MediaOverrides;
   /** The other platform's device when comparing platforms side by side. */
   vs?: string;
 }
@@ -52,7 +49,7 @@ const OVERLAY_KEYS: [keyof OverlayToggles, string][] = [
 const pick = <T extends string>(v: string | null, values: readonly T[]): T | undefined => values.find((x) => x === v);
 const flag = (v: string | null) => (v === '1' ? true : v === '0' ? false : undefined);
 
-function readMedia(q: URLSearchParams): MediaOverrides {
+function readMedia(q: URLSearchParams): MediaOverrides | undefined {
   const m: MediaOverrides = {
     pointer: pick(q.get('ptr'), ['coarse', 'fine'] as const),
     keyboard: pick(q.get('kbd'), ['virtual', 'physical'] as const),
@@ -60,7 +57,8 @@ function readMedia(q: URLSearchParams): MediaOverrides {
     hasCamera: flag(q.get('cam')),
     hasMicrophone: flag(q.get('mic')),
   };
-  return Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)) as MediaOverrides;
+  const set = Object.entries(m).filter(([, v]) => v !== undefined);
+  return set.length ? (Object.fromEntries(set) as MediaOverrides) : undefined;
 }
 
 const MEDIA_KEYS = [
@@ -100,6 +98,7 @@ export function readUrlState(search = location.search): UrlState {
       ime: q.get('kb') === '1' || undefined,
       appPortrait: q.get('portrait') === '1' || undefined,
       targetSdk: q.get('sdk') ? Number(q.get('sdk')) : undefined,
+      media: readMedia(q),
     },
     screenId: q.get('screen') ?? 'home',
     theme: q.get('theme') ? (q.get('theme') === 'dark' ? 'dark' : 'light') : systemTheme(),
@@ -107,7 +106,6 @@ export function readUrlState(search = location.search): UrlState {
     rtl: q.get('dir') === 'rtl',
     overlays,
     text: { fontScale: Number(q.get('fs') ?? 1), bold: q.get('bold') === '1', reducedMotion: q.get('motion') === 'reduced' },
-    media: readMedia(q),
     vs: q.get('vs') ?? undefined,
   };
 }
@@ -143,9 +141,10 @@ export function writeUrlState(state: UrlState, env: Environment, device: DeviceS
   if (state.text.fontScale !== 1) q.set('fs', String(state.text.fontScale));
   if (state.text.bold) q.set('bold', '1');
   if (state.text.reducedMotion) q.set('motion', 'reduced');
-  const base = mediaFacts(device);
+  // An override equal to what the window would have anyway is not written, so links stay minimal.
+  const base = baseMedia(device, env);
   for (const [key, token] of MEDIA_KEYS) {
-    const v = state.media[key];
+    const v = sel.media?.[key];
     if (v === undefined || v === base[key]) continue;
     q.set(token, typeof v === 'boolean' ? (v ? '1' : '0') : v);
   }
