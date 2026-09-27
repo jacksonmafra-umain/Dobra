@@ -51,4 +51,11 @@ describe('config schema', () => {
     cfg.layoutRules.pop();
     expect(issuesOf(cfg).join('\n')).toMatch(/fallback/);
   });
+
+  it('ships no Figma file or frame ids', () => {
+    const cfg = parseConfig(raw);
+    expect('figmaFile' in cfg).toBe(false);
+    expect(cfg.screens.every((s) => s.figma === null && typeof s.source === 'string')).toBe(true);
+    expect(JSON.stringify(cfg.sources)).not.toMatch(/node \d|FILE_KEY/);
+  });
 });

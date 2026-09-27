@@ -1,6 +1,6 @@
 /* Sample design system tokens and components rendered inside the simulated screen. */
 .sample {
-  --typeface-primary: "Sample Sans", "Helvetica Neue", Arial, sans-serif;
+  --typeface-primary: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --bg-primary: #f9f9f9;
   --bg-secondary: #fff;
   --bg-tertiary: #f3f3f3;
