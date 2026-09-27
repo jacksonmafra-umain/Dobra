@@ -77,3 +77,9 @@ th {
   text-align: left;
   margin: 4px 0;
 }
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: 11px ui-monospace, monospace;
+}
