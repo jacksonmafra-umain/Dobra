@@ -8,6 +8,7 @@ import { envConfigOf, parseTargetKey, type Target } from '@hinge/core/targets';
 import { download } from './download';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
+import { ReportNotes } from './ReportNotes';
 import { tokenStore } from './tokenStore';
 
 const catalog = loadCatalog();
@@ -186,6 +187,7 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
           </ul>
         </>
       )}
+      <ReportNotes notes={report.notes} />
     </>
   );
 }
