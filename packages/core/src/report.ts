@@ -30,6 +30,8 @@ export interface Report {
   frames: ReportFrame[];
   coverage: CoverageMatrix;
   unloaded: { ref: string; name: string; reason: string }[];
+  /** Things the reader should know about the run, such as a page cut short at the element cap. */
+  notes?: string[];
 }
 
 export interface ReportInput {
@@ -72,6 +74,7 @@ export const reportSchema = z.object({
     byCategory: z.record(z.string(), z.object({ required: z.number(), present: z.number() })),
   }),
   unloaded: z.array(z.object({ ref: z.string(), name: z.string(), reason: z.string() })),
+  notes: z.array(z.string()).optional(),
 });
 
 export function parseReport(json: unknown): Report {
@@ -133,6 +136,10 @@ export function toMarkdown(r: Report): string {
   if (r.unloaded.length) {
     lines.push('', '## Could not load', '');
     for (const u of r.unloaded) lines.push(`- ${u.name}: ${u.reason}`);
+  }
+  if (r.notes?.length) {
+    lines.push('', '## Notes', '');
+    for (const n of r.notes) lines.push(`- ${n}`);
   }
   return `${lines.join('\n')}\n`;
 }
