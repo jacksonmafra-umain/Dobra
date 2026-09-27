@@ -78,4 +78,18 @@ describe('loadFigmaReport', () => {
     expect(thumbnails).toEqual({});
     expect(notice).toMatch(/Thumbnails .*retry in 5 s/);
   });
+
+  it("uses the file's name words, stored by the plugin on the document", async () => {
+    const chart: RestNode = { id: '2:1', name: 'Chart', type: 'FRAME', absoluteBoundingBox: box(500, 100, 120, 80) };
+    const frame: RestNode = { ...home, children: [chart] };
+    const withWords: RestNode = { ...document, sharedPluginData: { dobra: { patterns: JSON.stringify({ controls: ['chart'], chrome: [] }) } }, children: [{ id: '0:1', name: 'Screens', type: 'CANVAS', children: [frame] }] };
+    const client: FigmaClient = {
+      me: async () => ({ handle: 'x' }),
+      file: async () => ({ name: 'Words', version: 'words-v1', document: withWords }),
+      nodes: async () => ({ loaded: { '1:1': frame }, failed: [] }),
+      images: async () => ({}),
+    };
+    const { report } = await loadFigmaReport(client, 'https://www.figma.com/design/WORDS/x');
+    expect(report.frames[0].findings.filter((f) => f.nodeId === '2:1').map((f) => f.ruleId)).toContain('hinge-content');
+  });
 });
