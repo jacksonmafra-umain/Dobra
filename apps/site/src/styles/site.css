@@ -1,0 +1,21 @@
+/* Site chrome: header, layout, footer. Colors and type from @dobra/brand. */
+* { box-sizing: border-box; }
+html { background: var(--dobra-bg); color: var(--dobra-text); }
+body { margin: 0; font: var(--dobra-type-body-lg); min-height: 100vh; display: flex; flex-direction: column; }
+a { color: var(--dobra-fold); }
+img, video { max-width: 100%; }
+.site-header { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 20px; padding: 12px 20px; background: var(--dobra-panel); backdrop-filter: blur(16px); border-bottom: 1px solid var(--dobra-border); }
+.site-header__home { display: flex; }
+.logo { height: 22px; width: auto; display: block; }
+.logo--on-light { display: none; }
+[data-theme='light'] .logo--on-dark { display: none; }
+[data-theme='light'] .logo--on-light { display: block; }
+.site-header__nav { display: flex; gap: 16px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.site-header__nav a { color: var(--dobra-muted); text-decoration: none; font: 500 14px/1 var(--dobra-font-body); }
+.site-header__nav a:hover, .site-header__nav a[aria-current='page'] { color: var(--dobra-text); }
+.theme-toggle { font: inherit; background: var(--dobra-field); color: var(--dobra-text); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius); width: 32px; height: 32px; cursor: pointer; }
+.site-body { flex: 1; display: flex; width: 100%; max-width: 1200px; margin: 0 auto; }
+.site-main { flex: 1; min-width: 0; padding: 32px 20px 64px; }
+.site-footer { padding: 24px 20px; color: var(--dobra-muted); font: var(--dobra-type-label-md); letter-spacing: var(--dobra-tracking-label-md); border-top: 1px solid var(--dobra-border); text-align: center; }
+:focus-visible { outline: 1px solid var(--dobra-fold); outline-offset: 2px; }
+@media (max-width: 600px) { .site-header { gap: 12px; padding: 10px 16px; } .site-main { padding: 24px 16px 48px; } }
