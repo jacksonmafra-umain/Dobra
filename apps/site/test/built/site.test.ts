@@ -61,6 +61,10 @@ describe('built site', () => {
     expect(readFileSync(join(dist, 'sitemap-0.xml'), 'utf8')).toContain('https://dobra-five.vercel.app/guide/');
   });
 
+  it('asks Vercel to redirect to trailing slashes, so /simulator loads its relative assets', () => {
+    expect(JSON.parse(readFileSync(join(dist, 'vercel.json'), 'utf8'))).toMatchObject({ trailingSlash: true });
+  });
+
   it('loads no fonts from the network', () => {
     for (const file of pages) expect(readFileSync(file, 'utf8')).not.toContain('fonts.googleapis');
   });
