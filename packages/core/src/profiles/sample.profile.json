@@ -1,0 +1,1069 @@
+{
+  "$comment": "Sample app profile: components, pane scenes, typography, the app manifest, layout rules, tab bar and screens for the neutral sample app.",
+  "sources": {
+    "figma-ui": "Sample design system: screens and components"
+  },
+  "components": {
+    "$comment": "Every component the rules can lay out. kind says which rule settings it takes; gap is the space between items; minLegibleWidth is the narrowest box its text still reads in (checked by the width-loss check).",
+    "news_story_hero": {
+      "kind": "hero",
+      "split": {
+        "imageFraction": 0.5,
+        "textPadding": 48
+      },
+      "minLegibleWidth": 200,
+      "source": "figma-ui"
+    },
+    "action_card": {
+      "kind": "grid",
+      "gap": 12,
+      "minLegibleWidth": 240,
+      "source": "figma-ui"
+    },
+    "shortcut_card_item": {
+      "kind": "grid",
+      "gap": 12,
+      "minLegibleWidth": 82,
+      "source": "figma-ui",
+      "forms": [
+        "perRow",
+        "flex"
+      ],
+      "items": 3
+    },
+    "news_story_card": {
+      "kind": "grid",
+      "gap": 24,
+      "minLegibleWidth": 200,
+      "source": "figma-ui"
+    },
+    "reward_card": {
+      "kind": "grid",
+      "gap": 16,
+      "minLegibleWidth": 120,
+      "source": "figma-ui"
+    },
+    "deal_card": {
+      "kind": "grid",
+      "gap": 24,
+      "minLegibleWidth": 200,
+      "source": "figma-ui"
+    },
+    "bonus_campaign_banner": {
+      "kind": "grid",
+      "gap": 12,
+      "minLegibleWidth": 240,
+      "source": "figma-ui"
+    },
+    "product_card": {
+      "kind": "grid",
+      "gap": 16,
+      "minLegibleWidth": 150,
+      "forms": [
+        "perRow",
+        "grid"
+      ],
+      "items": 8,
+      "source": "estimated"
+    },
+    "restaurant-card-small": {
+      "kind": "carousel"
+    },
+    "tab_bar_26": {
+      "kind": "tab-bar"
+    }
+  },
+  "scenes": {
+    "$comment": "Pane strategies named after Navigation 3 SceneStrategy. A screen declares one; the engine splits at a separating hinge, splits by the parameters when both minimum widths fit, and otherwise falls back to one pane.",
+    "list-detail": {
+      "strategy": "list-detail",
+      "listFraction": 0.4,
+      "listMinWidth": 320,
+      "detailMinWidth": 360,
+      "textMinWidth": 240,
+      "source": "material3"
+    },
+    "two-pane": {
+      "strategy": "two-pane",
+      "ratio": 0.5,
+      "paneMinWidth": 320,
+      "source": "material3"
+    },
+    "supporting-pane": {
+      "strategy": "supporting-pane",
+      "supportingWidth": 360,
+      "mainMinWidth": 400,
+      "source": "material3"
+    }
+  },
+  "typography": {
+    "$comment": "Sample design system type styles (figma-tokens). pt on iOS, sp on Android.",
+    "H0": {
+      "size": 56,
+      "lineHeight": 62
+    },
+    "H1": {
+      "size": 32,
+      "lineHeight": 35
+    },
+    "H2": {
+      "size": 24,
+      "lineHeight": 26
+    },
+    "H3": {
+      "size": 17,
+      "lineHeight": 19
+    },
+    "H4": {
+      "size": 14,
+      "lineHeight": 16
+    },
+    "Paragraph-Medium": {
+      "size": 14,
+      "lineHeight": 18
+    },
+    "Paragraph-Small": {
+      "size": 12,
+      "lineHeight": 15
+    },
+    "Paragraph-XSmall": {
+      "size": 10,
+      "lineHeight": 16
+    },
+    "Button": {
+      "size": 16,
+      "lineHeight": 19
+    },
+    "Badge": {
+      "size": 12,
+      "lineHeight": 16
+    },
+    "TabBar": {
+      "size": 11,
+      "lineHeight": 14
+    }
+  },
+  "app": {
+    "android": {
+      "targetSdk": 36,
+      "screenOrientation": "unspecified",
+      "configChanges": [
+        "orientation",
+        "screenSize",
+        "screenLayout",
+        "smallestScreenSize",
+        "keyboardHidden"
+      ],
+      "source": "estimated",
+      "$note": "Assumed Android manifest values. density and fontScale are not listed, so those changes recreate the activity."
+    }
+  },
+  "layoutRules": [
+    {
+      "id": "phone-portrait",
+      "label": "Compact width · Regular height",
+      "platform": "ios",
+      "match": {
+        "horizontal": "compact",
+        "vertical": "regular"
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max",
+        "$comment": "max = max(base, safe area). Reproduces hSafeAreaInset: 24 portrait."
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 190
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 375
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "perRow": 2,
+          "minItemWidth": 150
+        }
+      }
+    },
+    {
+      "id": "phone-landscape",
+      "label": "Any width · Compact height",
+      "platform": "ios",
+      "match": {
+        "vertical": "compact"
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max",
+        "$comment": "Safe area is 62 in landscape, so this reproduces hSafeAreaInset: 62."
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "split",
+          "bleed": "inset"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "inline",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "perRow": 2,
+          "minItemWidth": 150
+        }
+      }
+    },
+    {
+      "id": "regular-regular",
+      "label": "Regular width · Regular height",
+      "platform": "ios",
+      "match": {
+        "horizontal": "regular",
+        "vertical": "regular"
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 2,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 190
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 375
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "perRow": 2,
+          "minItemWidth": 150
+        }
+      }
+    },
+    {
+      "id": "fallback",
+      "label": "Fallback (no other rule matched)",
+      "platform": "ios",
+      "match": {},
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked",
+          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 190
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 375
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "perRow": 2,
+          "minItemWidth": 150
+        }
+      }
+    },
+    {
+      "id": "android-compact-short",
+      "label": "Compact width · Compact height",
+      "platform": "android",
+      "match": {
+        "width": [
+          "compact"
+        ],
+        "height": [
+          "compact"
+        ]
+      },
+      "pageMargin": {
+        "base": 16,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "flex": {
+            "wrap": true,
+            "basis": 96,
+            "grow": 1,
+            "shrink": 1,
+            "gap": 12,
+            "justify": "space-between"
+          }
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "grid": {
+            "columns": [
+              {
+                "adaptive": {
+                  "min": 160,
+                  "max": 240
+                }
+              }
+            ],
+            "gap": 16
+          }
+        }
+      },
+      "source": "estimated",
+      "$comment": "Clamshell cover displays and split-screen halves: short AND narrow. Never side-by-side here, whatever the orientation says."
+    },
+    {
+      "id": "android-compact",
+      "label": "Compact width",
+      "platform": "android",
+      "match": {
+        "width": [
+          "compact"
+        ]
+      },
+      "pageMargin": {
+        "base": 16,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "flex": {
+            "wrap": true,
+            "basis": 96,
+            "grow": 1,
+            "shrink": 1,
+            "gap": 12,
+            "justify": "space-between"
+          }
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "grid": {
+            "columns": [
+              {
+                "adaptive": {
+                  "min": 160,
+                  "max": 240
+                }
+              }
+            ],
+            "gap": 16
+          }
+        }
+      },
+      "source": "estimated",
+      "$comment": "Margin 16 dp is the Material 3 compact margin; app value to confirm."
+    },
+    {
+      "id": "android-wide-short",
+      "label": "Medium+ width · Compact height",
+      "platform": "android",
+      "match": {
+        "width": [
+          "medium",
+          "expanded",
+          "large",
+          "extraLarge"
+        ],
+        "height": [
+          "compact"
+        ]
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "split",
+          "bleed": "inset"
+        },
+        "action_card": {
+          "perRow": 2
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "inline"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "grid": {
+            "columns": [
+              {
+                "adaptive": {
+                  "min": 160,
+                  "max": 240
+                }
+              }
+            ],
+            "gap": 16
+          }
+        }
+      },
+      "source": "estimated"
+    },
+    {
+      "id": "android-medium",
+      "label": "Medium width",
+      "platform": "android",
+      "match": {
+        "width": [
+          "medium"
+        ]
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 8,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 2
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 4,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 2,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 2,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 2,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "grid": {
+            "columns": [
+              {
+                "adaptive": {
+                  "min": 160,
+                  "max": 240
+                }
+              }
+            ],
+            "gap": 16
+          }
+        }
+      },
+      "source": "estimated"
+    },
+    {
+      "id": "android-expanded",
+      "label": "Expanded+ width",
+      "platform": "android",
+      "match": {
+        "width": [
+          "expanded",
+          "large",
+          "extraLarge"
+        ]
+      },
+      "pageMargin": {
+        "base": 24,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 12,
+        "gutter": 24,
+        "proposed": true
+      },
+      "panes": 2,
+      "components": {
+        "news_story_hero": {
+          "variant": "split",
+          "bleed": "inset"
+        },
+        "action_card": {
+          "perRow": 2
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 6,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 3,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 3,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 3,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "grid": {
+            "columns": [
+              {
+                "adaptive": {
+                  "min": 160,
+                  "max": 240
+                }
+              }
+            ],
+            "gap": 16
+          }
+        }
+      },
+      "source": "estimated"
+    },
+    {
+      "id": "android-fallback",
+      "label": "Fallback (no other Android rule matched)",
+      "platform": "android",
+      "match": {},
+      "pageMargin": {
+        "base": 16,
+        "mode": "max"
+      },
+      "grid": {
+        "columns": 4,
+        "gutter": 16,
+        "proposed": true
+      },
+      "panes": 1,
+      "components": {
+        "news_story_hero": {
+          "variant": "stacked",
+          "bleed": "full"
+        },
+        "action_card": {
+          "perRow": 1
+        },
+        "shortcut_card_item": {
+          "perRow": 3
+        },
+        "restaurant-card-small": {
+          "mode": "carousel"
+        },
+        "tab_bar_26": {
+          "item": "stacked"
+        },
+        "reward_card": {
+          "perRow": 2,
+          "minItemWidth": 128,
+          "maxItemWidth": 220
+        },
+        "deal_card": {
+          "perRow": 1,
+          "minItemWidth": 320,
+          "maxItemWidth": 500
+        },
+        "bonus_campaign_banner": {
+          "perRow": 1,
+          "minItemWidth": 272
+        },
+        "news_story_card": {
+          "perRow": 1,
+          "minItemWidth": 280
+        },
+        "product_card": {
+          "perRow": 2,
+          "minItemWidth": 150
+        }
+      },
+      "source": "estimated"
+    }
+  ],
+  "tabBar": {
+    "component": "tab_bar_26",
+    "items": [
+      {
+        "id": "home",
+        "title": "Home",
+        "icon": "ic_logo_filled_32"
+      },
+      {
+        "id": "deals",
+        "title": "Deals",
+        "icon": "ic_deals_32",
+        "iconSelected": "ic_deals_32"
+      },
+      {
+        "id": "order",
+        "title": "Order",
+        "icon": "ic_order_32"
+      },
+      {
+        "id": "food",
+        "title": "Food",
+        "icon": "ic_food_32"
+      },
+      {
+        "id": "more",
+        "title": "More",
+        "icon": "ic_more_32"
+      }
+    ]
+  },
+  "screens": [
+    {
+      "id": "home",
+      "name": "Home",
+      "experience": "navigation",
+      "tab": "home",
+      "enabled": true,
+      "figma": null,
+      "source": "sample app screen",
+      "components": [
+        "news_story_hero",
+        "action_card",
+        "shortcut_card_item",
+        "news_story_card"
+      ],
+      "toolbar": {
+        "component": "app_toolbar",
+        "logo": "im_sample_logo",
+        "items": [
+          {
+            "id": "qr",
+            "title": "Scan code",
+            "symbol": "ic_qr_code_default_32",
+            "label": "symbol",
+            "group": "prominent",
+            "priority": 2
+          },
+          {
+            "id": "points",
+            "title": "320 points",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "deals",
+      "name": "Deals",
+      "experience": "navigation",
+      "tab": "deals",
+      "enabled": true,
+      "figma": null,
+      "source": "sample app screen",
+      "components": [
+        "action_card",
+        "bonus_campaign_banner",
+        "deal_card"
+      ],
+      "toolbar": {
+        "component": "app_toolbar",
+        "logo": "member_logo_light_default",
+        "items": [
+          {
+            "id": "qr",
+            "title": "Scan code",
+            "symbol": "ic_qr_code_default_32",
+            "label": "symbol",
+            "group": "prominent",
+            "priority": 2
+          },
+          {
+            "id": "points",
+            "title": "320 points",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "rewards",
+      "name": "Rewards",
+      "experience": "navigation",
+      "tab": "deals",
+      "enabled": true,
+      "figma": null,
+      "source": "sample app screen",
+      "components": [
+        "reward_card"
+      ],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "All rewards",
+        "items": [
+          {
+            "id": "back",
+            "title": "Back",
+            "symbol": "ic_chevron_left_default_32",
+            "label": "symbol",
+            "group": "navigation",
+            "priority": 3
+          },
+          {
+            "id": "points",
+            "title": "321 pts",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "bag",
+      "name": "Bag",
+      "experience": "task",
+      "tab": "order",
+      "enabled": true,
+      "figma": null,
+      "source": "sample app screen",
+      "components": [],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "Your bag",
+        "items": [
+          {
+            "id": "back",
+            "title": "Back",
+            "symbol": "ic_chevron_left_default_32",
+            "label": "symbol",
+            "group": "navigation",
+            "priority": 3
+          },
+          {
+            "id": "edit",
+            "title": "Edit",
+            "symbol": null,
+            "label": "text",
+            "group": "secondary",
+            "priority": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "checkout",
+      "name": "Checkout",
+      "experience": "task",
+      "tab": "order",
+      "enabled": true,
+      "figma": null,
+      "source": "sample app screen",
+      "components": [],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "Checkout",
+        "items": [
+          {
+            "id": "close",
+            "title": "Close",
+            "symbol": "ic_close_default_32",
+            "label": "symbol",
+            "group": "navigation",
+            "priority": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "locations",
+      "name": "Locations",
+      "experience": "navigation",
+      "tab": "order",
+      "enabled": true,
+      "scene": "list-detail",
+      "figma": null,
+      "source": "built from sample app components; list-detail canonical layout (Material 3)",
+      "components": [],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "Locations",
+        "items": []
+      }
+    },
+    {
+      "id": "products",
+      "name": "Products",
+      "experience": "navigation",
+      "tab": "food",
+      "enabled": true,
+      "figma": null,
+      "source": "built from sample app components; adaptive product grid",
+      "components": [
+        "product_card"
+      ],
+      "toolbar": {
+        "component": "toolbar",
+        "type": "H3",
+        "title": "Burgers",
+        "items": []
+      }
+    }
+  ]
+}

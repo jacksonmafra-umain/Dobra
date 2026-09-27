@@ -26,6 +26,8 @@ const NAVIGATION_LABEL: Record<Layout['navigation']['pattern'], string> = {
   drawer: 'navigation drawer · leading edge',
 };
 
+
+const COVER_POLICY = { 'user-granted': 'User must allow it', 'any-app': 'Any app', 'allow-list': 'Allow-listed apps only' } as const;
 export function Inspector({ config, env, layout, screen, collisions, findings, modal, rtl }: InspectorProps) {
   const u = env.unit;
   const safe = env.safeArea;
@@ -290,7 +292,10 @@ function ReservedPanel({
         {env.android?.coverScreen && (
           <div>
             <dt>cover screen</dt>
-            <dd>{env.android.coverScreen.note}</dd>
+            <dd>
+              {COVER_POLICY[env.android.coverScreen.policy]}
+              {env.android.coverScreen.continuity ? ' · stays open when folded' : ''} · {env.android.coverScreen.note}
+            </dd>
           </div>
         )}
         {modal && (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import raw from './simulator.config.json';
+import { rawConfig as raw } from './load';
 import { ConfigError, parseConfig } from './schema';
 
 const clone = () => JSON.parse(JSON.stringify(raw));
@@ -75,5 +75,12 @@ describe('config schema', () => {
     const rule = cfg.layoutRules.find((r: { id: string }) => r.id === 'android-expanded');
     rule.components.product_card = { grid: { columns: [], gap: 16 } };
     expect(issuesOf(cfg).join('\n')).toMatch(/product_card/);
+  });
+
+  it('rejects an unknown cover-screen policy', () => {
+    const cfg = clone();
+    const flip = cfg.devices.find((d: { id: string }) => d.id === 'galaxy-z-flip-7');
+    flip.displays.cover.coverScreen.policy = 'sometimes';
+    expect(issuesOf(cfg).join('\n')).toMatch(/coverScreen\.policy/);
   });
 });

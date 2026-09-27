@@ -1,4 +1,4 @@
-// Types of simulator.config.json, derived from the schema so the two cannot drift apart.
+// Types of the catalog and app profile, derived from the schema so the two cannot drift apart.
 import type { SimulatorConfig } from './schema';
 
 export type { ComponentKind, FlexFormRule, GridFormRule, GridRule, HeroRule, Platform, SimulatorConfig, TabBarRule } from './schema';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FoldFeature } from './engine/folds';
-import raw from './config/simulator.config.json';
+import { rawConfig as raw } from './config/load';
 import { parseConfig } from './config/schema';
 import { resolveEnvironment } from './engine/environment';
 import { collisionsToFindings, collisionZones, findCollisions, rectsOverlap, spansOverlap } from './collisions';

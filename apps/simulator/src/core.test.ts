@@ -2,11 +2,11 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadConfig } from '@hinge/core/config/load';
-import raw from '@hinge/core/config/simulator.config.json';
+import catalogJson from '@hinge/core/catalog/catalog.json';
 
 describe('@hinge/core', () => {
   it('serves the config JSON and a validated config', () => {
-    expect(loadConfig().devices.length).toBe(raw.devices.length);
+    expect(loadConfig().devices.length).toBe(catalogJson.devices.length);
   });
 
   it('has no old-path re-exports left in the app', () => {

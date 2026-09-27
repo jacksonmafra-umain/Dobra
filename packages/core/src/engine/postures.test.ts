@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import raw from '../config/simulator.config.json';
+import { rawConfig as raw } from '../config/load';
 import { parseConfig } from '../config/schema';
 import { resolveEnvironment, type Selection } from './environment';
 import { resolveLayout } from './layout';
@@ -46,7 +46,7 @@ describe('androidx.window postures', () => {
     const env = resolveEnvironment(config, sel('galaxy-z-flip-7', 'closed'));
     expect(env).toMatchObject({ width: 352, height: 339, orientation: 'landscape' });
     expect(env.sizeClass).toEqual({ system: 'window', width: 'compact', height: 'compact' });
-    expect(env.android?.coverScreen?.userGranted).toBe(true);
+    expect(env.android?.coverScreen).toMatchObject({ policy: 'user-granted', continuity: false });
     expect(env.android?.rotationLocked).toBe(true);
   });
 

@@ -1,8 +1,7 @@
 {
-  "$comment": "Size-Class Simulator config. Everything the simulator shows is driven from this file. Sizes are in the unit of the device's platform: points (pt) on iOS, density-independent pixels (dp) on Android. See README.md > Editing the config.",
+  "$comment": "Generic device catalog: devices, displays, postures, folds and platform profiles. Sizes are in the unit of the device platform (pt on iOS, dp on Android). App-specific screens and layout rules live in a profile.",
   "version": "0.5.0",
   "sources": {
-    "figma-ui": "Sample design system: screens and components",
     "figma-tokens": "Sample design system: device and orientation tokens (hSafeAreaInset 24/62, bottomSafeAreaInset 21)",
     "apple-device": "Apple device spec (not in our Figma: Figma frames are 375×812 portrait / 812 landscape)",
     "estimated": "Estimated: not confirmed. Verify in Xcode 27.1 Device Hub.",
@@ -374,167 +373,13 @@
       ]
     }
   },
-  "components": {
-    "$comment": "Every component the rules can lay out. kind says which rule settings it takes; gap is the space between items; minLegibleWidth is the narrowest box its text still reads in (checked by the width-loss check).",
-    "news_story_hero": {
-      "kind": "hero",
-      "split": {
-        "imageFraction": 0.5,
-        "textPadding": 48
-      },
-      "minLegibleWidth": 200,
-      "source": "figma-ui"
-    },
-    "action_card": {
-      "kind": "grid",
-      "gap": 12,
-      "minLegibleWidth": 240,
-      "source": "figma-ui"
-    },
-    "shortcut_card_item": {
-      "kind": "grid",
-      "gap": 12,
-      "minLegibleWidth": 82,
-      "source": "figma-ui",
-      "forms": [
-        "perRow",
-        "flex"
-      ],
-      "items": 3
-    },
-    "news_story_card": {
-      "kind": "grid",
-      "gap": 24,
-      "minLegibleWidth": 200,
-      "source": "figma-ui"
-    },
-    "reward_card": {
-      "kind": "grid",
-      "gap": 16,
-      "minLegibleWidth": 120,
-      "source": "figma-ui"
-    },
-    "deal_card": {
-      "kind": "grid",
-      "gap": 24,
-      "minLegibleWidth": 200,
-      "source": "figma-ui"
-    },
-    "bonus_campaign_banner": {
-      "kind": "grid",
-      "gap": 12,
-      "minLegibleWidth": 240,
-      "source": "figma-ui"
-    },
-    "product_card": {
-      "kind": "grid",
-      "gap": 16,
-      "minLegibleWidth": 150,
-      "forms": [
-        "perRow",
-        "grid"
-      ],
-      "items": 8,
-      "source": "estimated"
-    },
-    "restaurant-card-small": {
-      "kind": "carousel"
-    },
-    "tab_bar_26": {
-      "kind": "tab-bar"
-    }
-  },
-  "scenes": {
-    "$comment": "Pane strategies named after Navigation 3 SceneStrategy. A screen declares one; the engine splits at a separating hinge, splits by the parameters when both minimum widths fit, and otherwise falls back to one pane.",
-    "list-detail": {
-      "strategy": "list-detail",
-      "listFraction": 0.4,
-      "listMinWidth": 320,
-      "detailMinWidth": 360,
-      "textMinWidth": 240,
-      "source": "material3"
-    },
-    "two-pane": {
-      "strategy": "two-pane",
-      "ratio": 0.5,
-      "paneMinWidth": 320,
-      "source": "material3"
-    },
-    "supporting-pane": {
-      "strategy": "supporting-pane",
-      "supportingWidth": 360,
-      "mainMinWidth": 400,
-      "source": "material3"
-    }
-  },
-  "typography": {
-    "$comment": "Sample design system type styles (figma-tokens). pt on iOS, sp on Android.",
-    "H0": {
-      "size": 56,
-      "lineHeight": 62
-    },
-    "H1": {
-      "size": 32,
-      "lineHeight": 35
-    },
-    "H2": {
-      "size": 24,
-      "lineHeight": 26
-    },
-    "H3": {
-      "size": 17,
-      "lineHeight": 19
-    },
-    "H4": {
-      "size": 14,
-      "lineHeight": 16
-    },
-    "Paragraph-Medium": {
-      "size": 14,
-      "lineHeight": 18
-    },
-    "Paragraph-Small": {
-      "size": 12,
-      "lineHeight": 15
-    },
-    "Paragraph-XSmall": {
-      "size": 10,
-      "lineHeight": 16
-    },
-    "Button": {
-      "size": 16,
-      "lineHeight": 19
-    },
-    "Badge": {
-      "size": 12,
-      "lineHeight": 16
-    },
-    "TabBar": {
-      "size": 11,
-      "lineHeight": 14
-    }
-  },
-  "app": {
-    "android": {
-      "targetSdk": 36,
-      "screenOrientation": "unspecified",
-      "configChanges": [
-        "orientation",
-        "screenSize",
-        "screenLayout",
-        "smallestScreenSize",
-        "keyboardHidden"
-      ],
-      "source": "estimated",
-      "$note": "Assumed Android manifest values. density and fontScale are not listed, so those changes recreate the activity."
-    }
-  },
   "devices": [
     {
       "id": "iphone-se",
       "platform": "ios",
       "name": "iPhone SE",
       "enabled": true,
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -594,6 +439,7 @@
       "platform": "ios",
       "name": "iPhone 17",
       "enabled": true,
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -657,6 +503,7 @@
       "platform": "ios",
       "name": "iPhone 17 Pro Max",
       "enabled": true,
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -720,6 +567,7 @@
       "platform": "ios",
       "name": "iPhone Duo",
       "enabled": true,
+      "category": "foldable-book",
       "displays": {
         "outer": {
           "label": "Outer display (closed)",
@@ -890,6 +738,7 @@
         {
           "id": "closed",
           "label": "Closed",
+          "kind": "cover",
           "display": "outer",
           "folded": false,
           "orientations": [
@@ -900,6 +749,7 @@
         {
           "id": "open",
           "label": "Fully open",
+          "kind": "flat",
           "display": "inner",
           "folded": false,
           "orientations": [
@@ -910,6 +760,7 @@
         {
           "id": "book",
           "label": "Folded like a book",
+          "kind": "book",
           "display": "inner",
           "folded": true,
           "orientations": [
@@ -920,6 +771,7 @@
         {
           "id": "flat",
           "label": "Laid flat",
+          "kind": "flat",
           "display": "inner",
           "folded": false,
           "orientations": [
@@ -931,6 +783,7 @@
         {
           "id": "stand",
           "label": "Standing on its edge",
+          "kind": "tabletop",
           "display": "inner",
           "folded": true,
           "orientations": [
@@ -946,7 +799,7 @@
       "platform": "android",
       "name": "Compact Android phone (360×780)",
       "enabled": true,
-      "class": "phone",
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -1005,7 +858,7 @@
       "platform": "android",
       "name": "Pixel 9",
       "enabled": true,
-      "class": "phone",
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -1064,7 +917,7 @@
       "platform": "android",
       "name": "Pixel 9 Pro XL",
       "enabled": true,
-      "class": "phone",
+      "category": "phone",
       "displays": {
         "main": {
           "label": "Display",
@@ -1123,7 +976,7 @@
       "platform": "android",
       "name": "Pixel Tablet",
       "enabled": true,
-      "class": "tablet",
+      "category": "tablet",
       "displays": {
         "main": {
           "label": "Display",
@@ -1176,7 +1029,7 @@
       "platform": "android",
       "name": "Generic 10\" tablet",
       "enabled": true,
-      "class": "tablet",
+      "category": "tablet",
       "displays": {
         "main": {
           "label": "Display",
@@ -1228,7 +1081,7 @@
       "platform": "android",
       "name": "Generic 12\" tablet",
       "enabled": true,
-      "class": "tablet",
+      "category": "tablet",
       "displays": {
         "main": {
           "label": "Display",
@@ -1280,7 +1133,7 @@
       "platform": "android",
       "name": "Pixel 9 Pro Fold",
       "enabled": true,
-      "class": "book-foldable",
+      "category": "foldable-book",
       "displays": {
         "outer": {
           "label": "Outer display",
@@ -1380,12 +1233,14 @@
         {
           "id": "closed",
           "label": "Closed (outer display)",
+          "kind": "cover",
           "display": "outer",
           "features": []
         },
         {
           "id": "open",
           "label": "Open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1398,6 +1253,7 @@
         {
           "id": "book",
           "label": "Half-open, book",
+          "kind": "book",
           "display": "inner",
           "rotation": 0,
           "features": [
@@ -1411,6 +1267,7 @@
         {
           "id": "tabletop",
           "label": "Half-open, tabletop",
+          "kind": "tabletop",
           "display": "inner",
           "rotation": 90,
           "features": [
@@ -1424,6 +1281,7 @@
         {
           "id": "rear-display",
           "label": "Rear display mode",
+          "kind": "rear",
           "display": "outer",
           "features": [],
           "windowArea": "rear-display",
@@ -1432,6 +1290,7 @@
         {
           "id": "dual-screen",
           "label": "Dual-screen mode",
+          "kind": "dual",
           "display": "inner",
           "features": [
             {
@@ -1459,7 +1318,7 @@
       "platform": "android",
       "name": "Galaxy Z Fold 7",
       "enabled": true,
-      "class": "book-foldable",
+      "category": "foldable-book",
       "displays": {
         "cover": {
           "label": "Cover display",
@@ -1559,12 +1418,14 @@
         {
           "id": "closed",
           "label": "Closed (cover display)",
+          "kind": "cover",
           "display": "cover",
           "features": []
         },
         {
           "id": "open",
           "label": "Open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1576,6 +1437,7 @@
         {
           "id": "book",
           "label": "Half-open, book (Flex mode)",
+          "kind": "book",
           "display": "inner",
           "rotation": 0,
           "features": [
@@ -1588,6 +1450,7 @@
         {
           "id": "tabletop",
           "label": "Half-open, tabletop (Flex mode)",
+          "kind": "tabletop",
           "display": "inner",
           "rotation": 90,
           "features": [
@@ -1600,6 +1463,7 @@
         {
           "id": "dual-screen",
           "label": "Dual-screen mode",
+          "kind": "dual",
           "display": "inner",
           "features": [
             {
@@ -1627,7 +1491,7 @@
       "platform": "android",
       "name": "Galaxy Z Flip 7",
       "enabled": true,
-      "class": "clamshell",
+      "category": "foldable-flip",
       "displays": {
         "cover": {
           "label": "Cover display (FlexWindow)",
@@ -1657,7 +1521,8 @@
             "$note": "The observed 352×339 dp app window already excludes the cover screen system areas."
           },
           "coverScreen": {
-            "userGranted": true,
+            "policy": "user-granted",
+            "continuity": false,
             "note": "Samsung only runs an app on the cover screen when the user allows it (Settings › Advanced features › Labs › Apps allowed on cover screen, or Good Lock MultiStar). No manifest flag puts an app there."
           },
           "source": "observed",
@@ -1721,6 +1586,7 @@
         {
           "id": "closed",
           "label": "Closed (cover display)",
+          "kind": "cover",
           "display": "cover",
           "features": [],
           "note": "Only when the user has allowed the app on the cover screen."
@@ -1728,6 +1594,7 @@
         {
           "id": "open",
           "label": "Open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1739,6 +1606,7 @@
         {
           "id": "flex",
           "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
           "display": "inner",
           "rotation": 0,
           "features": [
@@ -1752,6 +1620,7 @@
         {
           "id": "flex-rotated",
           "label": "Half-open, rotated (book)",
+          "kind": "book",
           "display": "inner",
           "rotation": 90,
           "features": [
@@ -1778,7 +1647,7 @@
       "platform": "android",
       "name": "Galaxy Z TriFold",
       "enabled": true,
-      "class": "tri-fold",
+      "category": "multi-fold",
       "displays": {
         "cover": {
           "label": "Cover display",
@@ -1879,12 +1748,14 @@
         {
           "id": "closed",
           "label": "Closed (cover display)",
+          "kind": "cover",
           "display": "cover",
           "features": []
         },
         {
           "id": "open",
           "label": "Fully open, flat",
+          "kind": "flat",
           "display": "inner",
           "features": [
             {
@@ -1900,6 +1771,7 @@
         {
           "id": "left-half",
           "label": "Left hinge half-open",
+          "kind": "book",
           "display": "inner",
           "features": [
             {
@@ -1916,6 +1788,7 @@
         {
           "id": "both-half",
           "label": "Both hinges half-open",
+          "kind": "book",
           "display": "inner",
           "features": [
             {
@@ -1947,7 +1820,7 @@
       "platform": "android",
       "name": "Huawei Mate XT",
       "enabled": true,
-      "class": "tri-fold",
+      "category": "multi-fold",
       "displays": {
         "single": {
           "label": "Single panel",
@@ -2098,12 +1971,14 @@
         {
           "id": "single",
           "label": "One panel",
+          "kind": "cover",
           "display": "single",
           "features": []
         },
         {
           "id": "dual",
           "label": "Two panels, flat",
+          "kind": "partial",
           "display": "dual",
           "features": [
             {
@@ -2115,6 +1990,7 @@
         {
           "id": "triple",
           "label": "Three panels, flat",
+          "kind": "flat",
           "display": "triple",
           "features": [
             {
@@ -2130,6 +2006,7 @@
         {
           "id": "triple-half",
           "label": "Three panels, one hinge half-open",
+          "kind": "book",
           "display": "triple",
           "features": [
             {
@@ -2160,7 +2037,7 @@
       "platform": "android",
       "name": "Chromebook (1366×768)",
       "enabled": true,
-      "class": "desktop",
+      "category": "desktop",
       "displays": {
         "main": {
           "label": "Display",
@@ -2210,7 +2087,7 @@
       "platform": "android",
       "name": "Samsung DeX (1080p monitor)",
       "enabled": true,
-      "class": "desktop",
+      "category": "desktop",
       "displays": {
         "main": {
           "label": "Display",
@@ -2260,7 +2137,7 @@
       "platform": "android",
       "name": "Android desktop windowing (1440p monitor)",
       "enabled": true,
-      "class": "desktop",
+      "category": "desktop",
       "displays": {
         "main": {
           "label": "Display",
@@ -2306,912 +2183,103 @@
       "$comment": "Android 16 desktop windowing on an external 2560×1440 display at an assumed 1.5 density."
     }
   ],
-  "layoutRules": [
+  "requirements": [
     {
-      "id": "phone-portrait",
-      "label": "Compact width · Regular height",
-      "platform": "ios",
-      "match": {
-        "horizontal": "compact",
-        "vertical": "regular"
-      },
-      "pageMargin": {
-        "base": 24,
-        "mode": "max",
-        "$comment": "max = max(base, safe area). Reproduces hSafeAreaInset: 24 portrait."
-      },
-      "grid": {
-        "columns": 4,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "stacked",
-          "bleed": "full"
-        },
-        "action_card": {
-          "perRow": 1
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked",
-          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
-        },
-        "reward_card": {
-          "perRow": 2,
-          "minItemWidth": 128,
-          "maxItemWidth": 190
-        },
-        "deal_card": {
-          "perRow": 1,
-          "minItemWidth": 320,
-          "maxItemWidth": 375
-        },
-        "bonus_campaign_banner": {
-          "perRow": 1,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 1,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "perRow": 2,
-          "minItemWidth": 150
-        }
-      }
+      "category": "phone",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "phone-landscape",
-      "label": "Any width · Compact height",
-      "platform": "ios",
-      "match": {
-        "vertical": "compact"
-      },
-      "pageMargin": {
-        "base": 24,
-        "mode": "max",
-        "$comment": "Safe area is 62 in landscape, so this reproduces hSafeAreaInset: 62."
-      },
-      "grid": {
-        "columns": 8,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "split",
-          "bleed": "inset"
-        },
-        "action_card": {
-          "perRow": 1
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "inline",
-          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
-        },
-        "reward_card": {
-          "perRow": 4,
-          "minItemWidth": 128,
-          "maxItemWidth": 220
-        },
-        "deal_card": {
-          "perRow": 2,
-          "minItemWidth": 320,
-          "maxItemWidth": 500
-        },
-        "bonus_campaign_banner": {
-          "perRow": 2,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 2,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "perRow": 2,
-          "minItemWidth": 150
-        }
-      }
+      "category": "phone",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "optional"
     },
     {
-      "id": "regular-regular",
-      "label": "Regular width · Regular height",
-      "platform": "ios",
-      "match": {
-        "horizontal": "regular",
-        "vertical": "regular"
-      },
-      "pageMargin": {
-        "base": 24,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 8,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 2,
-      "components": {
-        "news_story_hero": {
-          "variant": "stacked",
-          "bleed": "full"
-        },
-        "action_card": {
-          "perRow": 1
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked",
-          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
-        },
-        "reward_card": {
-          "perRow": 4,
-          "minItemWidth": 128,
-          "maxItemWidth": 190
-        },
-        "deal_card": {
-          "perRow": 2,
-          "minItemWidth": 320,
-          "maxItemWidth": 375
-        },
-        "bonus_campaign_banner": {
-          "perRow": 2,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 2,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "perRow": 2,
-          "minItemWidth": 150
-        }
-      }
+      "category": "foldable-book",
+      "kind": "cover",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "fallback",
-      "label": "Fallback (no other rule matched)",
-      "platform": "ios",
-      "match": {},
-      "pageMargin": {
-        "base": 24,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 4,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "stacked",
-          "bleed": "full"
-        },
-        "action_card": {
-          "perRow": 1
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked",
-          "$comment": "stacked = icon over label; inline = label beside icon (Figma landscape variant)"
-        },
-        "reward_card": {
-          "perRow": 2,
-          "minItemWidth": 128,
-          "maxItemWidth": 190
-        },
-        "deal_card": {
-          "perRow": 1,
-          "minItemWidth": 320,
-          "maxItemWidth": 375
-        },
-        "bonus_campaign_banner": {
-          "perRow": 1,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 1,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "perRow": 2,
-          "minItemWidth": 150
-        }
-      }
+      "category": "foldable-book",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "android-compact-short",
-      "label": "Compact width · Compact height",
-      "platform": "android",
-      "match": {
-        "width": [
-          "compact"
-        ],
-        "height": [
-          "compact"
-        ]
-      },
-      "pageMargin": {
-        "base": 16,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 4,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "stacked",
-          "bleed": "full"
-        },
-        "action_card": {
-          "perRow": 1
-        },
-        "shortcut_card_item": {
-          "flex": {
-            "wrap": true,
-            "basis": 96,
-            "grow": 1,
-            "shrink": 1,
-            "gap": 12,
-            "justify": "space-between"
-          }
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked"
-        },
-        "reward_card": {
-          "perRow": 2,
-          "minItemWidth": 128,
-          "maxItemWidth": 220
-        },
-        "deal_card": {
-          "perRow": 1,
-          "minItemWidth": 320,
-          "maxItemWidth": 500
-        },
-        "bonus_campaign_banner": {
-          "perRow": 1,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 1,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "grid": {
-            "columns": [
-              {
-                "adaptive": {
-                  "min": 160,
-                  "max": 240
-                }
-              }
-            ],
-            "gap": 16
-          }
-        }
-      },
-      "source": "estimated",
-      "$comment": "Clamshell cover displays and split-screen halves: short AND narrow. Never side-by-side here, whatever the orientation says."
+      "category": "foldable-book",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
     },
     {
-      "id": "android-compact",
-      "label": "Compact width",
-      "platform": "android",
-      "match": {
-        "width": [
-          "compact"
-        ]
-      },
-      "pageMargin": {
-        "base": 16,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 4,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "stacked",
-          "bleed": "full"
-        },
-        "action_card": {
-          "perRow": 1
-        },
-        "shortcut_card_item": {
-          "flex": {
-            "wrap": true,
-            "basis": 96,
-            "grow": 1,
-            "shrink": 1,
-            "gap": 12,
-            "justify": "space-between"
-          }
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked"
-        },
-        "reward_card": {
-          "perRow": 2,
-          "minItemWidth": 128,
-          "maxItemWidth": 220
-        },
-        "deal_card": {
-          "perRow": 1,
-          "minItemWidth": 320,
-          "maxItemWidth": 500
-        },
-        "bonus_campaign_banner": {
-          "perRow": 1,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 1,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "grid": {
-            "columns": [
-              {
-                "adaptive": {
-                  "min": 160,
-                  "max": 240
-                }
-              }
-            ],
-            "gap": 16
-          }
-        }
-      },
-      "source": "estimated",
-      "$comment": "Margin 16 dp is the Material 3 compact margin; app value to confirm."
+      "category": "foldable-book",
+      "kind": "book",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "android-wide-short",
-      "label": "Medium+ width · Compact height",
-      "platform": "android",
-      "match": {
-        "width": [
-          "medium",
-          "expanded",
-          "large",
-          "extraLarge"
-        ],
-        "height": [
-          "compact"
-        ]
-      },
-      "pageMargin": {
-        "base": 24,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 8,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "split",
-          "bleed": "inset"
-        },
-        "action_card": {
-          "perRow": 2
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "inline"
-        },
-        "reward_card": {
-          "perRow": 4,
-          "minItemWidth": 128,
-          "maxItemWidth": 220
-        },
-        "deal_card": {
-          "perRow": 2,
-          "minItemWidth": 320,
-          "maxItemWidth": 500
-        },
-        "bonus_campaign_banner": {
-          "perRow": 2,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 2,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "grid": {
-            "columns": [
-              {
-                "adaptive": {
-                  "min": 160,
-                  "max": 240
-                }
-              }
-            ],
-            "gap": 16
-          }
-        }
-      },
-      "source": "estimated"
+      "category": "foldable-book",
+      "kind": "tabletop",
+      "orientation": "landscape",
+      "level": "required"
     },
     {
-      "id": "android-medium",
-      "label": "Medium width",
-      "platform": "android",
-      "match": {
-        "width": [
-          "medium"
-        ]
-      },
-      "pageMargin": {
-        "base": 24,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 8,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "stacked",
-          "bleed": "full"
-        },
-        "action_card": {
-          "perRow": 2
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked"
-        },
-        "reward_card": {
-          "perRow": 4,
-          "minItemWidth": 128,
-          "maxItemWidth": 220
-        },
-        "deal_card": {
-          "perRow": 2,
-          "minItemWidth": 320,
-          "maxItemWidth": 500
-        },
-        "bonus_campaign_banner": {
-          "perRow": 2,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 2,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "grid": {
-            "columns": [
-              {
-                "adaptive": {
-                  "min": 160,
-                  "max": 240
-                }
-              }
-            ],
-            "gap": 16
-          }
-        }
-      },
-      "source": "estimated"
+      "category": "foldable-flip",
+      "kind": "cover",
+      "orientation": "landscape",
+      "level": "required",
+      "note": "The Flip cover is wider than tall yet compact width; landscape is not wide."
     },
     {
-      "id": "android-expanded",
-      "label": "Expanded+ width",
-      "platform": "android",
-      "match": {
-        "width": [
-          "expanded",
-          "large",
-          "extraLarge"
-        ]
-      },
-      "pageMargin": {
-        "base": 24,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 12,
-        "gutter": 24,
-        "proposed": true
-      },
-      "panes": 2,
-      "components": {
-        "news_story_hero": {
-          "variant": "split",
-          "bleed": "inset"
-        },
-        "action_card": {
-          "perRow": 2
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked"
-        },
-        "reward_card": {
-          "perRow": 6,
-          "minItemWidth": 128,
-          "maxItemWidth": 220
-        },
-        "deal_card": {
-          "perRow": 3,
-          "minItemWidth": 320,
-          "maxItemWidth": 500
-        },
-        "bonus_campaign_banner": {
-          "perRow": 3,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 3,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "grid": {
-            "columns": [
-              {
-                "adaptive": {
-                  "min": 160,
-                  "max": 240
-                }
-              }
-            ],
-            "gap": 16
-          }
-        }
-      },
-      "source": "estimated"
+      "category": "foldable-flip",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "android-fallback",
-      "label": "Fallback (no other Android rule matched)",
-      "platform": "android",
-      "match": {},
-      "pageMargin": {
-        "base": 16,
-        "mode": "max"
-      },
-      "grid": {
-        "columns": 4,
-        "gutter": 16,
-        "proposed": true
-      },
-      "panes": 1,
-      "components": {
-        "news_story_hero": {
-          "variant": "stacked",
-          "bleed": "full"
-        },
-        "action_card": {
-          "perRow": 1
-        },
-        "shortcut_card_item": {
-          "perRow": 3
-        },
-        "restaurant-card-small": {
-          "mode": "carousel"
-        },
-        "tab_bar_26": {
-          "item": "stacked"
-        },
-        "reward_card": {
-          "perRow": 2,
-          "minItemWidth": 128,
-          "maxItemWidth": 220
-        },
-        "deal_card": {
-          "perRow": 1,
-          "minItemWidth": 320,
-          "maxItemWidth": 500
-        },
-        "bonus_campaign_banner": {
-          "perRow": 1,
-          "minItemWidth": 272
-        },
-        "news_story_card": {
-          "perRow": 1,
-          "minItemWidth": 280
-        },
-        "product_card": {
-          "perRow": 2,
-          "minItemWidth": 150
-        }
-      },
-      "source": "estimated"
-    }
-  ],
-  "tabBar": {
-    "component": "tab_bar_26",
-    "items": [
-      {
-        "id": "home",
-        "title": "Home",
-        "icon": "ic_logo_filled_32"
-      },
-      {
-        "id": "deals",
-        "title": "Deals",
-        "icon": "ic_deals_32",
-        "iconSelected": "ic_deals_32"
-      },
-      {
-        "id": "order",
-        "title": "Order",
-        "icon": "ic_order_32"
-      },
-      {
-        "id": "food",
-        "title": "Food",
-        "icon": "ic_food_32"
-      },
-      {
-        "id": "more",
-        "title": "More",
-        "icon": "ic_more_32"
-      }
-    ]
-  },
-  "screens": [
-    {
-      "id": "home",
-      "name": "Home",
-      "experience": "navigation",
-      "tab": "home",
-      "enabled": true,
-      "figma": null,
-      "source": "sample app screen",
-      "components": [
-        "news_story_hero",
-        "action_card",
-        "shortcut_card_item",
-        "news_story_card"
-      ],
-      "toolbar": {
-        "component": "app_toolbar",
-        "logo": "im_sample_logo",
-        "items": [
-          {
-            "id": "qr",
-            "title": "Scan code",
-            "symbol": "ic_qr_code_default_32",
-            "label": "symbol",
-            "group": "prominent",
-            "priority": 2
-          },
-          {
-            "id": "points",
-            "title": "320 points",
-            "symbol": null,
-            "label": "text",
-            "group": "secondary",
-            "priority": 1
-          }
-        ]
-      }
+      "category": "foldable-flip",
+      "kind": "tabletop",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "deals",
-      "name": "Deals",
-      "experience": "navigation",
-      "tab": "deals",
-      "enabled": true,
-      "figma": null,
-      "source": "sample app screen",
-      "components": [
-        "action_card",
-        "bonus_campaign_banner",
-        "deal_card"
-      ],
-      "toolbar": {
-        "component": "app_toolbar",
-        "logo": "member_logo_light_default",
-        "items": [
-          {
-            "id": "qr",
-            "title": "Scan code",
-            "symbol": "ic_qr_code_default_32",
-            "label": "symbol",
-            "group": "prominent",
-            "priority": 2
-          },
-          {
-            "id": "points",
-            "title": "320 points",
-            "symbol": null,
-            "label": "text",
-            "group": "secondary",
-            "priority": 1
-          }
-        ]
-      }
+      "category": "multi-fold",
+      "kind": "cover",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "rewards",
-      "name": "Rewards",
-      "experience": "navigation",
-      "tab": "deals",
-      "enabled": true,
-      "figma": null,
-      "source": "sample app screen",
-      "components": [
-        "reward_card"
-      ],
-      "toolbar": {
-        "component": "toolbar",
-        "type": "H3",
-        "title": "All rewards",
-        "items": [
-          {
-            "id": "back",
-            "title": "Back",
-            "symbol": "ic_chevron_left_default_32",
-            "label": "symbol",
-            "group": "navigation",
-            "priority": 3
-          },
-          {
-            "id": "points",
-            "title": "321 pts",
-            "symbol": null,
-            "label": "text",
-            "group": "secondary",
-            "priority": 1
-          }
-        ]
-      }
+      "category": "multi-fold",
+      "kind": "partial",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "bag",
-      "name": "Bag",
-      "experience": "task",
-      "tab": "order",
-      "enabled": true,
-      "figma": null,
-      "source": "sample app screen",
-      "components": [],
-      "toolbar": {
-        "component": "toolbar",
-        "type": "H3",
-        "title": "Your bag",
-        "items": [
-          {
-            "id": "back",
-            "title": "Back",
-            "symbol": "ic_chevron_left_default_32",
-            "label": "symbol",
-            "group": "navigation",
-            "priority": 3
-          },
-          {
-            "id": "edit",
-            "title": "Edit",
-            "symbol": null,
-            "label": "text",
-            "group": "secondary",
-            "priority": 1
-          }
-        ]
-      }
+      "category": "multi-fold",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
     },
     {
-      "id": "checkout",
-      "name": "Checkout",
-      "experience": "task",
-      "tab": "order",
-      "enabled": true,
-      "figma": null,
-      "source": "sample app screen",
-      "components": [],
-      "toolbar": {
-        "component": "toolbar",
-        "type": "H3",
-        "title": "Checkout",
-        "items": [
-          {
-            "id": "close",
-            "title": "Close",
-            "symbol": "ic_close_default_32",
-            "label": "symbol",
-            "group": "navigation",
-            "priority": 3
-          }
-        ]
-      }
+      "category": "tablet",
+      "kind": "flat",
+      "orientation": "portrait",
+      "level": "required"
     },
     {
-      "id": "locations",
-      "name": "Locations",
-      "experience": "navigation",
-      "tab": "order",
-      "enabled": true,
-      "scene": "list-detail",
-      "figma": null,
-      "source": "built from sample app components; list-detail canonical layout (Material 3)",
-      "components": [],
-      "toolbar": {
-        "component": "toolbar",
-        "type": "H3",
-        "title": "Locations",
-        "items": []
-      }
+      "category": "tablet",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
     },
     {
-      "id": "products",
-      "name": "Products",
-      "experience": "navigation",
-      "tab": "food",
-      "enabled": true,
-      "figma": null,
-      "source": "built from sample app components; adaptive product grid",
-      "components": [
-        "product_card"
-      ],
-      "toolbar": {
-        "component": "toolbar",
-        "type": "H3",
-        "title": "Burgers",
-        "items": []
-      }
+      "category": "desktop",
+      "kind": "flat",
+      "orientation": "landscape",
+      "level": "required"
     }
   ]
 }

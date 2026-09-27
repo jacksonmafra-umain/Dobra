@@ -86,7 +86,7 @@ export interface AndroidDetails {
   cutout: Rect | null;
   navigationBar: { edge: 'bottom' | 'right' | 'left'; size: number } | null;
   /** The display is a cover screen the user must allow apps on (Samsung). */
-  coverScreen: { userGranted: boolean; note: string } | null;
+  coverScreen: { policy: 'user-granted' | 'any-app' | 'allow-list'; continuity: boolean; note: string } | null;
   /** Rotation is fixed by the posture or the display. */
   rotationLocked: boolean;
 }
@@ -142,7 +142,7 @@ export interface Environment {
 
 export function findDevice(config: SimulatorConfig, id: string): DeviceSpec {
   const device = config.devices.find((d) => d.id === id);
-  if (!device) throw new Error(`Unknown device "${id}" in simulator.config.json`);
+  if (!device) throw new Error(`Unknown device "${id}" in the catalog`);
   return device;
 }
 
