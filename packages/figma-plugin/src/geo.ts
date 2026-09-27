@@ -1,15 +1,14 @@
 // Figma nodes → the core geometry tree. Rects are relative to the frame being checked.
-import { CHROME_NAME, INTERACTIVE_NAME, MIN_CONTROL_SIDE } from '@dobra/core/figmaRest';
+import { MIN_CONTROL_SIDE } from '@dobra/core/figmaRest';
 import type { GeoNode, GeoRole } from '@dobra/core/geo';
-import { OVERLAY_NAME } from './presets';
+import { DEFAULT_PATTERNS, IMPORTANCE_KEY, importanceOf, nameRole, type NamePatterns } from '@dobra/core/namePatterns';
+import { NAMESPACE, OVERLAY_NAME } from './presets';
 
-/** The name patterns live in core so the plugin and the web report classify layers alike. */
-export { CHROME_NAME, INTERACTIVE_NAME };
-
-export function roleOf(node: SceneNode): GeoRole {
+/** The name words live in core (and in the file), so the plugin and the web report classify layers alike. */
+export function roleOf(node: SceneNode, patterns: NamePatterns = DEFAULT_PATTERNS): GeoRole {
   if (node.type === 'TEXT') return 'text';
-  if (CHROME_NAME.test(node.name)) return 'chrome';
-  if (INTERACTIVE_NAME.test(node.name)) return 'interactive';
+  const byName = nameRole(node.name, patterns);
+  if (byName) return byName;
   if (node.type === 'INSTANCE' && Math.min(node.width, node.height) >= MIN_CONTROL_SIDE) return 'interactive';
   const fills = 'fills' in node && Array.isArray(node.fills) ? (node.fills as readonly Paint[]) : [];
   if (fills.some((f) => f.type === 'IMAGE' || f.type === 'VIDEO')) return 'media';
@@ -28,10 +27,11 @@ function layoutOf(n: SceneNode): GeoNode['layout'] {
 }
 
 /** Walks a frame's visible layers, pausing every `yieldEvery` layers so Figma stays responsive. */
-export async function toGeo(frame: FrameNode, onProgress?: (visited: number) => void, yieldEvery = 500): Promise<GeoNode[]> {
+export async function toGeo(frame: FrameNode, onProgress?: (visited: number) => void, yieldEvery = 500, patterns: NamePatterns = DEFAULT_PATTERNS): Promise<GeoNode[]> {
   const origin = frame.absoluteBoundingBox ?? { x: frame.x, y: frame.y, width: frame.width, height: frame.height };
   let visited = 0;
-  const convert = async (nodes: readonly SceneNode[]): Promise<GeoNode[]> => {
+  // A layer marked not important takes everything inside it along.
+  const convert = async (nodes: readonly SceneNode[], ignored = false): Promise<GeoNode[]> => {
     const out: GeoNode[] = [];
     for (const n of nodes) {
       if (!n.visible || n.name === OVERLAY_NAME) continue;
@@ -43,18 +43,22 @@ export async function toGeo(frame: FrameNode, onProgress?: (visited: number) => 
       const g: GeoNode = {
         id: n.id,
         name: n.name,
-        role: roleOf(n),
+        role: roleOf(n, patterns),
         rect: { x: box.x - origin.x, y: box.y - origin.y, width: box.width, height: box.height },
         scrollAxis: scrollOf(n),
         layout: layoutOf(n),
         ...('clipsContent' in n && n.clipsContent ? { clips: true } : {}),
       };
+      const mark = importanceOf(n.getSharedPluginData(NAMESPACE, IMPORTANCE_KEY));
+      const ignore = ignored || mark === 'ignore';
+      if (mark === 'important' && !ignored) g.important = true;
+      if (ignore) g.ignore = true;
       if (n.type === 'TEXT') {
         g.chars = n.characters.length;
         if (typeof n.fontSize === 'number') g.fontSize = n.fontSize;
       }
       // Instances are walked too, so text inside a card component is checked for legibility.
-      if ('children' in n) g.children = await convert(n.children);
+      if ('children' in n) g.children = await convert(n.children, ignore);
       out.push(g);
     }
     return out;
