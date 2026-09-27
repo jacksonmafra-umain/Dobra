@@ -35,7 +35,7 @@ describe('run', () => {
   it('prints the usage for help and returns 2', async () => {
     const h = harness(report());
     expect(await run(['--help'], h.io)).toBe(2);
-    expect(h.out.join('\n')).toMatch(/Usage: hinge check site/);
+    expect(h.out.join('\n')).toMatch(/Usage: dobra check site/);
   });
 
   it('writes the report, summarises each frame and returns 0 when clean', async () => {

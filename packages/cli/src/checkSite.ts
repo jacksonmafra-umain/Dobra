@@ -1,4 +1,4 @@
-// hinge check site: one Chromium context per target, the same rules as the plugin and the web
+// dobra check site: one Chromium context per target, the same rules as the plugin and the web
 // report, and an unfold pass that resizes from the cover display without reloading.
 import { chromium, type Browser, type Page } from 'playwright';
 import { loadCatalog } from '@dobra/core/catalog/load';

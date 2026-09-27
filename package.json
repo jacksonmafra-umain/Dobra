@@ -16,7 +16,7 @@
     "test": "npm run test --workspaces --if-present",
     "dev:report": "npm run dev -w @dobra/report --",
     "build:report": "npm run build -w @dobra/report",
-    "hinge": "node packages/cli/dist/hinge.mjs",
+    "dobra": "node packages/cli/dist/dobra.mjs",
     "build:cli": "npm run build -w @dobra/cli"
   }
 }

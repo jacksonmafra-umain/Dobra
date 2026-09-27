@@ -1,4 +1,4 @@
-// The hinge command. `run` holds everything but the browser, so it is unit-tested with a fake check.
+// The dobra command. `run` holds everything but the browser, so it is unit-tested with a fake check.
 import { realpathSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
