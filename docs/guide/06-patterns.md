@@ -43,25 +43,35 @@ Added with the iOS part.
 ### CSS/HTML
 
 ```html
-<div class="list-detail" data-open="false">
-  <nav class="list">…</nav>
-  <article class="detail">…</article>
+<div class="list-detail">
+  <div class="panes" data-open="false">
+    <nav class="list">…</nav>
+    <article class="detail">…</article>
+  </div>
 </div>
 ```
 
 ```css
-.list-detail { container-type: inline-size; display: grid; }
+/* The container can't query itself, so the grid lives one level down. */
+.list-detail { container-type: inline-size; }
+.panes { display: grid; }
 /* One pane: show the list, or the detail once an item is open. */
-.list-detail[data-open="true"] .list,
-.list-detail[data-open="false"] .detail { display: none; }
+@container (width < 40rem) {
+  .panes[data-open="true"] .list,
+  .panes[data-open="false"] .detail { display: none; }
+}
 /* Two panes when both fit at 20rem (320px at the default font size). */
 @container (width >= 40rem) {
-  .list-detail { grid-template-columns: minmax(20rem, 1fr) 2fr; }
-  .list-detail .list, .list-detail .detail { display: block; }
+  .panes { grid-template-columns: minmax(20rem, 1fr) 2fr; }
 }
 ```
 
 A container query answers "is this component wide enough", not "is the viewport wide enough".
+It styles the container's descendants, never the container itself: an element's query container is
+one of its ancestors ([CSS Conditional Rules Level 5](https://drafts.csswg.org/css-conditional-5/),
+[MDN: container queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries)).
+Keeping the one-pane rules inside their own query also stops them from outranking the two-pane
+rules by specificity.
 `@container` is Baseline widely available since February 2023
 ([MDN: @container](https://developer.mozilla.org/en-US/docs/Web/CSS/@container)).
 
@@ -99,11 +109,13 @@ Added with the iOS part.
 ### CSS/HTML
 
 ```css
-.with-support { container-type: inline-size; display: grid; gap: 1rem; }
-.with-support > aside { display: none; }
+/* <div class="with-support"><div class="layout"><main>…</main><aside>…</aside></div></div> */
+.with-support { container-type: inline-size; }
+.layout { display: grid; gap: 1rem; }
+.layout > aside { display: none; }
 @container (width >= 52.5rem) {           /* 840px at the default font size */
-  .with-support { grid-template-columns: 1fr minmax(20rem, 22rem); }
-  .with-support > aside { display: block; }
+  .layout { grid-template-columns: 1fr minmax(20rem, 22rem); }
+  .layout > aside { display: block; }
 }
 ```
 
@@ -198,8 +210,12 @@ Added with the iOS part. iOS has no fold API, so the SwiftUI sketch covers compa
 ```css
 .stage { display: grid; min-height: 100dvh; grid-template-rows: 1fr auto; }
 @media (vertical-viewport-segments: 2) {
-  /* Tabletop: the top segment is y index 0, the bottom one is 0 1. */
+  /* Tabletop: the top segment is y index 0, the bottom one is 0 1. Segment values are in
+     viewport coordinates, so the stage must start at the viewport's top edge and be exactly
+     the viewport's height for its rows to line up with the fold. */
   .stage {
+    position: fixed;
+    inset: 0;
     grid-template-rows:
       env(viewport-segment-height 0 0)
       calc(env(viewport-segment-top 0 1) - env(viewport-segment-bottom 0 0))
@@ -264,10 +280,11 @@ Added with the iOS part.
 
 ```css
 .app { display: grid; min-height: 100dvh; grid-template-rows: 1fr auto; }
-.suite { display: flex; justify-content: space-around; }            /* bottom bar */
+/* The nav comes first in the DOM, so place it in the bottom row explicitly. */
+.suite { grid-row: 2; display: flex; justify-content: space-around; }   /* bottom bar */
 @media (width >= 600px) and (height >= 480px) {
   .app { grid-template-columns: auto 1fr; grid-template-rows: none; }
-  .suite { flex-direction: column; justify-content: start; }         /* rail */
+  .suite { grid-row: auto; flex-direction: column; justify-content: start; }   /* rail */
 }
 ```
 
@@ -316,12 +333,24 @@ Added with the iOS part.
 ```
 
 ```css
-dialog { max-inline-size: min(100vw - 2rem, 32rem); }
+dialog { box-sizing: border-box; max-inline-size: min(100% - 2rem, 32rem); }
 @media (width < 600px) {
-  dialog { margin-block-end: 0; inline-size: 100%; max-inline-size: none; }   /* sheet */
+  dialog:modal {                                                    /* sheet */
+    margin-block-end: 0;
+    margin-inline: 0;
+    inline-size: 100%;
+    max-inline-size: none;
+    padding-block-end: max(1em, env(safe-area-inset-bottom));
+  }
 }
 ```
 
+- **Why these properties:** the browser's own styles give a modal dialog `position: fixed`,
+  `inset-block: 0`, `margin: auto`, `padding: 1em` and a border. Setting `margin-block-end: 0`
+  pins it to the bottom, and `box-sizing: border-box` with zero inline margins keeps
+  `inline-size: 100%` from overflowing
+  ([WHATWG HTML: rendering](https://html.spec.whatwg.org/multipage/rendering.html)). A non-modal
+  dialog is positioned absolutely, so the sheet rule targets `:modal` only.
 - **`<dialog>`:** Baseline widely available since March 2022; `showModal()` opens it modally
   ([MDN: dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog)).
 - **The `popover` attribute:** Baseline 2024, newly available since April 2024
@@ -397,3 +426,6 @@ reachability | Keeping frequent controls where one thumb can reach them, which i
 - https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length
 - https://drafts.csswg.org/css-env-1/
 - https://www.w3.org/WAI/WCAG22/Understanding/visual-presentation.html
+- https://drafts.csswg.org/css-conditional-5/
+- https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries
+- https://html.spec.whatwg.org/multipage/rendering.html
