@@ -1,6 +1,7 @@
 // The Dobra site: landing page and guide, static output, deployed to Vercel.
 import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
+import rehypeSlug from 'rehype-slug';
 import { defineConfig } from 'astro/config';
 import { rehypeHeadingAnchors } from './src/markdown/anchors';
 import { remarkUnverifiedCallout } from './src/markdown/callout';
@@ -18,7 +19,8 @@ export default defineConfig({
     // uses the unified processor from @astrojs/markdown-remark.
     processor: unified({
       remarkPlugins: [remarkGuideLinks, remarkGlossaryTable, remarkUnverifiedCallout, remarkSourcesBlock],
-      rehypePlugins: [rehypeHeadingAnchors],
+      // Astro assigns heading ids after these plugins run, so rehype-slug gives them ids first.
+      rehypePlugins: [rehypeSlug, rehypeHeadingAnchors],
     }),
   },
 });
