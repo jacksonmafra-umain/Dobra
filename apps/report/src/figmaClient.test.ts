@@ -18,6 +18,7 @@ describe('Figma client', () => {
   it('turns 403, 404 and 429 into readable errors', async () => {
     const client = (status: number, headers = {}) => createFigmaClient(TOKEN, async () => json(status, { err: 'x' }, headers));
     await expect(client(403).me()).rejects.toThrow(/token/i);
+    await expect(client(401).file('k')).rejects.toThrow(/token/i);
     await expect(client(404).file('k')).rejects.toThrow(/shared|not found/i);
     await expect(client(429, { 'retry-after': '30' }).file('k')).rejects.toMatchObject({ status: 429, retryAfter: 30 });
     await expect(client(403).me()).rejects.toBeInstanceOf(FigmaError);

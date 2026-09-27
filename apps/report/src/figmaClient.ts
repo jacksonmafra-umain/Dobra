@@ -44,7 +44,9 @@ export function createFigmaClient(rawToken: string, fetchImpl: typeof fetch = fe
       );
     }
     if (res.ok) return (await res.json()) as T;
-    if (res.status === 403) throw new FigmaError('Figma refused the token: check it is valid and has the file_content:read scope.', 403);
+    // 401 for a bad or expired token (on /me), 403 for a token that lacks access or scope.
+    if (res.status === 401 || res.status === 403)
+      throw new FigmaError('Figma refused the token: check it is valid, not expired, and has the file_content:read scope.', res.status);
     if (res.status === 404) throw new FigmaError("File not found: check the URL and that the file is shared with the token's account.", 404);
     if (res.status === 429) {
       const retryAfter = Number(res.headers.get('retry-after')) || undefined;
