@@ -13,8 +13,9 @@ const OPEN: Record<Tab, ToMain> = {
   coverage: { type: 'coverage' },
   check: { type: 'check', scope: 'selection' },
   adapt: { type: 'list-targets' },
+  variables: { type: 'list-targets' },
 };
-const TAB_LABEL: Record<Tab, string> = { presets: 'Artboards', tag: 'Tag frames', coverage: 'Coverage', check: 'Check', adapt: 'Adapt' };
+const TAB_LABEL: Record<Tab, string> = { presets: 'Artboards', tag: 'Tag frames', coverage: 'Coverage', check: 'Check', adapt: 'Adapt', variables: 'Variables' };
 
 export function App() {
   const [tab, setTab] = useState<Tab>('presets');

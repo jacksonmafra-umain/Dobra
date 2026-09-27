@@ -34,6 +34,10 @@
     {
       "name": "Adapt frame",
       "command": "adapt"
+    },
+    {
+      "name": "Variables",
+      "command": "variables"
     }
   ],
   "relaunchButtons": [

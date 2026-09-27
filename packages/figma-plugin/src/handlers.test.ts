@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import sampleProfile from '@dobra/core/profiles/sample.profile.json';
 import { handle } from './handlers';
 import { NAMESPACE } from './presets';
 import { createFakeFigma } from './test/fakeFigma';
@@ -145,5 +146,45 @@ describe('plugin handlers', () => {
     await handle(api, { type: 'select-node', nodeId: f.id });
     expect(api.currentPage).toBe(other);
     expect(api.currentPage.selection).toEqual([f]);
+  });
+
+  describe('variables', () => {
+    const DUO = 'surface-duo-2/spanned/spanned/landscape';
+    const run = (extra: Record<string, unknown> = {}) => ({ type: 'variables' as const, platforms: ['android' as const], keys: [DUO], profile: null, overwrite: false, removeStale: false, ...extra });
+
+    it('writes the size-class and device collections from the platform defaults', async () => {
+      const reply = await handle(createFakeFigma(), run());
+      if (reply?.type !== 'variables-done') throw new Error(JSON.stringify(reply));
+      expect(reply.summary.collections.map((c) => c.key)).toEqual(['size-classes/android', 'devices']);
+      expect(reply.source).toBe('Platform defaults');
+    });
+
+    it('uses a pasted profile and names it', async () => {
+      const reply = await handle(createFakeFigma(), run({ profile: JSON.stringify(sampleProfile) }));
+      if (reply?.type !== 'variables-done') throw new Error(JSON.stringify(reply));
+      expect(reply.source).toMatch(/^Profile/);
+    });
+
+    it('reports a broken profile with its path, and text that is not JSON', async () => {
+      expect(await handle(createFakeFigma(), run({ profile: '{"layoutRules": 3}' }))).toMatchObject({ type: 'error', message: expect.stringContaining('layoutRules') });
+      expect(await handle(createFakeFigma(), run({ profile: '{nope' }))).toMatchObject({ type: 'error', message: expect.stringMatching(/^That is not JSON/) });
+    });
+
+    it('names an unknown target key', async () => {
+      expect(await handle(createFakeFigma(), run({ keys: ['nope/x/-/portrait'] }))).toMatchObject({ type: 'error', message: expect.stringContaining('nope/x/-/portrait') });
+    });
+
+    it('says whether Dobra collections exist', async () => {
+      const api = createFakeFigma();
+      expect(await handle(api, { type: 'variables-status' })).toEqual({ type: 'variables-status', exists: false });
+      await handle(api, run());
+      expect(await handle(api, { type: 'variables-status' })).toEqual({ type: 'variables-status', exists: true });
+    });
+
+    it('picks one target per required coverage cell', async () => {
+      const reply = await handle(createFakeFigma(), { type: 'required-targets' });
+      if (reply?.type !== 'targets-picked') throw new Error(JSON.stringify(reply));
+      expect(reply.keys).toContain(DUO);
+    });
   });
 });

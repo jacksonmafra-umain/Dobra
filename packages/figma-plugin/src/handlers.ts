@@ -5,6 +5,10 @@ import { matchFrame } from '@dobra/core/match';
 import { check } from '@dobra/core/rules';
 import { presetSpec } from '@dobra/core/presets';
 import { enumerateTargets, parseTargetKey, targetKey, type Target } from '@dobra/core/targets';
+import catalogJson from '@dobra/core/catalog/catalog.json';
+import { composeConfig } from '@dobra/core/config/compose';
+import { ConfigError, type SimulatorConfig } from '@dobra/core/config/schema';
+import { variableSpec } from '@dobra/core/variables';
 import { adaptFrame } from './adapt';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';
@@ -12,6 +16,7 @@ import { toGeo } from './geo';
 import type { AdaptResult, FrameFindings, ToMain, ToUi } from './messages';
 import { applyPreset, NAMESPACE } from './presets';
 import { applyTag, tagCandidates, topLevelFrames } from './tagging';
+import { applyVariables, hasDobraVariables } from './variables';
 
 
 /** Frames on the page that stand for a target: tagged ones first-class, the rest by name or size. */
@@ -21,6 +26,43 @@ export function presentFrames(api: FigmaApi, env: EnvConfig): PresentFrame[] {
     const m = matchFrame({ tag: tag || undefined, name: f.name, width: f.width, height: f.height }, env);
     return m.by === 'none' ? [] : [{ frameId: f.id, targets: m.targets, confidence: m.by }];
   });
+}
+
+function parseKeys(keys: string[]): Target[] {
+  return keys.map((key) => {
+    const t = parseTargetKey(key);
+    if (!t) throw new Error(`"${key}" is not a target key`);
+    presetSpec(config, t); // throws with the key when the target is unknown, before anything is written
+    return t;
+  });
+}
+
+/** A profile the designer pasted, composed with the bundled catalog. Its $comment names it. */
+function loadProfile(text: string): { profile: SimulatorConfig; name: string } {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch (e) {
+    throw new Error(`That is not JSON: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  try {
+    const profile = composeConfig(catalogJson, raw);
+    const comment = (raw as { $comment?: unknown }).$comment;
+    return { profile, name: typeof comment === 'string' && comment.trim() ? comment.trim().slice(0, 40) : 'app profile' };
+  } catch (e) {
+    if (e instanceof ConfigError) throw new Error(`The profile is not valid: ${e.issues.join('; ')}`);
+    throw e;
+  }
+}
+
+function requiredTargets(): Target[] {
+  const out = new Map<string, Target>();
+  for (const r of catalog.requirements) {
+    if (r.level !== 'required') continue;
+    const t = representativeTarget(catalog, r);
+    if (t) out.set(targetKey(t), t);
+  }
+  return [...out.values()];
 }
 
 function create(api: FigmaApi, targets: Target[]): ToUi {
@@ -120,6 +162,17 @@ export async function handle(api: FigmaApi, msg: ToMain, onProgress?: (visited: 
         }
         return { type: 'adapted', results };
       }
+      case 'variables': {
+        const targets = parseKeys(msg.keys);
+        const loaded = msg.profile ? loadProfile(msg.profile) : null;
+        const spec = variableSpec(catalog, { platforms: msg.platforms, targets, ...(loaded ? { profile: loaded.profile, profileName: loaded.name } : {}) });
+        const summary = await applyVariables(api, spec, { overwrite: msg.overwrite, removeStale: msg.removeStale });
+        return { type: 'variables-done', summary, source: loaded ? `Profile: ${loaded.name}` : 'Platform defaults' };
+      }
+      case 'variables-status':
+        return { type: 'variables-status', exists: await hasDobraVariables(api) };
+      case 'required-targets':
+        return { type: 'targets-picked', keys: requiredTargets().map(targetKey) };
       case 'create-missing': {
         const matrix = coverage(catalog, presentFrames(api, config));
         const targets = matrix.cells

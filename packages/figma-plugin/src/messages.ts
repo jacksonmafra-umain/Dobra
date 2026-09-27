@@ -2,6 +2,7 @@
 import type { AdaptPlan } from '@dobra/core/adapt';
 import type { CoverageMatrix } from '@dobra/core/coverage';
 import type { Finding } from '@dobra/core/engine/checks';
+import type { VariablesSummary } from './variableTypes';
 
 export type ToMain =
   | { type: 'ready' }
@@ -13,7 +14,10 @@ export type ToMain =
   | { type: 'create-missing' }
   | { type: 'check'; scope: 'selection' | 'page' | 'all-pages' }
   | { type: 'select-node'; nodeId: string }
-  | { type: 'adapt'; frameId: string; keys: string[]; split: boolean };
+  | { type: 'adapt'; frameId: string; keys: string[]; split: boolean }
+  | { type: 'variables'; platforms: ('android' | 'ios')[]; keys: string[]; profile: string | null; overwrite: boolean; removeStale: boolean }
+  | { type: 'variables-status' }
+  | { type: 'required-targets' };
 
 export interface TagCandidate {
   id: string;
@@ -23,7 +27,7 @@ export interface TagCandidate {
   nearest?: string;
 }
 
-export type Command = 'presets' | 'tag' | 'coverage' | 'check' | 'adapt';
+export type Command = 'presets' | 'tag' | 'coverage' | 'check' | 'adapt' | 'variables';
 
 export interface AdaptResult {
   key: string;
@@ -49,5 +53,8 @@ export type ToUi = (
   | { type: 'progress'; visited: number }
   | { type: 'adapted'; results: AdaptResult[] }
   | { type: 'selection'; frames: { id: string; name: string }[] }
+  | { type: 'variables-done'; summary: VariablesSummary; source: string }
+  | { type: 'variables-status'; exists: boolean }
+  | { type: 'targets-picked'; keys: string[] }
   | { type: 'error'; message: string }
 ) & { command?: Command };

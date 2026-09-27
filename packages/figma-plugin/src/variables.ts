@@ -2,39 +2,11 @@
 // Collections, modes and variables are found again by the Dobra keys stored in plugin data, never by
 // name, so designers can rename them and bindings keep working. Values a designer changed are kept.
 import type { SpecCollection, VariableSpec, VarValue } from '@dobra/core/variables';
+import type { CollectionSummary, VariablesOptions, VariablesSummary } from './variableTypes';
 import type { FigmaApi } from './api';
 import { NAMESPACE } from './presets';
 
-export interface VariablesOptions {
-  overwrite: boolean;
-  removeStale: boolean;
-}
-
-export interface KeptEdit {
-  variable: string;
-  mode: string;
-  dobra: VarValue;
-  current: VarValue;
-}
-
-export interface CollectionSummary {
-  key: string;
-  name: string;
-  modes: number;
-  variables: number;
-  created: number;
-  updated: number;
-  keptEdits: KeptEdit[];
-  stale: string[];
-  removed: string[];
-  orphanVariables: string[];
-}
-
-export interface VariablesSummary {
-  collections: CollectionSummary[];
-  warnings: string[];
-  errors: { collection: string; message: string }[];
-}
+export type { CollectionSummary, KeptEdit, VariablesOptions, VariablesSummary } from './variableTypes';
 
 const KEY = { collection: 'var-collection', modes: 'var-modes', variable: 'var-key', written: 'var-written' } as const;
 
@@ -289,4 +261,16 @@ export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: Va
   }
   api.commitUndo();
   return out;
+}
+
+/** Whether this file already holds collections Dobra wrote. */
+export async function hasDobraVariables(api: FigmaApi): Promise<boolean> {
+  return (await api.variables.getLocalVariableCollectionsAsync()).some((c) => !!c.getSharedPluginData?.(NAMESPACE, KEY.collection));
+}
+
+/** Dobra's device collections and their mode ids by target key, for Adapt. */
+export async function deviceModes(api: FigmaApi): Promise<{ collection: VariableCollection; modes: Record<string, string> }[]> {
+  return (await api.variables.getLocalVariableCollectionsAsync())
+    .filter((c) => (c.getSharedPluginData?.(NAMESPACE, KEY.collection) ?? '').startsWith('devices'))
+    .map((c) => ({ collection: c, modes: readJson<Record<string, string>>(c.getSharedPluginData(NAMESPACE, KEY.modes), {}) }));
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { route } from './route';
+import { commandOf, route } from './route';
 import { createFakeFigma } from './test/fakeFigma';
 
 describe('route', () => {
@@ -11,5 +11,9 @@ describe('route', () => {
 
   it('passes every other message to the handlers', async () => {
     expect(await route(createFakeFigma(), 'presets', { type: 'scan-tags' })).toMatchObject({ type: 'tag-candidates' });
+  });
+
+  it('opens the Variables tab from its menu command', () => {
+    expect(commandOf('variables')).toBe('variables');
   });
 });
