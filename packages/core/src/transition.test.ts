@@ -18,6 +18,11 @@ describe('resize-vs-reload', () => {
     expect(f.message).toMatch(/4 elements/);
   });
 
+  it('ignores content that only moved down, as a late banner or image pushes it', () => {
+    const at = (id: string, y: number): GeoNode => ({ id, name: id, role: 'container', rect: { x: 0, y, width: 750, height: 50 } });
+    expect(resizeVsReload([at('a', 0), at('b', 60), at('c', 120)], [at('a', 100), at('b', 160), at('c', 220)], T)).toEqual([]);
+  });
+
   it('ignores elements that exist in only one of the two layouts', () => {
     expect(resizeVsReload([n('a', 0), n('only-before', 0)], [n('a', 0), n('only-after', 500)], T)).toEqual([]);
   });

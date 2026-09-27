@@ -60,8 +60,9 @@ The CLI adds one more:
 
 - `resize-vs-reload`: on an Android device with a cover display, the page is loaded on the cover,
   resized to the inner display without reloading (as unfolding does), and compared with a fresh
-  load at that size. Three or more elements that sit more than 4 px apart mean the page only lays
-  itself out on load. Both thresholds are estimated.
+  load at that size. Three or more elements whose left or right edge sits more than 4 px apart mean the
+  page only lays itself out on load. Vertical shifts are ignored: late banners, lazy images and
+  carousels move content between any two loads. Both thresholds are estimated.
 
 ## Known limits
 

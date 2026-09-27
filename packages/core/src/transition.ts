@@ -15,7 +15,9 @@ export function resizeVsReload(
     const b = before.get(node.id);
     if (!b) continue;
     const r = node.rect;
-    const edges = [b.rect.x - r.x, b.rect.y - r.y, b.rect.x + b.rect.width - (r.x + r.width), b.rect.y + b.rect.height - (r.y + r.height)];
+    // Horizontal placement only: unfolding changes the width, while vertical shifts come from late
+    // banners, lazy images and carousels, which differ between any two loads.
+    const edges = [b.rect.x - r.x, b.rect.x + b.rect.width - (r.x + r.width)];
     if (edges.some((d) => Math.abs(d) > tolerance)) moved.push(node);
   }
   if (moved.length < minMoved) return [];
