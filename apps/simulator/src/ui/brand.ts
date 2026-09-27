@@ -17,6 +17,12 @@ export function statusIcon(severity: string): StatusKind {
   return severity === 'error' || severity === 'warn' ? severity : 'info';
 }
 
+/** The data-kind that colors a finding's line: red for errors, amber for warnings, plain for information. */
+export function findingKind(severity: string): 'overfull' | 'text-in-vertical' | 'info' {
+  const kind = statusIcon(severity);
+  return kind === 'error' ? 'overfull' : kind === 'warn' ? 'text-in-vertical' : 'info';
+}
+
 /** A gap that hides content is a hinge (rose); a separating crease is a fold line (cyan); a flat crease stays dashed. */
 export function foldOverlayClass(fold: Pick<FoldFeature, 'axis' | 'separating' | 'occludes'>): string {
   const kind = fold.occludes ? 'occludes' : fold.separating ? 'line' : 'flat';

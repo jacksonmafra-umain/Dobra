@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { tokens } from '@dobra/brand/tokens';
 import { describe, expect, it } from 'vitest';
-import { foldOverlayClass, logoFor, statusIcon } from './brand';
+import { findingKind, foldOverlayClass, logoFor, statusIcon } from './brand';
 
 // Vite inlines small assets as data URLs (with single quotes) and serves larger ones as files; read either form.
 const svgOf = (url: string) =>
@@ -36,5 +36,16 @@ describe('foldOverlayClass', () => {
   });
   it('keeps a flat, non-separating crease dashed', () => {
     expect(foldOverlayClass({ axis: 'vertical', separating: false, occludes: false })).toBe('ov-fold ov-fold--vertical ov-fold--flat');
+  });
+});
+
+describe('findingKind', () => {
+  it('colors a finding line by its own severity', () => {
+    expect(findingKind('error')).toBe('overfull');
+    expect(findingKind('warn')).toBe('text-in-vertical');
+    expect(findingKind('info')).toBe('info');
+  });
+  it('treats an unknown severity as information', () => {
+    expect(findingKind('fatal')).toBe('info');
   });
 });

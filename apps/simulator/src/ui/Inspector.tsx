@@ -6,7 +6,7 @@ import { placeModal, type ModalKind } from '@dobra/core/engine/modal';
 import { formatSizeClass } from '@dobra/core/engine/sizeClass';
 import type { Finding } from '@dobra/core/engine/checks';
 import type { Collision } from '../sample/collisions';
-import { statusIcon } from './brand';
+import { findingKind, statusIcon } from './brand';
 import { StatusIcon } from './StatusIcon';
 import type { ResolvedMedia } from './media';
 
@@ -115,7 +115,7 @@ export function Inspector({ config, env, layout, screen, collisions, findings, m
       {findings.length > 0 && (
         <ul className="bar-notes">
           {findings.map((f, i) => (
-            <li data-kind={f.severity === 'error' ? 'overfull' : 'text-in-vertical'} key={i}>
+            <li data-kind={findingKind(f.severity)} key={i}>
               <StatusIcon kind={statusIcon(f.severity)} />
               <code>{f.ruleId}</code> {f.message}{' '}
               <span className="muted">
