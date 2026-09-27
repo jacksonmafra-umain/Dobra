@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <radialGradient id="iconBgGlow" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#141E2F"/>
+      <stop offset="60%" stop-color="#0B0F17"/>
+      <stop offset="100%" stop-color="#06080D"/>
+    </radialGradient>
+    <filter id="iconHingeGlow" x="-50%" y="-20%" width="200%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#00F0FF" flood-opacity="0.95"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#00F0FF" flood-opacity="0.45"/>
+    </filter>
+    <linearGradient id="leftPaneGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#121824"/>
+      <stop offset="100%" stop-color="#162032"/>
+    </linearGradient>
+    <linearGradient id="rightPaneGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1A253A"/>
+      <stop offset="100%" stop-color="#101724"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#iconBgGlow)" stroke="#1F293D" stroke-width="3"/>
+  <rect x="14" y="14" width="484" height="484" rx="106" fill="none" stroke="#00F0FF" stroke-opacity="0.12" stroke-width="1.5"/>
+  <g id="dual-screen-mark">
+    <rect x="108" y="128" width="138" height="256" rx="20" fill="url(#leftPaneGrad)" stroke="#334155" stroke-width="2.5"/>
+    <rect x="120" y="140" width="114" height="232" rx="12" fill="#0A0E17" stroke="#1E293B" stroke-width="1"/>
+    <rect x="136" y="166" width="56" height="8" rx="4" fill="#334155" opacity="0.6"/>
+    <rect x="136" y="184" width="82" height="6" rx="3" fill="#1E293B"/>
+    <rect x="136" y="196" width="68" height="6" rx="3" fill="#1E293B"/>
+    <rect x="136" y="218" width="82" height="48" rx="8" fill="#162032" stroke="#1E293B" stroke-width="1"/>
+    <rect x="266" y="128" width="138" height="256" rx="20" fill="url(#rightPaneGrad)" stroke="#334155" stroke-width="2.5"/>
+    <rect x="278" y="140" width="114" height="232" rx="12" fill="#0A0E17" stroke="#1E293B" stroke-width="1"/>
+    <rect x="294" y="166" width="48" height="8" rx="4" fill="#00F0FF" fill-opacity="0.5"/>
+    <rect x="294" y="184" width="76" height="6" rx="3" fill="#1E293B"/>
+    <rect x="294" y="196" width="64" height="6" rx="3" fill="#1E293B"/>
+    <rect x="294" y="218" width="82" height="74" rx="8" fill="#162032" stroke="#1E293B" stroke-width="1"/>
+    <circle cx="362" cy="170" r="3" fill="#00F0FF"/>
+    <line x1="256" y1="102" x2="256" y2="410" stroke="#00F0FF" stroke-width="6" stroke-linecap="round" filter="url(#iconHingeGlow)"/>
+    <line x1="256" y1="106" x2="256" y2="406" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="256" cy="106" r="6" fill="#00F0FF"/>
+    <circle cx="256" cy="106" r="2.5" fill="#FFFFFF"/>
+    <circle cx="256" cy="406" r="6" fill="#00F0FF"/>
+    <circle cx="256" cy="406" r="2.5" fill="#FFFFFF"/>
+  </g>
+</svg>
