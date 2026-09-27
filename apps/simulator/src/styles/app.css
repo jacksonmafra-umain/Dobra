@@ -82,11 +82,14 @@ body {
   align-items: flex-end;
   gap: 12px 16px;
   display: flex;
+  min-width: 0;
+  max-width: 100%;
 }
 .control {
   flex-direction: column;
   gap: 4px;
   display: flex;
+  max-width: 100%;
 }
 .control > span {
   color: var(--ui-muted);
@@ -96,6 +99,7 @@ body {
 }
 .control select {
   border: 1px solid var(--ui-border-strong);
+  max-width: 100%;
   background: var(--ui-field);
   height: 30px;
   color: var(--ui-text);
@@ -110,6 +114,8 @@ body {
   padding: 2px;
   gap: 2px;
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 .seg button {
   background: transparent;
@@ -692,7 +698,7 @@ body {
 .canvas--parity {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(360px, 1fr) auto;
   overflow: auto;
 }
 .parity-side {
