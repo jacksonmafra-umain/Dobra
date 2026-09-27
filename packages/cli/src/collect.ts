@@ -41,12 +41,15 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
         r.bottom <= 0 ||
         /rect\(0(px)?,? 0(px)?,? 0(px)?,? 0(px)?\)/.test(style.clip) ||
         style.clipPath === 'inset(50%)';
-      const roleOf = (el: Element, style: CSSStyleDeclaration, rect: DOMRect): GeoNode['role'] | null => {
+      const roleOf = (el: Element, style: CSSStyleDeclaration, rect: DOMRect, inRow: boolean): GeoNode['role'] | null => {
         // A fixed chat button or FAB is still something people tap.
         if (el.matches(INTERACTIVE)) return 'interactive';
         if (el.matches(CHROME) || style.position === 'fixed' || style.position === 'sticky') return 'chrome';
         if (el.matches(MEDIA)) return 'media';
         if (el.matches(TEXT) && textStart(el, 1)) return 'text';
+        // A plain block laid out by a row (flex row or grid) is one of its panes: keep it, or the
+        // rules can't see a side-by-side split made of <section>s.
+        if (inRow) return 'container';
         if (style.display.includes('flex') || style.display.includes('grid') || /auto|scroll|hidden|clip/.test(style.overflowX + style.overflowY)) return 'container';
         // A plain box that runs past the window is kept, so overflow-x can report it.
         if (rect.right + scrollX > width + 1) return 'container';
@@ -69,9 +72,11 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
         return base + (text ? ` "${text.slice(0, 24)}"` : '');
       };
       /** `path` is the element's id: tag:index steps from the body, built as the walk goes down. */
+      const isRow = (style: CSSStyleDeclaration) => (style.display.includes('flex') && style.flexDirection.startsWith('row')) || style.display.includes('grid');
       const convert = (el: Element, path: string): GeoNode[] => {
         const out: GeoNode[] = [];
         const children = childrenOf(el);
+        const inRow = el instanceof HTMLElement && isRow(getComputedStyle(el));
         for (let i = 0; i < children.length; i++) {
           const child = children[i];
           const id = `${path ? `${path}/` : ''}${child.tagName.toLowerCase()}:${i}`;
@@ -82,7 +87,7 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
           const style = getComputedStyle(child);
           if (style.display === 'none' || style.visibility === 'hidden') continue;
           const r = child.getBoundingClientRect();
-          const role = roleOf(child, style, r);
+          const role = roleOf(child, style, r, inRow);
           // A zero-size wrapper (a custom element, a positioned child's parent) still renders its children.
           if (role && offScreen(style, r)) continue;
           // Count a node before its children, so a container never lands past the cap.

@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 const FIXTURES = fileURLToPath(new URL('./fixtures/', import.meta.url));
 
-export async function startFixtureServer(): Promise<{ url: string; close(): Promise<void> }> {
+/** Serves the test fixtures, or another folder of static pages (the repo's examples/sites). */
+export async function startFixtureServer(dir: string = FIXTURES): Promise<{ url: string; close(): Promise<void> }> {
   const server = createServer(async (req, res) => {
     const path = new URL(req.url ?? '/', 'http://x').pathname;
     if (path === '/slow') {
@@ -21,7 +22,7 @@ export async function startFixtureServer(): Promise<{ url: string; close(): Prom
       return;
     }
     try {
-      const body = await readFile(FIXTURES + name);
+      const body = await readFile(`${dir.replace(/\/?$/, '/')}${name}`);
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(body);
     } catch {
       res.writeHead(404).end('not found');
