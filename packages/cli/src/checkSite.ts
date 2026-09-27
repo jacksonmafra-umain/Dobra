@@ -82,7 +82,19 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       opts.onProgress?.(`Checking ${key}`);
       const profile = deviceProfile(config, t);
       const base = { ref: `${url}#${key}`, name: key, page: url, width: profile.width, height: profile.height, tag: key };
-      const { context, page, applyFold } = await openTarget(browser, profile);
+      // A browser that died mid-run (out of memory on a huge page) fails every later target the same way.
+      if (!browser.isConnected()) {
+        inputs.push({ ...base, root: null, reason: 'The browser closed unexpectedly.' });
+        continue;
+      }
+      let opened;
+      try {
+        opened = await openTarget(browser, profile);
+      } catch (e) {
+        inputs.push({ ...base, root: null, reason: firstLine(e) });
+        continue;
+      }
+      const { context, page, applyFold } = opened;
       try {
         await applyFold(profile.fold);
         const note = await load(page, url, opts.wait, loadTimeout);
@@ -101,7 +113,13 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       if (!cover) continue;
       opts.onProgress?.(`Unfolding ${targetKey(cover)} to ${key}`);
       const from = deviceProfile(config, cover);
-      const unfold = await openTarget(browser, from);
+      let unfold;
+      try {
+        unfold = await openTarget(browser, from);
+      } catch (e) {
+        notes.push(`${key}: the unfold pass failed (${firstLine(e)})`);
+        continue;
+      }
       try {
         await unfold.applyFold(from.fold);
         await load(unfold.page, url, opts.wait, loadTimeout);
@@ -118,7 +136,7 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       }
     }
   } finally {
-    if (!opts.browser) await browser.close();
+    if (!opts.browser && browser.isConnected()) await browser.close();
   }
   const report = buildReport(catalog, { kind: 'web', ref: url, name: url }, inputs);
   for (const f of report.frames) f.findings.push(...(extra.get(f.ref) ?? []));
