@@ -61,10 +61,21 @@ body {
 .topbar__title {
   align-items: center;
   gap: 8px;
-  margin: 0 16px 6px 0;
-  font-size: 15px;
-  font-weight: 650;
+  margin: 0 16px 4px 0;
   display: flex;
+}
+.topbar__logo {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+.topbar__version {
+  font: var(--dobra-type-label-sm);
+  letter-spacing: var(--dobra-tracking-label-sm);
+  color: var(--ui-muted);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--dobra-radius-sm);
+  padding: 3px 6px;
 }
 .controls {
   flex-wrap: wrap;

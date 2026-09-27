@@ -8,6 +8,7 @@ import type { ModalKind } from '@dobra/core/engine/modal';
 import type { TextSettings } from '@dobra/core/engine/typography';
 import { collisionsToFindings } from '@dobra/core/collisions';
 import type { Collision } from '../sample/collisions';
+import { logoFor } from './brand';
 import type { Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
 import { collectRecords, exportable, reportFileName, simulatorReport } from './exportReport';
@@ -111,7 +112,8 @@ export function App({ config }: { config: SimulatorConfig }) {
     <div className="app" data-theme={theme}>
       <header className="topbar">
         <h1 className="topbar__title">
-          Dobra Simulator <span className="tag">step 4</span>
+          <img className="topbar__logo" src={logoFor(theme)} alt="Dobra" />
+          <span className="tag">step 4</span>
           <span className="topbar__version" title="Version and build date of this copy">
             v{config.version} · {__BUILD_DATE__}
           </span>
