@@ -9,7 +9,9 @@
     "material3": "Material 3 adaptive guidance and component specs: m3.material.io/foundations/layout/applying-layout",
     "android-docs": "Android platform documentation (developer.android.com)",
     "device-spec": "Manufacturer device specification (pixels and default density); dp derived as px / density",
-    "observed": "Observed on hardware or an emulator while testing an Android app"
+    "observed": "Observed on hardware or an emulator while testing an Android app",
+    "microsoft-learn": "Microsoft Learn, Surface Duo screen dimensions: learn.microsoft.com/en-us/previous-versions/dual-screen/android/surface-duo-dimensions",
+    "android-studio-avd": "Android Studio device definitions (AOSP sdklib devices/nexus.xml)"
   },
   "platforms": {
     "ios": {
@@ -435,6 +437,71 @@
       }
     },
     {
+      "id": "iphone-mini",
+      "platform": "ios",
+      "name": "iPhone mini (5.4-inch)",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 375,
+            "height": 812
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 50,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 50,
+                "bottom": 21,
+                "left": 50,
+                "source": "estimated"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 336,
+            "landscape": 209,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1125,
+            "height": 2436
+          },
+          "$note": "375×812 pt, the iPhone 13 mini / 12 mini class (Apple HIG device table). No mini is on sale; kept as the smallest notch-era size. Corner radius copied from the template: Apple publishes none."
+        }
+      }
+    },
+    {
       "id": "iphone-17",
       "platform": "ios",
       "name": "iPhone 17",
@@ -495,6 +562,144 @@
             "landscape": 209,
             "source": "estimated"
           }
+        }
+      }
+    },
+    {
+      "id": "iphone-plus",
+      "platform": "ios",
+      "name": "iPhone Plus (6.7-inch)",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 430,
+            "height": 932
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 62,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "apple-device"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 62,
+                "bottom": 21,
+                "left": 62,
+                "source": "figma-tokens"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": {
+              "width": 125,
+              "height": 37,
+              "offset": 11
+            }
+          },
+          "keyboard": {
+            "portrait": 346,
+            "landscape": 209,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1290,
+            "height": 2796
+          },
+          "$note": "430×932 pt, the iPhone 16 Plus / 15 Plus class (Apple HIG). The 16 Plus is the last Plus model. Corner radius copied from the template: Apple publishes none."
+        }
+      }
+    },
+    {
+      "id": "iphone-air",
+      "platform": "ios",
+      "name": "iPhone Air",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 420,
+            "height": 912
+          },
+          "scale": 3,
+          "estimated": false,
+          "cornerRadius": 62,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "compact",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 62,
+                "right": 0,
+                "bottom": 34,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "compact"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 0,
+                "right": 62,
+                "bottom": 21,
+                "left": 62,
+                "source": "estimated"
+              },
+              "statusBar": false
+            }
+          },
+          "hardware": {
+            "dynamicIsland": {
+              "width": 125,
+              "height": 37,
+              "offset": 11
+            }
+          },
+          "keyboard": {
+            "portrait": 346,
+            "landscape": 209,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1260,
+            "height": 2736
+          },
+          "$note": "420×912 pt (Apple HIG). Safe areas copied from the Pro Max and marked estimated. Corner radius copied from the template: Apple publishes none."
         }
       }
     },
@@ -792,7 +997,333 @@
           "estimated": true,
           "$comment": "Interpretation to confirm: partially open and standing, so the hinge runs across the middle."
         }
-      ]
+      ],
+      "$note": "Apple published pixels for the iPhone Duo (apple.com/iphone-duo/specs): inner 1878×2670 px, outer 1398×2034 px. Point sizes are not published: the 3x scale, and so every pt value, stays estimated."
+    },
+    {
+      "id": "ipad-mini",
+      "platform": "ios",
+      "name": "iPad mini",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 744,
+            "height": 1133
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1488,
+            "height": 2266
+          },
+          "$note": "744×1133 pt, iPad mini (A17 Pro), apple.com/ipad/compare. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-11",
+      "platform": "ios",
+      "name": "iPad / iPad Air 11-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 820,
+            "height": 1180
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1640,
+            "height": 2360
+          },
+          "$note": "820×1180 pt, shared by iPad (A16) and iPad Air 11-inch (M4). Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-pro-11",
+      "platform": "ios",
+      "name": "iPad Pro 11-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 834,
+            "height": 1210
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 1668,
+            "height": 2420
+          },
+          "$note": "834×1210 pt, iPad Pro 11-inch (M4/M5), apple.com/ipad-pro/specs. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-air-13",
+      "platform": "ios",
+      "name": "iPad Air 13-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 1024,
+            "height": 1366
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 2048,
+            "height": 2732
+          },
+          "$note": "1024×1366 pt, iPad Air 13-inch (M4); also the older 12.9-inch Pro. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
+    },
+    {
+      "id": "ipad-pro-13",
+      "platform": "ios",
+      "name": "iPad Pro 13-inch",
+      "enabled": true,
+      "category": "tablet",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "portraitSize": {
+            "width": 1032,
+            "height": 1376
+          },
+          "scale": 2,
+          "estimated": false,
+          "cornerRadius": 18,
+          "homeIndicator": true,
+          "orientations": {
+            "portrait": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            },
+            "landscape": {
+              "sizeClass": {
+                "horizontal": "regular",
+                "vertical": "regular"
+              },
+              "barAxis": "horizontal",
+              "safeArea": {
+                "top": 24,
+                "right": 0,
+                "bottom": 20,
+                "left": 0,
+                "source": "estimated"
+              },
+              "statusBar": true
+            }
+          },
+          "hardware": {
+            "dynamicIsland": null
+          },
+          "keyboard": {
+            "portrait": 313,
+            "landscape": 398,
+            "source": "estimated"
+          },
+          "pixels": {
+            "width": 2064,
+            "height": 2752
+          },
+          "$note": "1032×1376 pt, iPad Pro 13-inch (M4/M5), apple.com/ipad-pro/specs. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
+        }
+      }
     },
     {
       "id": "android-compact-phone",
@@ -970,6 +1501,186 @@
       "source": "device-spec",
       "estimated": true,
       "$comment": "Large phone. 1344×2992 px; the default density is assumed to be 480 dpi (3.0). Verify on device."
+    },
+    {
+      "id": "galaxy-s25",
+      "platform": "android",
+      "name": "Galaxy S25",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 360.0,
+            "height": 780.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2340
+          },
+          "density": 3.0,
+          "cornerRadius": 44,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 48,
+              "hole": {
+                "diameter": 26,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Samsung publishes native pixels (Samsung Developers emulator skins) but not the default resolution or density. 1080×2340 px at 3.0 is the common third-party value; confirm with adb shell wm size / wm density."
+        }
+      },
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Native panel pixels are confirmed; the default rendering resolution and density are not."
+    },
+    {
+      "id": "galaxy-s25-plus",
+      "platform": "android",
+      "name": "Galaxy S25+",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 384.0,
+            "height": 832.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2340
+          },
+          "density": 2.8125,
+          "cornerRadius": 44,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 48,
+              "hole": {
+                "diameter": 26,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Samsung publishes native pixels (Samsung Developers emulator skins) but not the default resolution or density. 1080×2340 px at 2.8125 is the common third-party value; confirm with adb shell wm size / wm density."
+        }
+      },
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Native panel pixels are confirmed; the default rendering resolution and density are not."
+    },
+    {
+      "id": "galaxy-s25-ultra",
+      "platform": "android",
+      "name": "Galaxy S25 Ultra",
+      "enabled": true,
+      "category": "phone",
+      "displays": {
+        "main": {
+          "label": "Display",
+          "size": {
+            "width": 384.0,
+            "height": 832.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2340
+          },
+          "density": 2.8125,
+          "cornerRadius": 44,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 48,
+              "hole": {
+                "diameter": 26,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "Status bar, cutout and navigation bar heights are estimates. Confirm with WindowInsets on the device (adb shell dumpsys window)."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Samsung publishes native pixels (Samsung Developers emulator skins) but not the default resolution or density. 1080×2340 px at 2.8125 is the common third-party value; confirm with adb shell wm size / wm density."
+        }
+      },
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Native panel pixels are confirmed; the default rendering resolution and density are not."
     },
     {
       "id": "pixel-tablet",
@@ -1314,6 +2025,534 @@
       "$comment": "The emulator profile the Android density crash was seen on. Outer 443×995 dp, inner 851×883 dp (brief values, consistent with the pixel sizes at 2.4375)."
     },
     {
+      "id": "pixel-fold",
+      "platform": "android",
+      "name": "Pixel Fold",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 411.5,
+            "height": 797.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2092
+          },
+          "density": 2.625,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_fold: 420 dpi. The inner display is landscape-native (2208×1840 px); the crease runs across its width."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 841.0,
+            "height": 701.0
+          },
+          "pixels": {
+            "width": 2208,
+            "height": 1840
+          },
+          "density": 2.625,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "The inner camera sits in the bezel on the first Pixel Fold, so there is no hole-punch cutout; other insets are estimates."
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 420.5,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "android-studio-avd",
+              "estimated": false,
+              "$note": "AVD fold at x = 1104 px."
+            }
+          ],
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_fold: 420 dpi. The inner display is landscape-native (2208×1840 px); the crease runs across its width."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "android-studio-avd",
+      "estimated": false,
+      "$note": "Android Studio AVD pixel_fold: 420 dpi. The inner display is landscape-native (2208×1840 px); the crease runs across its width."
+    },
+    {
+      "id": "pixel-10-pro-fold",
+      "platform": "android",
+      "name": "Pixel 10 Pro Fold",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 443.0,
+            "height": 970.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2364
+          },
+          "density": 2.4375,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_10_pro_fold: 390 dpi. Outer 1080×2364 px is 443×970 dp (not 995, which is the 9 Pro Fold). Chrome DevTools uses 2.625 for the 9 Pro Fold cover; if the cover uses it, the outer would be about 411×900 dp."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 851.5,
+            "height": 883.0
+          },
+          "pixels": {
+            "width": 2076,
+            "height": 2152
+          },
+          "density": 2.4375,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 425.75,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "android-studio-avd",
+              "estimated": false,
+              "$note": "AVD fold at x = 1038 px."
+            }
+          ],
+          "source": "android-studio-avd",
+          "estimated": false,
+          "$note": "Android Studio AVD pixel_10_pro_fold: 390 dpi. Outer 1080×2364 px is 443×970 dp (not 995, which is the 9 Pro Fold). Chrome DevTools uses 2.625 for the 9 Pro Fold cover; if the cover uses it, the outer would be about 411×900 dp."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        },
+        {
+          "id": "rear-display",
+          "label": "Rear display mode",
+          "kind": "rear",
+          "display": "outer",
+          "features": [],
+          "windowArea": "rear-display",
+          "note": "Rear display mode (WindowAreaController.transferActivityToWindowArea): the app moves to the outer display so the rear cameras can frame the user. Documented only: the simulator shows the outer display."
+        },
+        {
+          "id": "dual-screen",
+          "label": "Dual-screen mode",
+          "kind": "dual",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "windowArea": "dual-screen",
+          "note": "Dual-screen mode (WindowAreaController.presentContentOnWindowArea): the app keeps the inner display and presents extra content on the outer one. Documented only: the outer presentation is not rendered."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "android-studio-avd",
+      "estimated": false,
+      "$note": "Android Studio AVD pixel_10_pro_fold: 390 dpi. Outer 1080×2364 px is 443×970 dp (not 995, which is the 9 Pro Fold). Chrome DevTools uses 2.625 for the 9 Pro Fold cover; if the cover uses it, the outer would be about 411×900 dp."
+    },
+    {
+      "id": "pixel-11-pro-fold",
+      "platform": "android",
+      "name": "Pixel 11 Pro Fold",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 443.0,
+            "height": 961.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2342
+          },
+          "density": 2.4375,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Google Pixel support (support.google.com/pixelphone/answer/7158570). Density assumed to match the 10 Pro Fold (390 dpi); no AVD yet."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 851.5,
+            "height": 883.0
+          },
+          "pixels": {
+            "width": 2076,
+            "height": 2152
+          },
+          "density": 2.4375,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 425.75,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Google Pixel support (support.google.com/pixelphone/answer/7158570). Density assumed to match the 10 Pro Fold (390 dpi); no AVD yet."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        },
+        {
+          "id": "rear-display",
+          "label": "Rear display mode",
+          "kind": "rear",
+          "display": "outer",
+          "features": [],
+          "windowArea": "rear-display",
+          "note": "Rear display mode (WindowAreaController.transferActivityToWindowArea): the app moves to the outer display so the rear cameras can frame the user. Documented only: the simulator shows the outer display."
+        },
+        {
+          "id": "dual-screen",
+          "label": "Dual-screen mode",
+          "kind": "dual",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "windowArea": "dual-screen",
+          "note": "Dual-screen mode (WindowAreaController.presentContentOnWindowArea): the app keeps the inner display and presents extra content on the outer one. Documented only: the outer presentation is not rendered."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from Google Pixel support (support.google.com/pixelphone/answer/7158570). Density assumed to match the 10 Pro Fold (390 dpi); no AVD yet."
+    },
+    {
       "id": "galaxy-z-fold-7",
       "platform": "android",
       "name": "Galaxy Z Fold 7",
@@ -1359,7 +2598,7 @@
           },
           "source": "device-spec",
           "estimated": true,
-          "$note": "1080×2520 px. Default density assumed 420 dpi (2.625): verify with adb shell wm density."
+          "$note": "1080×2520 px (GSMArena; 6.5-inch on Samsung specs). At the assumed 2.625: 411×960 dp."
         },
         "inner": {
           "label": "Inner display",
@@ -1411,7 +2650,7 @@
           ],
           "source": "device-spec",
           "estimated": true,
-          "$note": "1968×2184 px. At 2.625 the inner width is 750 dp: Medium, not Expanded. Samsung may ship a different inner density; confirm on device."
+          "$note": "1968×2184 px (Samsung Developers emulator skin). Samsung publishes no density; 2.625 is supported by Chrome DevTools' Fold 5 profile, which matches the Fold 5 pixels exactly. 750×832 dp. duoresponsive lists the Fold 6 at 768×904, which no single density produces: not a dp value."
         }
       },
       "postures": [
@@ -1485,6 +2724,330 @@
       "source": "device-spec",
       "estimated": true,
       "$comment": "All dp values estimated from pixels and an assumed density."
+    },
+    {
+      "id": "oneplus-open",
+      "platform": "android",
+      "name": "OnePlus Open",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 425.0,
+            "height": 946.5
+          },
+          "pixels": {
+            "width": 1116,
+            "height": 2484
+          },
+          "density": 2.625,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oneplus.com/us/open/specs. OnePlus does not publish the default density; 2.625 (420 dpi) is assumed."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 864.0,
+            "height": 929.5
+          },
+          "pixels": {
+            "width": 2268,
+            "height": 2440
+          },
+          "density": 2.625,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 432.0,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oneplus.com/us/open/specs. OnePlus does not publish the default density; 2.625 (420 dpi) is assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from oneplus.com/us/open/specs. OnePlus does not publish the default density; 2.625 (420 dpi) is assumed."
+    },
+    {
+      "id": "oppo-find-n6",
+      "platform": "android",
+      "name": "Oppo Find N6",
+      "enabled": true,
+      "category": "foldable-book",
+      "displays": {
+        "outer": {
+          "label": "Outer display",
+          "size": {
+            "width": 434.5,
+            "height": 996.5
+          },
+          "pixels": {
+            "width": 1140,
+            "height": 2616
+          },
+          "density": 2.625,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 44,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oppo.com Find N6 specs (announced March 2026). Oppo does not publish the density; 2.625 is an assumption, so every dp value is a guess."
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 856.5,
+            "height": 945.0
+          },
+          "pixels": {
+            "width": 2248,
+            "height": 2480
+          },
+          "density": 2.625,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 22,
+                "offset": 0.8
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "vertical",
+              "position": 428.25,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from oppo.com Find N6 specs (announced March 2026). Oppo does not publish the density; 2.625 is an assumption, so every dp value is a guess."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (outer display)",
+          "kind": "cover",
+          "display": "outer",
+          "features": []
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ],
+          "note": "FLAT and not separating: one window, one layout."
+        },
+        {
+          "id": "book",
+          "label": "Half-open, book",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "VERTICAL fold, HALF_OPENED, so isSeparating is true: split at the crease."
+        },
+        {
+          "id": "tabletop",
+          "label": "Half-open, tabletop",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "The crease turns HORIZONTAL: content on top, controls on the bottom half."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from oppo.com Find N6 specs (announced March 2026). Oppo does not publish the density; 2.625 is an assumption, so every dp value is a guess."
     },
     {
       "id": "galaxy-z-flip-7",
@@ -1641,6 +3204,617 @@
       "source": "device-spec",
       "estimated": true,
       "$comment": "The most valuable cell in the matrix: the cover window is landscape-shaped but Compact width."
+    },
+    {
+      "id": "razr-plus-2024",
+      "platform": "android",
+      "name": "Motorola Razr+ (2024)",
+      "enabled": true,
+      "category": "foldable-flip",
+      "displays": {
+        "cover": {
+          "label": "External display",
+          "size": {
+            "width": 392.5,
+            "height": 462.5
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "The size is the whole external panel, so the 24 dp status bar is an estimate. The camera cut-outs in the external display are not modelled."
+          },
+          "coverScreen": {
+            "policy": "any-app",
+            "continuity": true,
+            "note": "Motorola lets the user add any installed app to the external display (en-us.support.motorola.com/app/answers/detail/a_id/174650). Continuity keeps the app there when the phone closes."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Motorola Support (a_id 181473). Motorola does not publish the density; 2.75 (440 dpi) is assumed.",
+          "pixels": {
+            "width": 1080,
+            "height": 1272
+          }
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 392.5,
+            "height": 960.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2640
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 480.0,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from Motorola Support (a_id 181473). Motorola does not publish the density; 2.75 (440 dpi) is assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "kind": "cover",
+          "display": "cover",
+          "features": [],
+          "note": "Any app the user has added to the external display."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from Motorola Support (a_id 181473). Motorola does not publish the density; 2.75 (440 dpi) is assumed."
+    },
+    {
+      "id": "razr-2026",
+      "platform": "android",
+      "name": "Motorola Razr (2026)",
+      "enabled": true,
+      "category": "foldable-flip",
+      "displays": {
+        "cover": {
+          "label": "External display",
+          "size": {
+            "width": 384.0,
+            "height": 387.5
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "The size is the whole external panel, so the 24 dp status bar is an estimate. The camera cut-outs in the external display are not modelled."
+          },
+          "coverScreen": {
+            "policy": "any-app",
+            "continuity": true,
+            "note": "Motorola lets the user add any installed app to the external display (en-us.support.motorola.com/app/answers/detail/a_id/174650). Continuity keeps the app there when the phone closes."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Inner pixels from GSMArena and Google Fi; the 1056×1066 px cover is from GSMArena and matches the official Razr 2024 cover. Density 2.75 assumed.",
+          "pixels": {
+            "width": 1056,
+            "height": 1066
+          }
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 392.5,
+            "height": 960.0
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2640
+          },
+          "density": 2.75,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 480.0,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Inner pixels from GSMArena and Google Fi; the 1056×1066 px cover is from GSMArena and matches the official Razr 2024 cover. Density 2.75 assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "kind": "cover",
+          "display": "cover",
+          "features": [],
+          "note": "Any app the user has added to the external display."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Inner pixels from GSMArena and Google Fi; the 1056×1066 px cover is from GSMArena and matches the official Razr 2024 cover. Density 2.75 assumed."
+    },
+    {
+      "id": "razr-ultra-2026",
+      "platform": "android",
+      "name": "Motorola Razr Ultra (2026)",
+      "enabled": true,
+      "category": "foldable-flip",
+      "displays": {
+        "cover": {
+          "label": "External display",
+          "size": {
+            "width": 360.0,
+            "height": 424.0
+          },
+          "density": 3.0,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "The size is the whole external panel, so the 24 dp status bar is an estimate. The camera cut-outs in the external display are not modelled."
+          },
+          "coverScreen": {
+            "policy": "any-app",
+            "continuity": true,
+            "note": "Motorola lets the user add any installed app to the external display (en-us.support.motorola.com/app/answers/detail/a_id/174650). Continuity keeps the app there when the phone closes."
+          },
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from GSMArena (motorola.com did not render its specs). Density 3.0 assumed.",
+          "pixels": {
+            "width": 1080,
+            "height": 1272
+          }
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 408.0,
+            "height": 997.5
+          },
+          "pixels": {
+            "width": 1224,
+            "height": 2992
+          },
+          "density": 3.0,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 498.75,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-spec",
+          "estimated": true,
+          "$note": "Pixels from GSMArena (motorola.com did not render its specs). Density 3.0 assumed."
+        }
+      },
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "kind": "cover",
+          "display": "cover",
+          "features": [],
+          "note": "Any app the user has added to the external display."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$note": "Pixels from GSMArena (motorola.com did not render its specs). Density 3.0 assumed."
+    },
+    {
+      "id": "surface-duo-2",
+      "platform": "android",
+      "name": "Surface Duo 2",
+      "enabled": true,
+      "category": "dual-screen",
+      "displays": {
+        "single": {
+          "label": "One screen",
+          "size": {
+            "width": 537,
+            "height": 756
+          },
+          "pixels": {
+            "width": 1344,
+            "height": 1892
+          },
+          "density": 2.5,
+          "cornerRadius": 40,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "24 dp status bar per screen from the Microsoft Learn diagram; navigation and IME values are estimates."
+          },
+          "source": "microsoft-learn",
+          "estimated": false,
+          "$note": "1344×1892 px at 2.5 (Microsoft Learn dimensions diagram). 5.8-inch screen."
+        },
+        "spanned": {
+          "label": "Both screens (spanned)",
+          "size": {
+            "width": 1100,
+            "height": 756
+          },
+          "density": 2.5,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 330,
+              "landscape": 300
+            },
+            "source": "estimated",
+            "estimated": true,
+            "$note": "24 dp status bar per screen from the Microsoft Learn diagram; navigation and IME values are estimates."
+          },
+          "hinges": [
+            {
+              "id": "hinge",
+              "axis": "vertical",
+              "position": 537,
+              "width": 26,
+              "occlusion": "FULL",
+              "source": "microsoft-learn"
+            }
+          ],
+          "source": "microsoft-learn",
+          "estimated": false,
+          "$note": "1100×756 dp as Microsoft Learn publishes it: two 537 dp screens and a 26 dp hinge, each rounded down. The spanned panel is 2754×1892 px (66 px hinge mask), which divides to 1101.6 dp, so pixels are not listed here."
+        }
+      },
+      "postures": [
+        {
+          "id": "single",
+          "label": "One screen",
+          "kind": "cover",
+          "display": "single",
+          "features": []
+        },
+        {
+          "id": "spanned",
+          "label": "Spanned, double portrait",
+          "kind": "book",
+          "display": "spanned",
+          "features": [
+            {
+              "hinge": "hinge",
+              "state": "FLAT"
+            }
+          ],
+          "note": "The gap hides content even when flat (FULL occlusion), so isSeparating is true: split at the hinge."
+        },
+        {
+          "id": "spanned-landscape",
+          "label": "Spanned, double landscape",
+          "kind": "tabletop",
+          "display": "spanned",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "hinge",
+              "state": "FLAT"
+            }
+          ],
+          "note": "The hinge turns HORIZONTAL: one screen above the other."
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "freeform",
+        "popup",
+        "pip"
+      ],
+      "source": "microsoft-learn",
+      "estimated": false,
+      "$comment": "The only device in the catalog whose hinge hides content (FULL occlusion). Reference fixture for the hinge-content rule."
     },
     {
       "id": "galaxy-z-trifold",
@@ -2279,6 +4453,25 @@
       "category": "desktop",
       "kind": "flat",
       "orientation": "landscape",
+      "level": "required"
+    },
+    {
+      "category": "dual-screen",
+      "kind": "cover",
+      "orientation": "portrait",
+      "level": "required"
+    },
+    {
+      "category": "dual-screen",
+      "kind": "book",
+      "orientation": "landscape",
+      "level": "required",
+      "note": "Double portrait spans 1100×756 dp: a landscape-shaped window split by a 26 dp gap."
+    },
+    {
+      "category": "dual-screen",
+      "kind": "tabletop",
+      "orientation": "portrait",
       "level": "required"
     }
   ]
