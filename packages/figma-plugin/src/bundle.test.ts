@@ -15,6 +15,13 @@ describe.skipIf(!existsSync(dist('code.js')))('bundle', () => {
     expect(code).not.toContain('Sample design system');
   });
 
+  it('has no text the Figma sandbox rejects', () => {
+    // Figma rejects plugin code containing "import(" or HTML comment markers anywhere, comments included.
+    const code = readFileSync(dist('code.js'), 'utf8');
+    expect(code).not.toMatch(/\bimport\s*\(/);
+    expect(code).not.toMatch(/<!--|-->/);
+  });
+
   it('builds one self-contained UI file', () => {
     expect(readFileSync(dist('ui.html'), 'utf8')).not.toMatch(/<script[^>]+src=/);
   });
