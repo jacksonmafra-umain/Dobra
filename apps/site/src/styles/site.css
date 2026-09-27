@@ -50,3 +50,19 @@ p.has-unverified { border-left: 2px solid var(--dobra-warn); padding-left: 12px;
 .sources h2 { margin-top: 0; font: var(--dobra-type-label-lg); letter-spacing: var(--dobra-tracking-label-lg); text-transform: uppercase; color: var(--dobra-muted); }
 .sources a { overflow-wrap: anywhere; font: var(--dobra-type-body-sm); }
 @media (max-width: 900px) { .site-body { flex-direction: column; } .sidebar { position: static; width: auto; max-height: none; padding: 16px 16px 0; } .sidebar__sections { display: none !important; } }
+/* Landing */
+.hero { display: grid; gap: 20px; padding: 24px 0 40px; }
+.hero h1 { font: 600 48px/1.05 var(--dobra-font-display); letter-spacing: -0.03em; margin: 0; }
+.hero__lede { font: 400 18px/1.6 var(--dobra-font-body); color: var(--dobra-muted); max-width: 640px; margin: 0; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.button { display: inline-flex; align-items: center; padding: 11px 18px; border-radius: var(--dobra-radius); border: 1px solid var(--dobra-border-strong); background: var(--dobra-field); color: var(--dobra-text); text-decoration: none; font: 600 14px/1 var(--dobra-font-body); }
+.button--primary { background: var(--dobra-fold); border-color: transparent; color: var(--dobra-on-fold); }
+.hero__video { width: 100%; border-radius: var(--dobra-radius-lg); border: 1px solid var(--dobra-border); background: var(--dobra-field); aspect-ratio: 16 / 9; }
+.tools h2, .quickstart h2 { font: var(--dobra-type-headline-md); margin: 32px 0 16px; }
+.tools__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.tool { display: block; padding: 18px; background: var(--dobra-panel); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); color: inherit; text-decoration: none; }
+.tool:hover { border-color: color-mix(in srgb, var(--dobra-fold) 45%, transparent); }
+.tool h3 { font: var(--dobra-type-headline-sm); margin: 0 0 8px; }
+.tool p { margin: 0; color: var(--dobra-muted); font: var(--dobra-type-body-md); }
+.quickstart pre { background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 16px; overflow-x: auto; font: 13px/1.7 var(--dobra-font-mono); }
+@media (max-width: 600px) { .hero h1 { font-size: 34px; } }
