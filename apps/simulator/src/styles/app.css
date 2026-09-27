@@ -1,30 +1,33 @@
-/* Simulator chrome: top bar, canvas, sidebar and overlays. */
-:root {
-  --ui-bg: #f4f4f5;
-  --ui-surface: #fff;
-  --ui-border: #e4e4e7;
-  --ui-text: #18181b;
-  --ui-muted: #71717a;
-  --ui-accent: #2563eb;
-  --ui-accent-soft: #dbeafe;
-  --ui-warn: #b45309;
-  --ui-warn-soft: #fef3c7;
-  --ov-safe: #ec489938;
-  --ov-safe-ink: #be185d;
-  --ov-margin: #2563eb24;
-  --ov-margin-ink: #1d4ed8;
-  --ov-grid: #10b9811f;
-}
-.app[data-theme="dark"] {
-  --ui-bg: #0b0b0d;
-  --ui-surface: #17171a;
-  --ui-border: #2a2a2f;
-  --ui-text: #f4f4f5;
-  --ui-muted: #a1a1aa;
-  --ui-accent: #60a5fa;
-  --ui-accent-soft: #1e3a5f;
-  --ui-warn: #fbbf24;
-  --ui-warn-soft: #3b2f0b;
+/* Simulator chrome: top bar, canvas, sidebar and overlays. Every color comes from @dobra/brand;
+   .app carries data-theme, so the tokens switch with the Light/Dark control. */
+.app {
+  --ui-bg: var(--dobra-bg);
+  --ui-surface: var(--dobra-panel);
+  --ui-flyout: var(--dobra-flyout);
+  --ui-field: var(--dobra-field);
+  --ui-border: var(--dobra-border);
+  --ui-border-strong: var(--dobra-border-strong);
+  --ui-text: var(--dobra-text);
+  --ui-muted: var(--dobra-muted);
+  --ui-accent: var(--dobra-fold);
+  --ui-on-accent: var(--dobra-on-fold);
+  --ui-accent-soft: color-mix(in srgb, var(--dobra-fold) 14%, transparent);
+  --ui-warn: var(--dobra-warn);
+  --ui-warn-soft: color-mix(in srgb, var(--dobra-warn) 14%, transparent);
+  --ui-error: var(--dobra-hinge);
+  --ui-error-soft: color-mix(in srgb, var(--dobra-hinge) 14%, transparent);
+  --ui-pass: var(--dobra-pass);
+  --ov-safe: color-mix(in srgb, var(--dobra-accent-2) 22%, transparent);
+  --ov-safe-ink: var(--dobra-accent-2);
+  --ov-margin: color-mix(in srgb, var(--dobra-muted) 14%, transparent);
+  --ov-margin-ink: var(--dobra-muted);
+  --ov-grid: color-mix(in srgb, var(--dobra-pass) 12%, transparent);
+  --ov-grid-ink: color-mix(in srgb, var(--dobra-pass) 45%, transparent);
+  --ov-reserved: color-mix(in srgb, var(--dobra-warn) 30%, transparent);
+  --ov-reserved-ink: var(--dobra-warn);
+  --ov-hinge: color-mix(in srgb, var(--dobra-hinge) 40%, transparent);
+  --ov-hinge-ink: var(--dobra-hinge);
+  --ov-fold: var(--dobra-fold);
 }
 html,
 body,
@@ -33,12 +36,8 @@ body,
   margin: 0;
 }
 body {
-  background: var(--ui-bg);
-  font:
-    13px/1.4 -apple-system,
-    Inter,
-    system-ui,
-    sans-serif;
+  background: var(--dobra-bg);
+  font: var(--dobra-type-body-md);
 }
 .app {
   background: var(--ui-bg);
@@ -190,16 +189,16 @@ body {
 .device {
   transform-origin: 0 0;
   box-sizing: border-box;
-  background: #111;
+  background: var(--dobra-field);
   position: absolute;
   top: 0;
   left: 0;
   box-shadow:
-    0 0 0 2px #3f3f46,
-    0 20px 50px #00000040;
+    0 0 0 2px var(--dobra-border-strong),
+    var(--dobra-shadow-2);
 }
 .device__screen {
-  background: #fff;
+  background: var(--dobra-bg);
   position: relative;
   overflow: hidden;
 }
@@ -301,7 +300,7 @@ body {
   position: absolute;
 }
 .ov-safe em {
-  color: #fff;
+  color: var(--dobra-bg);
   background: var(--ov-safe-ink);
   white-space: nowrap;
   border-radius: 3px;
@@ -313,7 +312,7 @@ body {
 }
 .ov-margin {
   background: var(--ov-margin);
-  border-inline: 1px solid #2563eb66;
+  border-inline: 1px solid var(--ov-margin-ink);
   justify-content: center;
   padding-top: 50%;
   display: flex;
@@ -322,7 +321,7 @@ body {
   bottom: 0;
 }
 .ov-margin span {
-  color: #fff;
+  color: var(--dobra-bg);
   background: var(--ov-margin-ink);
   border-radius: 3px;
   height: fit-content;
@@ -334,7 +333,7 @@ body {
 }
 .ov-grid__col {
   background: var(--ov-grid);
-  border-inline: 1px solid #10b98159;
+  border-inline: 1px solid var(--ov-grid-ink);
   position: absolute;
   top: 0;
   bottom: 0;
@@ -384,7 +383,7 @@ body {
   opacity: 0.5;
 }
 .device--free {
-  background: #3f3f46;
+  background: var(--dobra-border-strong);
 }
 .resize-handle {
   z-index: 5;
@@ -446,45 +445,37 @@ body {
   color: var(--ui-warn);
 }
 .bar-notes li[data-kind="overfull"] {
-  color: #dc2626;
+  color: var(--ui-error);
 }
 .ov-reserved {
-  background: repeating-linear-gradient(
-    45deg,
-    #7c3aed59 0 6px,
-    #7c3aed1f 6px 12px
-  );
-  outline: 1px solid #7c3aed;
+  background: repeating-linear-gradient(45deg, var(--ov-reserved) 0 6px, transparent 6px 12px);
+  outline: 1px solid var(--ov-reserved-ink);
   justify-content: center;
   align-items: flex-end;
   display: flex;
   position: absolute;
 }
 .ov-reserved em {
-  color: #fff;
+  color: var(--dobra-bg);
   white-space: nowrap;
-  background: #7c3aed;
+  background: var(--ov-reserved-ink);
   border-radius: 3px;
   padding: 2px 4px;
   font-style: normal;
   transform: translateY(120%);
 }
 .ov-fold {
-  background: repeating-linear-gradient(
-    45deg,
-    #ea580c73 0 6px,
-    #ea580c26 6px 12px
-  );
-  outline: 1px solid #ea580c;
+  background: repeating-linear-gradient(45deg, var(--ov-hinge) 0 6px, transparent 6px 12px);
+  outline: 1px solid var(--ov-hinge-ink);
   justify-content: center;
   align-items: center;
   display: flex;
   position: absolute;
 }
 .ov-fold em {
-  color: #fff;
+  color: var(--dobra-bg);
   white-space: nowrap;
-  background: #ea580c;
+  background: var(--ov-hinge-ink);
   border-radius: 3px;
   padding: 2px 4px;
   font-style: normal;
@@ -494,7 +485,7 @@ body {
 }
 .ov-fold-region {
   outline-offset: -1px;
-  outline: 1px dashed #ea580c99;
+  outline: 1px dashed var(--ov-fold);
   justify-content: center;
   align-items: flex-end;
   padding-bottom: 60px;
@@ -502,15 +493,15 @@ body {
   position: absolute;
 }
 .ov-fold-region em {
-  color: #9a3412;
-  background: #ffedd5eb;
+  color: var(--dobra-on-fold);
+  background: var(--ov-fold);
   border-radius: 3px;
   padding: 2px 5px;
   font-style: normal;
 }
 .seg-single--accent {
   background: var(--ui-accent);
-  color: #fff;
+  color: var(--ui-on-accent);
   border-color: var(--ui-accent);
   font-weight: 600;
 }
@@ -522,7 +513,7 @@ body {
   margin: 8px 0 0;
 }
 .collisions--bad {
-  color: #dc2626;
+  color: var(--ui-error);
   font-weight: 600;
 }
 
@@ -533,7 +524,7 @@ body {
 .config-error h1 {
   margin: 0;
   font-size: 18px;
-  color: #dc2626;
+  color: var(--ui-error);
 }
 .config-error ul {
   display: grid;
@@ -546,7 +537,7 @@ body {
   outline-style: dashed;
 }
 .device__screen--desktop {
-  background: linear-gradient(135deg, #3f3f46, #18181b);
+  background: linear-gradient(135deg, var(--dobra-border-strong), var(--dobra-bg));
 }
 .window {
   position: absolute;
@@ -554,7 +545,7 @@ body {
 }
 .window--floating {
   border-radius: 12px;
-  box-shadow: 0 12px 40px #00000066;
+  box-shadow: var(--dobra-shadow-2);
 }
 .window .resize-handle--x {
   right: 0;
@@ -571,13 +562,13 @@ body {
   position: absolute;
   display: grid;
   place-items: center;
-  background: repeating-linear-gradient(45deg, #e4e4e7 0 8px, #d4d4d8 8px 16px);
-  color: #52525b;
-  font: 600 12px/1 ui-monospace, Menlo, monospace;
+  background: repeating-linear-gradient(45deg, var(--ui-surface) 0 8px, var(--ui-flyout) 8px 16px);
+  color: var(--ui-muted);
+  font: var(--dobra-type-label-lg);
 }
 .window-divider {
   position: absolute;
-  background: #18181b;
+  background: var(--dobra-bg);
 }
 .caption-bar {
   position: absolute;
@@ -587,9 +578,9 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  background: #27272a;
-  color: #fafafa;
-  font: 600 12px/1 system-ui, sans-serif;
+  background: var(--ui-flyout);
+  color: var(--ui-text);
+  font: 600 12px/1 var(--dobra-font-body);
 }
 /* Comparing platforms: two stages side by side, then the table of what differs. */
 .canvas--parity {
