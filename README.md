@@ -7,7 +7,7 @@ dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.
 
 | Part | What it does | State |
 | --- | --- | --- |
-| Simulator (`apps/simulator`) | Renders devices, postures and window states, plus scenes and Grid/FlexBox layouts. Runs collision and rule checks, shows and overrides media facts, and compares iOS and Android side by side | Merged |
+| Simulator (`apps/simulator`) | Renders devices, postures and window states, plus scenes and Grid/FlexBox layouts. Runs collision and rule checks, shows and overrides media facts, compares iOS and Android side by side, and exports the current screen's findings as a report JSON for the web report | Merged |
 | Core (`packages/core`) | Holds the device catalog, targets, the layout engine, the geometry rules, frame matching, coverage, reports and resize transitions | Merged |
 | Figma plugin (`packages/figma-plugin`) | Artboard presets with hinge overlays, Tag frames, coverage, a checker, and Adapt & flag | Merged |
 | Web report (`apps/report`) | Shows a Figma file's coverage and findings | Merged |
