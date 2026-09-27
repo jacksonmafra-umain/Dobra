@@ -288,21 +288,31 @@ body {
   margin: 16px 0 8px;
 }
 .rule-chip {
-  background: var(--ui-accent-soft);
-  color: var(--ui-accent);
-  border-radius: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-  padding: 8px 10px;
-  display: flex;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--dobra-accent-2) 30%, var(--ui-flyout)), var(--ui-flyout));
+  border: 1px solid color-mix(in srgb, var(--dobra-accent-2) 40%, transparent);
+  border-radius: var(--dobra-radius-lg);
+  color: var(--ui-text);
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+}
+.rule-chip__eyebrow {
+  text-transform: uppercase;
+  font: var(--dobra-type-label-sm);
+  letter-spacing: var(--dobra-tracking-label-sm);
+  color: var(--ui-muted);
 }
 .rule-chip__sc {
-  font-weight: 700;
+  font: var(--dobra-type-headline-md);
+  letter-spacing: var(--dobra-tracking-headline-md);
+  overflow-wrap: anywhere;
+}
+.rule-chip__label {
+  color: var(--ui-muted);
 }
 .rule-chip code {
-  opacity: 0.8;
+  color: var(--ui-muted);
   font-size: 11px;
 }
 .kv {
@@ -496,10 +506,30 @@ body {
   transform: translate(-50%);
 }
 .bar-notes {
-  gap: 4px;
+  gap: 6px;
   margin: 8px 0 0;
-  padding-left: 18px;
+  padding: 0;
+  list-style: none;
   display: grid;
+}
+/* Findings and notes share one indent; a finding's icon sits in it, so wrapped text stays aligned. */
+.bar-notes li {
+  position: relative;
+  padding-left: 22px;
+}
+.finding-icon {
+  position: absolute;
+  top: 2px;
+  left: 0;
+}
+.finding-icon--error {
+  color: var(--ui-error);
+}
+.finding-icon--warn {
+  color: var(--ui-warn);
+}
+.finding-icon--info {
+  color: var(--ui-accent);
 }
 .bar-notes li[data-kind="text-in-vertical"] {
   color: var(--ui-warn);

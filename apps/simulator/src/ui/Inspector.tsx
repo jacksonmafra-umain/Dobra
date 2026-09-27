@@ -6,6 +6,8 @@ import { placeModal, type ModalKind } from '@dobra/core/engine/modal';
 import { formatSizeClass } from '@dobra/core/engine/sizeClass';
 import type { Finding } from '@dobra/core/engine/checks';
 import type { Collision } from '../sample/collisions';
+import { statusIcon } from './brand';
+import { StatusIcon } from './StatusIcon';
 import type { ResolvedMedia } from './media';
 
 interface InspectorProps {
@@ -96,8 +98,9 @@ export function Inspector({ config, env, layout, screen, collisions, findings, m
     <section className="panel">
       <h2 className="panel__title">Indicators</h2>
       <div className="rule-chip">
+        <span className="rule-chip__eyebrow">Size class</span>
         <span className="rule-chip__sc">{formatSizeClass(sc, android)}</span>
-        <span>{layout.rule.label}</span>
+        <span className="rule-chip__label">{layout.rule.label}</span>
         <code>{layout.rule.id}</code>
       </div>
       <dl className="kv">
@@ -113,6 +116,7 @@ export function Inspector({ config, env, layout, screen, collisions, findings, m
         <ul className="bar-notes">
           {findings.map((f, i) => (
             <li data-kind={f.severity === 'error' ? 'overfull' : 'text-in-vertical'} key={i}>
+              <StatusIcon kind={statusIcon(f.severity)} />
               <code>{f.ruleId}</code> {f.message}{' '}
               <span className="muted">
                 ({f.source}

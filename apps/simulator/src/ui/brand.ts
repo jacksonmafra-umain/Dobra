@@ -7,3 +7,10 @@ import type { Theme } from './urlState';
 export function logoFor(theme: Theme): string {
   return theme === 'dark' ? logoDark : logoLight;
 }
+
+export type StatusKind = 'error' | 'warn' | 'info';
+
+/** The icon for a finding's severity; anything unrecognised reads as information. */
+export function statusIcon(severity: string): StatusKind {
+  return severity === 'error' || severity === 'warn' ? severity : 'info';
+}
