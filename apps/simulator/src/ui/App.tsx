@@ -8,7 +8,7 @@ import type { ModalKind } from '@dobra/core/engine/modal';
 import type { TextSettings } from '@dobra/core/engine/typography';
 import { collisionsToFindings } from '@dobra/core/collisions';
 import type { Collision } from '../sample/collisions';
-import { logoFor } from './brand';
+import { applyPageTheme, logoFor } from './brand';
 import type { Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
 import { collectRecords, exportable, reportFileName, simulatorReport } from './exportReport';
@@ -99,6 +99,8 @@ export function App({ config }: { config: SimulatorConfig }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, vs]);
+
+  useEffect(() => applyPageTheme(document.documentElement, theme), [theme]);
 
   const toggleOverlay = (key: keyof OverlayToggles) => setOverlays((o) => ({ ...o, [key]: !o[key] }));
   const resizeFree = (w: number, h: number) => setSel((s) => ({ ...s, free: clampFree(w, h) }));

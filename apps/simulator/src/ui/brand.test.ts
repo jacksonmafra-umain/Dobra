@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { tokens } from '@dobra/brand/tokens';
 import { describe, expect, it } from 'vitest';
-import { findingKind, foldOverlayClass, logoFor, statusIcon } from './brand';
+import { applyPageTheme, findingKind, foldOverlayClass, logoFor, statusIcon } from './brand';
 
 // Vite inlines small assets as data URLs (with single quotes) and serves larger ones as files; read either form.
 const svgOf = (url: string) =>
@@ -47,5 +47,15 @@ describe('findingKind', () => {
   });
   it('treats an unknown severity as information', () => {
     expect(findingKind('fatal')).toBe('info');
+  });
+});
+
+describe('applyPageTheme', () => {
+  it('puts the theme on the page root, so the body and scrollbars behind the app follow it', () => {
+    const root = { dataset: {} as DOMStringMap };
+    applyPageTheme(root, 'light');
+    expect(root.dataset.theme).toBe('light');
+    applyPageTheme(root, 'dark');
+    expect(root.dataset.theme).toBe('dark');
   });
 });

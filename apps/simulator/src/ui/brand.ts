@@ -28,3 +28,8 @@ export function foldOverlayClass(fold: Pick<FoldFeature, 'axis' | 'separating' |
   const kind = fold.occludes ? 'occludes' : fold.separating ? 'line' : 'flat';
   return `ov-fold ov-fold--${fold.axis} ov-fold--${kind}`;
 }
+
+/** Mirrors the app's theme onto the page root; the body, overscroll and scrollbars sit outside .app. */
+export function applyPageTheme(root: { dataset: DOMStringMap }, theme: Theme): void {
+  root.dataset.theme = theme;
+}
