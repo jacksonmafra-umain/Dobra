@@ -11,8 +11,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "skipLibCheck": true,
+    "allowJs": true,
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["tokens.ts", "test", "vitest.config.ts"]
+  "include": ["tokens.ts", "test", "scripts", "vitest.config.ts"]
 }
