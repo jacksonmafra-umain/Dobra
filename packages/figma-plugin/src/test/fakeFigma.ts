@@ -89,7 +89,9 @@ export interface FakeVariable {
   getSharedPluginData(namespace: string, key: string): string;
 }
 
-export type FakeFigma = FigmaApi & {
+export type FakeFigma = Omit<FigmaApi, 'editorType'> & {
+  /** Writable here so tests can open the plugin in Dev Mode. */
+  editorType: FigmaApi['editorType'];
   /** Modes a collection may hold before addMode throws, as a Figma plan does. */
   modeLimit: number;
   /** When true, creating a collection throws, as in a file without edit access. */

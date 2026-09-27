@@ -99,3 +99,78 @@ describe('applyVariables', () => {
     expect((await variablesOf(api)).length).toBe(2);
   });
 });
+
+const devices = (n: number, categories: string[]): VariableSpec => ({
+  collections: [
+    {
+      key: 'devices',
+      name: 'Dobra · Devices',
+      modes: Array.from({ length: n }, (_, i) => ({ key: `t${i}`, name: `Target ${i}` })),
+      modeCategory: Object.fromEntries(Array.from({ length: n }, (_, i) => [`t${i}`, categories[i % categories.length]])),
+      variables: [
+        { key: 'window/width', name: 'window/width', type: 'FLOAT', scopes: ['WIDTH_HEIGHT'], description: 'Dobra catalog', values: Object.fromEntries(Array.from({ length: n }, (_, i) => [`t${i}`, 300 + i])) },
+      ],
+    },
+  ],
+});
+
+describe('limits and errors', () => {
+  it('splits devices by category, then into numbered parts, and explains it', async () => {
+    const api = createFakeFigma();
+    api.modeLimit = 4;
+    const s = await applyVariables(api, devices(10, ['foldable-book', 'foldable-flip']), OFF);
+    const names = (await api.variables.getLocalVariableCollectionsAsync()).map((c) => c.name).sort();
+    expect(names).toEqual(['Dobra · Devices · Foldable book', 'Dobra · Devices · Foldable book 2', 'Dobra · Devices · Foldable flip', 'Dobra · Devices · Foldable flip 2']);
+    expect(s.warnings.join('\n')).toMatch(/Limited to 4 modes/);
+    expect(s.errors).toEqual([]);
+  });
+
+  it('goes straight to the split form on the next run', async () => {
+    const api = createFakeFigma();
+    api.modeLimit = 4;
+    await applyVariables(api, devices(10, ['foldable-book', 'foldable-flip']), OFF);
+    const s = await applyVariables(api, devices(10, ['foldable-book', 'foldable-flip']), OFF);
+    expect((await api.variables.getLocalVariableCollectionsAsync()).length).toBe(4);
+    expect(s.collections.every((c) => c.created === 0 && c.updated === 0)).toBe(true);
+  });
+
+  it('survives a limit of one mode', async () => {
+    const api = createFakeFigma();
+    api.modeLimit = 1;
+    const s = await applyVariables(api, { collections: [...spec().collections, ...devices(2, ['phone']).collections] }, OFF);
+    expect(s.errors).toEqual([]);
+    const all = await api.variables.getLocalVariableCollectionsAsync();
+    expect(all.length).toBe(4);
+    expect(all.every((c) => c.modes.length === 1)).toBe(true);
+  });
+
+  it('leaves a collection it did not create alone and makes its own next to it', async () => {
+    const api = createFakeFigma();
+    api.variables.createVariableCollection('Dobra · Size classes · Android');
+    const s = await applyVariables(api, spec(), OFF);
+    expect((await api.variables.getLocalVariableCollectionsAsync()).map((c) => c.name)).toContain('Dobra · Size classes · Android (Dobra)');
+    expect(s.warnings.join('\n')).toMatch(/already has a collection/);
+  });
+
+  it('writes nothing without edit access', async () => {
+    for (const block of ['dev', 'readOnly'] as const) {
+      const api = createFakeFigma();
+      if (block === 'dev') api.editorType = 'dev';
+      else api.readOnly = true;
+      const s = await applyVariables(api, spec(), OFF);
+      expect(s.errors[0].message).toBe('You need edit access to create variables');
+      expect(await api.variables.getLocalVariableCollectionsAsync()).toEqual([]);
+    }
+  });
+
+  it('keeps writing other collections when one fails, and commits one undo step', async () => {
+    const api = createFakeFigma();
+    const good = spec().collections[0];
+    const broken: VariableSpec = { collections: [{ ...good, key: 'bad', name: 'Broken', variables: [{ ...good.variables[0], type: 'BROKEN' as never }] }, good] };
+    const s = await applyVariables(api, broken, OFF);
+    expect(s.errors.map((e) => e.collection)).toEqual(['bad']);
+    expect(s.collections.map((c) => c.key)).toEqual(['size-classes/android']);
+    expect((await api.variables.getLocalVariableCollectionsAsync()).map((c) => c.name)).toEqual(['Dobra · Size classes · Android']);
+    expect(api.undoCommits).toBe(1);
+  });
+});

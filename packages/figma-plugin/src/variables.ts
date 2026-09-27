@@ -38,6 +38,27 @@ export interface VariablesSummary {
 
 const KEY = { collection: 'var-collection', modes: 'var-modes', variable: 'var-key', written: 'var-written' } as const;
 
+const EDIT_ACCESS = 'You need edit access to create variables';
+
+/** Figma refused another mode: the plan's limit per collection. */
+class ModeLimit extends Error {
+  constructor(
+    readonly limit: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+class NoEditAccess extends Error {}
+
+/** Ids of collections this run created, so a failed or split attempt can take them back. */
+interface Run {
+  created: Set<string>;
+  /** Names of collections Dobra did not create; Dobra never reuses them. */
+  foreignNames: Set<string>;
+}
+
 const readJson = <T>(text: string, fallback: T): T => {
   if (!text) return fallback;
   try {
@@ -47,16 +68,43 @@ const readJson = <T>(text: string, fallback: T): T => {
   }
 };
 
+function createCollection(api: FigmaApi, spec: SpecCollection, run: Run, warnings: string[]): VariableCollection {
+  let name = spec.name;
+  if (run.foreignNames.has(name)) {
+    name = `${spec.name} (Dobra)`;
+    warnings.push(`The file already has a collection named "${spec.name}"; Dobra wrote "${name}"`);
+  }
+  let collection: VariableCollection;
+  try {
+    collection = api.variables.createVariableCollection(name);
+  } catch (e) {
+    throw run.created.size === 0 ? new NoEditAccess(EDIT_ACCESS) : e;
+  }
+  run.created.add(collection.id);
+  collection.setSharedPluginData(NAMESPACE, KEY.collection, spec.key);
+  return collection;
+}
+
 async function applyCollection(
   api: FigmaApi,
   spec: SpecCollection,
   existing: VariableCollection | undefined,
   opts: VariablesOptions,
   warnings: string[],
+  run: Run,
 ): Promise<CollectionSummary> {
   const isNew = !existing;
-  const collection = existing ?? api.variables.createVariableCollection(spec.name);
-  if (isNew) collection.setSharedPluginData(NAMESPACE, KEY.collection, spec.key);
+  const collection = existing ?? createCollection(api, spec, run, warnings);
+  const addMode = (name: string) => {
+    try {
+      return collection.addMode(name);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      // Any refusal once the collection holds a mode is treated as the plan's limit (spec §9 risk 4).
+      if (collection.modes.length >= 1) throw new ModeLimit(collection.modes.length, message);
+      throw e;
+    }
+  };
   const summary: CollectionSummary = {
     key: spec.key,
     name: collection.name,
@@ -80,7 +128,7 @@ async function applyCollection(
       collection.renameMode(collection.modes[0].modeId, m.name);
       modeIds[m.key] = collection.modes[0].modeId;
     } else {
-      modeIds[m.key] = collection.addMode(m.name);
+      modeIds[m.key] = addMode(m.name);
     }
   });
   const wanted = new Set(spec.modes.map((m) => m.key));
@@ -148,13 +196,97 @@ async function applyCollection(
   return summary;
 }
 
+const categoryLabel = (id: string) => capital(id.replace(/-/g, ' '));
+function capital(text: string) {
+  return text[0].toUpperCase() + text.slice(1);
+}
+
+/** The same collection with only some of its modes. */
+function subset(spec: SpecCollection, key: string, name: string, modeKeys: string[]): SpecCollection {
+  const keep = new Set(modeKeys);
+  return {
+    key,
+    name,
+    modes: spec.modes.filter((m) => keep.has(m.key)),
+    ...(spec.modeCategory ? { modeCategory: Object.fromEntries(Object.entries(spec.modeCategory).filter(([k]) => keep.has(k))) } : {}),
+    variables: spec.variables.map((v) => ({ ...v, values: Object.fromEntries(Object.entries(v.values).filter(([k]) => keep.has(k))) })),
+  };
+}
+
+/** One collection per device category. */
+function byCategory(spec: SpecCollection): SpecCollection[] {
+  const groups = new Map<string, string[]>();
+  for (const m of spec.modes) {
+    const cat = spec.modeCategory![m.key];
+    groups.set(cat, [...(groups.get(cat) ?? []), m.key]);
+  }
+  return [...groups].map(([cat, keys]) => subset(spec, `${spec.key}/${cat}`, `${spec.name} · ${categoryLabel(cat)}`, keys));
+}
+
+/** Parts of at most `limit` modes: the first keeps the key and name, the rest are numbered from 2. */
+function chunks(spec: SpecCollection, limit: number): SpecCollection[] {
+  const keys = spec.modes.map((m) => m.key);
+  const out: SpecCollection[] = [];
+  for (let i = 0; i < keys.length; i += limit) {
+    const n = i / limit + 1;
+    out.push(subset(spec, n === 1 ? spec.key : `${spec.key}/${n}`, n === 1 ? spec.name : `${spec.name} ${n}`, keys.slice(i, i + limit)));
+  }
+  return out;
+}
+
+const canSplitByCategory = (spec: SpecCollection) => !!spec.modeCategory && new Set(Object.values(spec.modeCategory)).size > 1;
+
 export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: VariablesOptions): Promise<VariablesSummary> {
   const out: VariablesSummary = { collections: [], warnings: [], errors: [] };
+  if (api.editorType === 'dev') return { ...out, errors: [{ collection: '*', message: EDIT_ACCESS }] };
   const local = await api.variables.getLocalVariableCollectionsAsync();
   const keyOf = (c: VariableCollection) => c.getSharedPluginData?.(NAMESPACE, KEY.collection) ?? '';
   const byKey = new Map(local.filter((c) => keyOf(c)).map((c) => [keyOf(c), c]));
+  const run: Run = { created: new Set(), foreignNames: new Set(local.filter((c) => !keyOf(c)).map((c) => c.name)) };
+  // Collections finished in this run, by id: a later failure never takes them back.
+  const done = new Set<string>();
+  /** Removes collections this run created but did not finish: a failed attempt or one that is being split. */
+  const takeBack = async () => {
+    for (const c of await api.variables.getLocalVariableCollectionsAsync()) {
+      if (run.created.has(c.id) && !done.has(c.id)) {
+        run.created.delete(c.id);
+        c.remove();
+      }
+    }
+  };
+
+  const apply = async (c: SpecCollection): Promise<void> => {
+    // A collection already split on an earlier run goes straight to its split form.
+    const splitBefore = [...byKey.keys()].some((k) => k.startsWith(`${c.key}/`));
+    if (!byKey.has(c.key) && splitBefore && canSplitByCategory(c)) {
+      for (const part of byCategory(c)) await apply(part);
+      return;
+    }
+    try {
+      const summary = await applyCollection(api, c, byKey.get(c.key), opts, out.warnings, run);
+      for (const id of run.created) done.add(id);
+      out.collections.push(summary);
+    } catch (e) {
+      if (!(e instanceof ModeLimit)) throw e;
+      await takeBack();
+      const parts = canSplitByCategory(c) ? byCategory(c) : chunks(c, e.limit);
+      out.warnings.push(`${c.name}: ${e.message}; split into ${parts.length} collections`);
+      for (const part of parts) await apply(part);
+    }
+  };
+
   for (const c of spec.collections) {
-    out.collections.push(await applyCollection(api, c, byKey.get(c.key), opts, out.warnings));
+    try {
+      await apply(c);
+    } catch (e) {
+      if (e instanceof NoEditAccess) {
+        out.errors.push({ collection: '*', message: EDIT_ACCESS });
+        break;
+      }
+      await takeBack();
+      out.errors.push({ collection: c.key, message: e instanceof Error ? e.message : String(e) });
+    }
   }
+  api.commitUndo();
   return out;
 }
