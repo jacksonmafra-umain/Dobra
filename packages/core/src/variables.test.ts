@@ -46,7 +46,7 @@ describe('size-class variables', () => {
     const iosOnly = { ...profile, layoutRules: profile.layoutRules.filter((r) => r.platform === 'ios') };
     const a = col(variableSpec(catalog, { profile: iosOnly, profileName: 'iOS only', platforms: ['android'], targets: [] }), 'size-classes/android');
     expect(val(a, 'layout/margin', 'compact')).toBe(16);
-    expect(desc(a, 'layout/margin')).toMatch(/Platform default \(the profile has no rule for this class\)/);
+    expect(desc(a, 'layout/margin')).toMatch(/Platform default for compact \(the profile has no rule for this class\)/);
   });
 });
 

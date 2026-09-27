@@ -78,7 +78,10 @@ so you can rename collections and variables, and existing bindings keep working.
 
 **Mode limits.** Figma plans limit the modes per collection. When Figma refuses a mode, Dobra splits
 the device collection by category (`Dobra · Devices · Foldable book`), and then into numbered parts.
-A size-class collection is split into numbered parts. The summary explains each split. A collection
+A size-class collection is split into numbered parts. The summary explains each split. Later runs
+fill the existing parts directly, without warning again. Each part is its own Figma collection, so
+a frame picks a mode in each part separately: bind a frame to the part that holds the modes it
+needs. A collection
 with Dobra's name that Dobra did not create is left alone; Dobra writes `… (Dobra)` next to it.
 
 **Smoke test in Figma desktop (once per release):**

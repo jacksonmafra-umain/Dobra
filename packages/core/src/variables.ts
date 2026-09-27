@@ -103,7 +103,7 @@ function profileLayout(catalog: Catalog, opts: VariableOptions, platform: Platfo
     freePlatform: platform,
   });
   const rule = matchRuleOrNull(profile, env);
-  if (!rule) return defaultLayout(catalog, platform, classId, 'Platform default (the profile has no rule for this class): ');
+  if (!rule) return defaultLayout(catalog, platform, classId, `Platform default for ${classId} (the profile has no rule for this class): `);
   const text = `Profile: ${opts.profileName ?? 'app profile'} (rule ${rule.id})`;
   return { values: { margin: rule.pageMargin.base, gutter: rule.grid.gutter, columns: rule.grid.columns, panes: rule.panes }, describe: () => text };
 }
@@ -161,7 +161,7 @@ function deviceRow(catalog: Catalog, opts: VariableOptions, t: Target): DeviceRo
         const text = `Profile: ${opts.profileName ?? 'app profile'} (rule ${rule.id})`;
         return { values: { margin: rule.pageMargin.base, gutter: rule.grid.gutter, columns: rule.grid.columns, panes: rule.panes }, describe: () => text };
       })()
-    : defaultLayout(catalog, e.platform, width, opts.profile ? 'Platform default (the profile has no rule for this window): ' : '');
+    : defaultLayout(catalog, e.platform, width, opts.profile ? `Platform default for ${width} (the profile has no rule for this window): ` : '');
   const mode = rule?.pageMargin.mode ?? 'max';
   const inset = Math.max(e.safeArea.left, e.safeArea.right);
   const base = layout.values.margin;

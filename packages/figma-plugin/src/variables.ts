@@ -8,7 +8,7 @@ import { NAMESPACE } from './presets';
 
 export type { CollectionSummary, KeptEdit, VariablesOptions, VariablesSummary } from './variableTypes';
 
-const KEY = { collection: 'var-collection', modes: 'var-modes', variable: 'var-key', written: 'var-written' } as const;
+const KEY = { collection: 'var-collection', modes: 'var-modes', variable: 'var-key', written: 'var-written', scopes: 'var-scopes' } as const;
 
 const EDIT_ACCESS = 'You need edit access to create variables';
 
@@ -55,7 +55,10 @@ function createCollection(api: FigmaApi, spec: SpecCollection, run: Run, warning
   try {
     collection = api.variables.createVariableCollection(name);
   } catch (e) {
-    throw run.created.size === 0 ? new NoEditAccess(EDIT_ACCESS) : e;
+    // Only a refusal to write means missing edit access; anything else is reported as it is.
+    const message = e instanceof Error ? e.message : String(e);
+    if (run.created.size === 0 && /read.?only|edit access|permission|not allowed|cannot write/i.test(message)) throw new NoEditAccess(EDIT_ACCESS);
+    throw e;
   }
   run.created.add(collection.id);
   collection.setSharedPluginData(NAMESPACE, KEY.collection, spec.key);
@@ -142,7 +145,12 @@ async function applyCollection(
       v.setSharedPluginData(NAMESPACE, KEY.variable, sv.key);
       summary.created++;
     }
-    v.scopes = sv.scopes as VariableScope[];
+    // Scopes are rewritten only when Dobra's own change, so a designer's scope edits are kept.
+    const scopes = sv.scopes.join(',');
+    if (created || v.getSharedPluginData(NAMESPACE, KEY.scopes) !== scopes) {
+      v.scopes = sv.scopes as VariableScope[];
+      v.setSharedPluginData(NAMESPACE, KEY.scopes, scopes);
+    }
     // A collection with no selected modes carries no description worth keeping over the last one.
     if (spec.modes.length && v.description !== sv.description) v.description = sv.description;
 
@@ -248,6 +256,13 @@ export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: Va
     // Nothing selected and nothing written before: don't create an empty collection.
     if (!c.modes.length && !byKey.has(c.key)) return;
     // A collection split by category on an earlier run keeps that form, even for one category now.
+    // A collection an earlier run split into numbered parts: fill the parts directly, sized by the
+    // first part, instead of hitting the limit again (and warning again) on every run.
+    const first = byKey.get(c.key);
+    if (first && byKey.has(`${c.key}/2`) && c.modes.length > first.modes.length) {
+      for (const part of chunks(c, first.modes.length, first.modes.length)) await apply(part);
+      return;
+    }
     const earlier = c.modeCategory && !byKey.has(c.key) ? categoryParts(c.key) : [];
     if (earlier.length) {
       const parts = byCategory(c);
@@ -289,6 +304,9 @@ export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: Va
   api.commitUndo();
   return out;
 }
+
+/** The Dobra key of a collection Dobra wrote (`size-classes/android`, `devices/phone`…), or ''. */
+export const dobraKeyOf = (c: VariableCollection): string => c.getSharedPluginData?.(NAMESPACE, KEY.collection) ?? '';
 
 /** Whether this file already holds collections Dobra wrote. */
 export async function hasDobraVariables(api: FigmaApi): Promise<boolean> {
