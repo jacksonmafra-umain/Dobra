@@ -7,6 +7,8 @@ export interface CollectedLayout {
   root: GeoNode[];
   scrollWidth: number;
   truncated: boolean;
+  /** The visual viewport's zoom: below 1 when mobile emulation zooms out to fit wide content. */
+  scale: number;
 }
 
 export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLayout> {
@@ -133,7 +135,8 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
         layout: 'vertical',
         children: content,
       };
-      return JSON.stringify({ root: [doc, ...fixed], scrollWidth: document.documentElement.scrollWidth, truncated });
+      const scale = window.visualViewport?.scale ?? 1;
+      return JSON.stringify({ root: [doc, ...fixed], scrollWidth: document.documentElement.scrollWidth, truncated, scale });
     },
     { limit: cap, width: viewport.width },
   );

@@ -99,9 +99,11 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
         await applyFold(profile.fold);
         const note = await load(page, url, opts.wait, loadTimeout);
         if (note) notes.push(`${key}: ${note}`);
-        const { root, truncated } = await within(collectLayout(page, CAP), collectTimeout, NO_ANSWER(collectTimeout));
+        const { root, truncated, scale } = await within(collectLayout(page, CAP), collectTimeout, NO_ANSWER(collectTimeout));
         inputs.push({ ...base, root });
         if (truncated) notes.push(`${key}: page truncated at ${CAP} elements`);
+        if (scale < 0.99)
+          notes.push(`${key}: the page is zoomed out to ${Math.round(scale * 100)}% to fit content wider than the window, so hinge positions are approximate`);
       } catch (e) {
         inputs.push({ ...base, root: null, reason: firstLine(e) });
         await close(context);

@@ -67,8 +67,8 @@ The CLI adds one more:
 
 - A horizontal fold (tabletop) does not flag content that scrolls with the page, since it moves
   past the crease. Fixed elements and pages that do not scroll are still checked.
-- Pages zoomed out to fit content wider than the window (which `overflow-x` already reports) get
-  approximate hinge positions.
+- A page without `initial-scale=1` that a mobile browser zooms out to fit wide content gets
+  approximate hinge positions; the report notes the zoom.
 - Iframes are treated as media and not entered.
 
 ## Exit codes

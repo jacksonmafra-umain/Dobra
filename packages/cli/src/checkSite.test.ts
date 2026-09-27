@@ -91,6 +91,13 @@ describe('checkSite', () => {
     expect(r.unloaded.map((u) => u.name)).toEqual([targetKey(PIXEL), targetKey(FOLD)]);
   });
 
+  it('notes a page zoomed out to fit content wider than the window', async () => {
+    const wide = await checkSite(`${server.url}/zoomed.html`, [FOLD], { ...opts, browser });
+    expect(wide.notes?.join('\n')).toMatch(/zoomed out/);
+    const plain = await checkSite(`${server.url}/flip.html`, [FOLD], { ...opts, browser });
+    expect(plain.notes ?? []).toEqual([]);
+  });
+
   it('lists targets it could not load, with the reason, instead of throwing', async () => {
     const down = await checkSite('http://127.0.0.1:1/', [DUO, PIXEL], { ...opts, browser });
     expect(down.frames).toHaveLength(0);
