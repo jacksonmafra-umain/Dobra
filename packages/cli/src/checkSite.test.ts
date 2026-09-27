@@ -1,0 +1,69 @@
+import { chromium, type Browser } from 'playwright';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import type { Report } from '@hinge/core/report';
+import { targetKey } from '@hinge/core/targets';
+import { checkSite } from './checkSite';
+import { startFixtureServer } from './test/server';
+
+const DUO = { deviceId: 'surface-duo-2', displayId: 'spanned', pose: 'spanned', orientation: 'landscape' } as const;
+const PIXEL = { deviceId: 'pixel-9', displayId: 'main', orientation: 'portrait' } as const;
+const FOLD = { deviceId: 'galaxy-z-fold-7', displayId: 'inner', pose: 'open', orientation: 'portrait' } as const;
+const opts = { wait: 100, transitions: false };
+let browser: Browser;
+let server: Awaited<ReturnType<typeof startFixtureServer>>;
+beforeAll(async () => {
+  browser = await chromium.launch();
+  server = await startFixtureServer();
+});
+afterAll(async () => {
+  await browser?.close();
+  await server?.close();
+});
+
+const frame = (r: Report, t: { deviceId: string }) => r.frames.find((f) => f.targets[0]?.startsWith(`${t.deviceId}/`))!;
+const rules = (r: Report, t: { deviceId: string }) => frame(r, t).findings.map((f) => f.ruleId);
+
+describe('checkSite', () => {
+  it('checks each target with the shared rules and counts coverage', async () => {
+    const r = await checkSite(`${server.url}/layout.html`, [DUO, PIXEL], { ...opts, browser });
+    expect(r.source.kind).toBe('web');
+    expect(r.frames.map((f) => f.confidence)).toEqual(['tag', 'tag']);
+    expect(frame(r, DUO).targets).toEqual([targetKey(DUO)]);
+    expect(rules(r, DUO)).toContain('hinge-content');
+    expect(rules(r, PIXEL)).not.toContain('hinge-content');
+    expect(r.coverage.cells.some((c) => c.requirement.category === 'dual-screen' && c.status === 'present')).toBe(true);
+  });
+
+  it('reports a page that only lays itself out on load when the device unfolds', async () => {
+    const withPass = await checkSite(`${server.url}/onload.html`, [FOLD], { ...opts, transitions: true, browser });
+    expect(rules(withPass, FOLD)).toContain('resize-vs-reload');
+    const without = await checkSite(`${server.url}/onload.html`, [FOLD], { ...opts, browser });
+    expect(rules(without, FOLD)).not.toContain('resize-vs-reload');
+  });
+
+  it('does not flag a page that reflows on resize', async () => {
+    const r = await checkSite(`${server.url}/layout.html`, [FOLD], { ...opts, transitions: true, browser });
+    expect(rules(r, FOLD)).not.toContain('resize-vs-reload');
+  });
+
+  it('notes a page cut short at the element cap', async () => {
+    const r = await checkSite(`${server.url}/huge.html`, [PIXEL], { ...opts, browser });
+    expect(r.notes).toEqual([`${targetKey(PIXEL)}: page truncated at 4000 elements`]);
+  });
+
+  it('does not wait for a network that never goes idle', async () => {
+    const start = Date.now();
+    const r = await checkSite(`${server.url}/poll.html`, [PIXEL], { ...opts, browser });
+    expect(Date.now() - start).toBeLessThan(10_000);
+    expect(r.frames).toHaveLength(1);
+  });
+
+  it('lists targets it could not load, with the reason, instead of throwing', async () => {
+    const down = await checkSite('http://127.0.0.1:1/', [DUO, PIXEL], { ...opts, browser });
+    expect(down.frames).toHaveLength(0);
+    expect(down.unloaded).toHaveLength(2);
+    expect(down.unloaded[0].reason).toBeTruthy();
+    const missing = await checkSite(`${server.url}/missing.html`, [PIXEL], { ...opts, browser });
+    expect(missing.unloaded[0].reason).toMatch(/HTTP 404/);
+  });
+});

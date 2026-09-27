@@ -1,0 +1,22 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body { margin: 0; font: 16px sans-serif; }
+  .card { position: absolute; height: 120px; box-sizing: border-box; padding: 8px; }
+</style>
+<div class="card"><p>First card with enough text to count as a block.</p></div>
+<div class="card"><p>Second card with enough text to count as a block.</p></div>
+<div class="card"><p>Third card with enough text to count as a block.</p></div>
+<div class="card"><p>Fourth card with enough text to count as a block.</p></div>
+<script>
+  // Lays the cards out once, on load, from the window width, and never again on resize.
+  addEventListener('load', () => {
+    const columns = innerWidth >= 600 ? 2 : 1;
+    const width = innerWidth / columns;
+    document.querySelectorAll('.card').forEach((card, i) => {
+      card.style.width = `${width}px`;
+      card.style.left = `${(i % columns) * width}px`;
+      card.style.top = `${Math.floor(i / columns) * 130}px`;
+    });
+  });
+</script>
