@@ -1346,11 +1346,6 @@
 .rule-grid__cell > * {
   flex: 1;
 }
-[data-collision] {
-  outline-offset: -2px;
-  box-shadow: inset 0 0 0 9999px #dc262614;
-  outline: 2px solid #dc2626 !important;
-}
 .modal-scrim {
   z-index: 60;
   background: #0000004d;

@@ -1,4 +1,6 @@
-// Brand choices that depend on state: which logo reads on the current theme.
+// Brand choices that depend on state: which logo reads on the current theme, which icon a
+// finding gets, and how each kind of fold is drawn.
+import type { FoldFeature } from '@dobra/core/engine/folds';
 import logoDark from '@dobra/brand/logo.svg';
 import logoLight from '@dobra/brand/logo-light.svg';
 import type { Theme } from './urlState';
@@ -13,4 +15,10 @@ export type StatusKind = 'error' | 'warn' | 'info';
 /** The icon for a finding's severity; anything unrecognised reads as information. */
 export function statusIcon(severity: string): StatusKind {
   return severity === 'error' || severity === 'warn' ? severity : 'info';
+}
+
+/** A gap that hides content is a hinge (rose); a separating crease is a fold line (cyan); a flat crease stays dashed. */
+export function foldOverlayClass(fold: Pick<FoldFeature, 'axis' | 'separating' | 'occludes'>): string {
+  const kind = fold.occludes ? 'occludes' : fold.separating ? 'line' : 'flat';
+  return `ov-fold ov-fold--${fold.axis} ov-fold--${kind}`;
 }
