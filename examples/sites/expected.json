@@ -57,6 +57,35 @@
           ]
         }
       ]
+    },
+    {
+      "file": "07-overflow-x.html",
+      "observed": "fixed-width content",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "overflow-x"
+          ],
+          "forbid": []
+        },
+        {
+          "target": "galaxy-z-flip-7/inner/open/portrait",
+          "expect": [
+            "overflow-x"
+          ],
+          "forbid": []
+        },
+        {
+          "target": "pixel-9-pro-fold/inner/book/portrait",
+          "expect": [
+            "hinge-content"
+          ],
+          "forbid": [
+            "overflow-x"
+          ]
+        }
+      ]
     }
   ],
   "transitions": []
