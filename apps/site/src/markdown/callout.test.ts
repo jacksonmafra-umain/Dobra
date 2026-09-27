@@ -19,4 +19,16 @@ describe('remarkUnverifiedCallout', () => {
     const html = (t.children[0] as unknown as { children: { type: string }[] }).children.filter((c) => c.type === 'html');
     expect(html).toHaveLength(2);
   });
+  it('marks claims inside table cells and list items too', () => {
+    const t: Root = {
+      type: 'root',
+      children: [
+        { type: 'table', children: [{ type: 'tableRow', children: [{ type: 'tableCell', children: [{ type: 'text', value: `Stage Manager ${MARK}` }] }] }] },
+        { type: 'list', children: [{ type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'emphasis', children: [{ type: 'text', value: `x ${MARK}` }] }] }] }] },
+      ],
+    };
+    remarkUnverifiedCallout()(t);
+    expect(JSON.stringify(t).match(/mark class=\\"unverified\\"/g)).toHaveLength(2);
+    expect(JSON.stringify(t)).not.toContain(MARK);
+  });
 });
