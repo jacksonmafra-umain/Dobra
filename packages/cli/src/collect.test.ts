@@ -65,6 +65,12 @@ describe('collectLayout', () => {
     expect(truncated).toBe(true);
   });
 
+  it('names and counts text that starts after blank lines', async () => {
+    await page.goto(`${server.url}/spaced.html`);
+    const { root } = await collectLayout(page);
+    expect(byName(root, 'p')).toMatchObject({ role: 'text', name: 'p "Text that starts after a"' });
+  });
+
   it('collects a page nested far deeper than real sites', async () => {
     await page.goto(`${server.url}/wordy.html`);
     const { root } = await collectLayout(page);
