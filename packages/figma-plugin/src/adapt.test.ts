@@ -68,7 +68,7 @@ describe('adaptFrame', () => {
 
   it('switches the Dobra device collection to the adapted target', async () => {
     const api = createFakeFigma();
-    await handle(api, { type: 'variables', platforms: [], keys: [targetKey(DUO)], profile: null, overwrite: false, removeStale: false });
+    await handle(api, { type: 'variables', platforms: [], keys: [targetKey(DUO)], devices: true, profile: null, overwrite: false, removeStale: false });
     const devices = (await api.variables.getLocalVariableCollectionsAsync()).find((c) => c.name === 'Dobra · Devices')!;
     const { frame } = await adaptFrame(api, source(api).id, DUO, { split: false });
     expect((frame as unknown as { explicitModes: Record<string, string> }).explicitModes[devices.id]).toBe(devices.modes[0].modeId);

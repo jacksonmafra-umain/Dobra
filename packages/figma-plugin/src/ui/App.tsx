@@ -312,7 +312,8 @@ function Variables({ targets, exists, result, picked }: { targets: Target[]; exi
   }, [picked]);
 
   const keys = devices ? [...checked] : [];
-  const chosen = (sizeClasses ? platforms.size : 0) + keys.length;
+  // Devices on with nothing picked still runs, so an earlier run's device modes are listed (and removable).
+  const chosen = (sizeClasses ? platforms.size : 0) + (devices ? Math.max(keys.length, 1) : 0);
   const togglePlatform = (p: 'android' | 'ios') =>
     setPlatforms((prev) => {
       const next = new Set(prev);
@@ -368,7 +369,7 @@ function Variables({ targets, exists, result, picked }: { targets: Target[]; exi
         className="primary"
         disabled={!chosen}
         onClick={() =>
-          post({ type: 'variables', platforms: sizeClasses ? [...platforms] : [], keys, profile: profile.trim() || null, overwrite, removeStale })
+          post({ type: 'variables', platforms: sizeClasses ? [...platforms] : [], keys, devices, profile: profile.trim() || null, overwrite, removeStale })
         }
       >
         {exists ? 'Update variables' : 'Create variables'}

@@ -150,7 +150,7 @@ describe('plugin handlers', () => {
 
   describe('variables', () => {
     const DUO = 'surface-duo-2/spanned/spanned/landscape';
-    const run = (extra: Record<string, unknown> = {}) => ({ type: 'variables' as const, platforms: ['android' as const], keys: [DUO], profile: null, overwrite: false, removeStale: false, ...extra });
+    const run = (extra: Record<string, unknown> = {}) => ({ type: 'variables' as const, platforms: ['android' as const], keys: [DUO], devices: true, profile: null, overwrite: false, removeStale: false, ...extra });
 
     it('writes the size-class and device collections from the platform defaults', async () => {
       const reply = await handle(createFakeFigma(), run());
@@ -179,6 +179,17 @@ describe('plugin handlers', () => {
       expect(await handle(api, { type: 'variables-status' })).toEqual({ type: 'variables-status', exists: false });
       await handle(api, run());
       expect(await handle(api, { type: 'variables-status' })).toEqual({ type: 'variables-status', exists: true });
+    });
+
+    it('reports device modes when devices stay on but every device is deselected', async () => {
+      const api = createFakeFigma();
+      await handle(api, run());
+      const reply = await handle(api, run({ keys: [] }));
+      if (reply?.type !== 'variables-done') throw new Error(JSON.stringify(reply));
+      expect(reply.summary.collections.find((c) => c.key === 'devices')?.stale).toHaveLength(1);
+      const off = await handle(api, run({ keys: [], devices: false }));
+      if (off?.type !== 'variables-done') throw new Error(JSON.stringify(off));
+      expect(off.summary.collections.map((c) => c.key)).toEqual(['size-classes/android']);
     });
 
     it('picks one target per required coverage cell', async () => {

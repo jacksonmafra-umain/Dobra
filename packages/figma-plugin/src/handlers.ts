@@ -165,7 +165,7 @@ export async function handle(api: FigmaApi, msg: ToMain, onProgress?: (visited: 
       case 'variables': {
         const targets = parseKeys(msg.keys);
         const loaded = msg.profile ? loadProfile(msg.profile) : null;
-        const spec = variableSpec(catalog, { platforms: msg.platforms, targets, ...(loaded ? { profile: loaded.profile, profileName: loaded.name } : {}) });
+        const spec = variableSpec(catalog, { platforms: msg.platforms, targets, devices: msg.devices, ...(loaded ? { profile: loaded.profile, profileName: loaded.name } : {}) });
         const summary = await applyVariables(api, spec, { overwrite: msg.overwrite, removeStale: msg.removeStale });
         return { type: 'variables-done', summary, source: loaded ? `Profile: ${loaded.name}` : 'Platform defaults' };
       }

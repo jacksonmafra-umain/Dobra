@@ -15,7 +15,7 @@ export type ToMain =
   | { type: 'check'; scope: 'selection' | 'page' | 'all-pages' }
   | { type: 'select-node'; nodeId: string }
   | { type: 'adapt'; frameId: string; keys: string[]; split: boolean }
-  | { type: 'variables'; platforms: ('android' | 'ios')[]; keys: string[]; profile: string | null; overwrite: boolean; removeStale: boolean }
+  | { type: 'variables'; platforms: ('android' | 'ios')[]; keys: string[]; devices: boolean; profile: string | null; overwrite: boolean; removeStale: boolean }
   | { type: 'variables-status' }
   | { type: 'required-targets' };
 
