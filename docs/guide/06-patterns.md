@@ -280,10 +280,11 @@ Added with the iOS part.
 
 ```css
 .app { display: grid; min-height: 100dvh; grid-template-rows: 1fr auto; }
-.suite { display: flex; justify-content: space-around; }            /* bottom bar */
+/* The nav comes first in the DOM, so place it in the bottom row explicitly. */
+.suite { grid-row: 2; display: flex; justify-content: space-around; }   /* bottom bar */
 @media (width >= 600px) and (height >= 480px) {
   .app { grid-template-columns: auto 1fr; grid-template-rows: none; }
-  .suite { flex-direction: column; justify-content: start; }         /* rail */
+  .suite { grid-row: auto; flex-direction: column; justify-content: start; }   /* rail */
 }
 ```
 
