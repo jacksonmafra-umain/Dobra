@@ -305,6 +305,9 @@ export async function applyVariables(api: FigmaApi, spec: VariableSpec, opts: Va
   return out;
 }
 
+/** The Dobra key of a collection Dobra wrote (`size-classes/android`, `devices/phone`…), or ''. */
+export const dobraKeyOf = (c: VariableCollection): string => c.getSharedPluginData?.(NAMESPACE, KEY.collection) ?? '';
+
 /** Whether this file already holds collections Dobra wrote. */
 export async function hasDobraVariables(api: FigmaApi): Promise<boolean> {
   return (await api.variables.getLocalVariableCollectionsAsync()).some((c) => !!c.getSharedPluginData?.(NAMESPACE, KEY.collection));

@@ -10,7 +10,7 @@ import { resolveTarget, targetKey, type Target } from '@dobra/core/targets';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';
 import { toGeo } from './geo';
-import { deviceModes } from './variables';
+import { deviceModes, dobraKeyOf } from './variables';
 import { decorate, nextFreeX, OVERLAY_NAME } from './presets';
 
 const GAP = 80;
@@ -117,6 +117,9 @@ export async function adaptFrame(
     }
   }
   for (const collection of await api.variables.getLocalVariableCollectionsAsync()) {
+    // Dobra's size-class collections are per platform: never switch the other platform's one.
+    const dobraKey = dobraKeyOf(collection);
+    if (dobraKey.startsWith('size-classes/') && !dobraKey.startsWith(`size-classes/${env.platform}`)) continue;
     const mode = collection.modes.find((m) => m.name.toLowerCase() === sizeClass.toLowerCase());
     if (mode) frame.setExplicitVariableModeForCollection(collection, mode.modeId);
   }

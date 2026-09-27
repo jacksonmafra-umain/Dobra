@@ -74,6 +74,19 @@ describe('adaptFrame', () => {
     expect((frame as unknown as { explicitModes: Record<string, string> }).explicitModes[devices.id]).toBe(devices.modes[0].modeId);
   });
 
+  it("leaves the other platform's size-class collection alone", async () => {
+    const api = createFakeFigma();
+    await handle(api, { type: 'variables', platforms: ['android', 'ios'], keys: [], devices: false, profile: null, overwrite: false, removeStale: false });
+    const all = await api.variables.getLocalVariableCollectionsAsync();
+    const android = all.find((c) => c.name === 'Dobra · Size classes · Android')!;
+    const ios = all.find((c) => c.name === 'Dobra · Size classes · iOS')!;
+    const PHONE = { deviceId: 'pixel-9', displayId: 'main', orientation: 'portrait' } as const;
+    const { frame } = await adaptFrame(api, source(api).id, PHONE, { split: false });
+    const modes = (frame as unknown as { explicitModes: Record<string, string> }).explicitModes;
+    expect(modes[android.id]).toBe(android.modes.find((m) => m.name === 'Compact')!.modeId);
+    expect(modes[ios.id]).toBeUndefined();
+  });
+
   it('checks the adapted frame', async () => {
     const api = createFakeFigma();
     const { findings } = await adaptFrame(api, source(api).id, DUO, { split: false });
