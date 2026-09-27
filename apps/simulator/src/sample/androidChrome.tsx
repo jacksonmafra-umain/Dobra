@@ -1,6 +1,6 @@
 // Android system chrome: status bar, punch-hole camera and the navigation bar (gesture handle or
 // 3-button). Drawn in the insets the engine resolved, so they move with rotation.
-import type { Environment } from '@hinge/core/engine/environment';
+import type { Environment } from '@dobra/core/engine/environment';
 
 function AndroidStatusIcons() {
   return (

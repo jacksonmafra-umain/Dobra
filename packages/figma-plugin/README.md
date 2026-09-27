@@ -1,12 +1,12 @@
 # Hinge — Figma plugin
 
-Artboards for foldable and dual-screen devices, straight from the device catalog in `@hinge/core`.
+Artboards for foldable and dual-screen devices, straight from the device catalog in `@dobra/core`.
 
 ## Build
 
 ```bash
 npm install
-npm run build -w @hinge/figma-plugin
+npm run build -w @dobra/figma-plugin
 ```
 
 This writes `dist/code.js` (the plugin's main thread) and `dist/ui.html` (its panel), then checks

@@ -1,6 +1,6 @@
 // Figma nodes → the core geometry tree. Rects are relative to the frame being checked.
-import { CHROME_NAME, INTERACTIVE_NAME, MIN_CONTROL_SIDE } from '@hinge/core/figmaRest';
-import type { GeoNode, GeoRole } from '@hinge/core/geo';
+import { CHROME_NAME, INTERACTIVE_NAME, MIN_CONTROL_SIDE } from '@dobra/core/figmaRest';
+import type { GeoNode, GeoRole } from '@dobra/core/geo';
 import { OVERLAY_NAME } from './presets';
 
 /** The name patterns live in core so the plugin and the web report classify layers alike. */

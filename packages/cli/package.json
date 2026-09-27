@@ -1,5 +1,5 @@
 {
-  "name": "@hinge/cli",
+  "name": "@dobra/cli",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hinge/core": "*",
+    "@dobra/core": "*",
     "playwright": "^1.63.0"
   },
   "devDependencies": {

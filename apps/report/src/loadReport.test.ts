@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { RestNode } from '@hinge/core/figmaRest';
+import type { RestNode } from '@dobra/core/figmaRest';
 import type { FigmaClient } from './figmaClient';
 import { FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';

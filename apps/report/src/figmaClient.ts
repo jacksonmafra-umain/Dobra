@@ -1,6 +1,6 @@
 // A small Figma REST client. The token only ever travels in the X-Figma-Token header, and every
 // error message is redacted before it leaves this module.
-import type { RestNode } from '@hinge/core/figmaRest';
+import type { RestNode } from '@dobra/core/figmaRest';
 
 const BASE = 'https://api.figma.com/v1';
 /** Frames per /nodes or /images call: keeps URLs short and one rate-limited batch small. */

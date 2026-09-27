@@ -1,6 +1,6 @@
-import type { Environment } from '@hinge/core/engine/environment';
-import { foldThickness } from '@hinge/core/engine/folds';
-import type { Layout } from '@hinge/core/engine/layout';
+import type { Environment } from '@dobra/core/engine/environment';
+import { foldThickness } from '@dobra/core/engine/folds';
+import type { Layout } from '@dobra/core/engine/layout';
 
 export interface OverlayToggles {
   safeArea: boolean;

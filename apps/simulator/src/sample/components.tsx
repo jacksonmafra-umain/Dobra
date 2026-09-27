@@ -1,7 +1,7 @@
 // Sample design system components, named after their Figma components (data-name).
 import { Children, useState, type CSSProperties, type ReactNode } from 'react';
-import type { FlexFormRule } from '@hinge/core/config/types';
-import type { Layout } from '@hinge/core/engine/layout';
+import type { FlexFormRule } from '@dobra/core/config/types';
+import type { Layout } from '@dobra/core/engine/layout';
 import { asset } from './assets';
 import type { NewsStory, OrderLine, Restaurant, Reward } from './content';
 import { FallbackIcon, Icon } from './icons';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { CoverageMatrix } from '@hinge/core/coverage';
+import type { CoverageMatrix } from '@dobra/core/coverage';
 import type { AdaptResult, Command, FrameFindings, TagCandidate, ToMain, ToUi } from '../messages';
 import './app.css';
 

@@ -1,8 +1,8 @@
 // The simulator's view of the media-query facts core resolved for this window (Environment.media),
 // with which facts the user overrode and whether they are category defaults.
-import { DEFAULT_MEDIA, mediaFacts, type MediaFacts } from '@hinge/core/catalog/media';
-import type { DeviceSpec } from '@hinge/core/config/types';
-import type { Environment } from '@hinge/core/engine/environment';
+import { DEFAULT_MEDIA, mediaFacts, type MediaFacts } from '@dobra/core/catalog/media';
+import type { DeviceSpec } from '@dobra/core/config/types';
+import type { Environment } from '@dobra/core/engine/environment';
 
 export type MediaOverrides = Partial<MediaFacts>;
 export type WindowPosture = 'Flat' | 'Book' | 'Tabletop';

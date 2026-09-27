@@ -1,5 +1,5 @@
 // Turns a core PresetFrame into a tagged Figma frame with a locked overlay and layout grids.
-import type { PresetFrame } from '@hinge/core/presets';
+import type { PresetFrame } from '@dobra/core/presets';
 import type { FigmaApi } from './api';
 
 export const NAMESPACE = 'hinge';

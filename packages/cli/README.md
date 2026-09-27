@@ -98,7 +98,7 @@ finding per device.
 ## Tests
 
 ```bash
-npm test -w @hinge/cli
+npm test -w @dobra/cli
 ```
 
 The browser tests start Chromium against local fixture pages in `src/test/fixtures`.

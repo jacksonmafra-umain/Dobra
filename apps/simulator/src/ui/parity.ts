@@ -1,9 +1,9 @@
 // Pairs a device with its nearest peer on the other platform and compares how both resolve.
-import type { DeviceSpec, Orientation, SimulatorConfig, Size } from '@hinge/core/config/types';
-import type { Finding } from '@hinge/core/engine/checks';
-import type { Environment, Selection } from '@hinge/core/engine/environment';
-import type { Layout } from '@hinge/core/engine/layout';
-import { formatSizeClass } from '@hinge/core/engine/sizeClass';
+import type { DeviceSpec, Orientation, SimulatorConfig, Size } from '@dobra/core/config/types';
+import type { Finding } from '@dobra/core/engine/checks';
+import type { Environment, Selection } from '@dobra/core/engine/environment';
+import type { Layout } from '@dobra/core/engine/layout';
+import { formatSizeClass } from '@dobra/core/engine/sizeClass';
 
 type Category = DeviceSpec['category'];
 

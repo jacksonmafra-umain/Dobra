@@ -1,10 +1,10 @@
 // Answers the panel's messages. Every branch returns a reply; errors become an 'error' message.
-import { coverage, representativeTarget, type PresentFrame } from '@hinge/core/coverage';
-import type { EnvConfig } from '@hinge/core/engine/environment';
-import { matchFrame } from '@hinge/core/match';
-import { check } from '@hinge/core/rules';
-import { presetSpec } from '@hinge/core/presets';
-import { enumerateTargets, parseTargetKey, targetKey, type Target } from '@hinge/core/targets';
+import { coverage, representativeTarget, type PresentFrame } from '@dobra/core/coverage';
+import type { EnvConfig } from '@dobra/core/engine/environment';
+import { matchFrame } from '@dobra/core/match';
+import { check } from '@dobra/core/rules';
+import { presetSpec } from '@dobra/core/presets';
+import { enumerateTargets, parseTargetKey, targetKey, type Target } from '@dobra/core/targets';
 import { adaptFrame } from './adapt';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';

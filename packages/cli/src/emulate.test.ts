@@ -1,7 +1,7 @@
 import { chromium, type Browser } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { enumerateTargets, envConfigOf, targetKey } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { enumerateTargets, envConfigOf, targetKey } from '@dobra/core/targets';
 import { deviceProfile, openTarget } from './emulate';
 import { startFixtureServer } from './test/server';
 

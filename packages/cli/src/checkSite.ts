@@ -1,11 +1,11 @@
 // hinge check site: one Chromium context per target, the same rules as the plugin and the web
 // report, and an unfold pass that resizes from the cover display without reloading.
 import { chromium, type Browser, type Page } from 'playwright';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import type { Finding } from '@hinge/core/engine/checks';
-import { buildReport, type Report, type ReportInput } from '@hinge/core/report';
-import { envConfigOf, isKnownTarget, targetKey, type Target } from '@hinge/core/targets';
-import { resizeVsReload } from '@hinge/core/transition';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import type { Finding } from '@dobra/core/engine/checks';
+import { buildReport, type Report, type ReportInput } from '@dobra/core/report';
+import { envConfigOf, isKnownTarget, targetKey, type Target } from '@dobra/core/targets';
+import { resizeVsReload } from '@dobra/core/transition';
 import { collectLayout } from './collect';
 import { deviceProfile, openTarget } from './emulate';
 

@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import raw from '@hinge/core/profiles/sample.profile.json';
+import raw from '@dobra/core/profiles/sample.profile.json';
 import { asset, hasAsset } from './assets';
 
 function sources(dir: string): string[] {

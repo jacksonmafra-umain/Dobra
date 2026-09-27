@@ -1,8 +1,8 @@
 // iPhone Duo trailing rail: status, vertical toolbar and vertical tab bar (HIG).
 import { useState, type CSSProperties } from 'react';
-import type { TabItemSpec, ToolbarItemSpec, VerticalBarsSpec } from '@hinge/core/config/types';
-import type { BarLayout } from '@hinge/core/engine/bars';
-import type { Environment } from '@hinge/core/engine/environment';
+import type { TabItemSpec, ToolbarItemSpec, VerticalBarsSpec } from '@dobra/core/config/types';
+import type { BarLayout } from '@dobra/core/engine/bars';
+import type { Environment } from '@dobra/core/engine/environment';
 import { asset } from './assets';
 import { StatusIcons } from './chrome';
 import { FallbackIcon, Icon } from './icons';

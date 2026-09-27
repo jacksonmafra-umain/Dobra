@@ -1,7 +1,7 @@
 // Figma file → foldable check report, with thumbnails. Complete results are cached per file version.
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { frameCandidates, parseFileKey, restToGeo, type RestNode } from '@hinge/core/figmaRest';
-import { buildReport, type Report } from '@hinge/core/report';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { frameCandidates, parseFileKey, restToGeo, type RestNode } from '@dobra/core/figmaRest';
+import { buildReport, type Report } from '@dobra/core/report';
 import { FigmaError, type FigmaClient } from './figmaClient';
 
 const catalog = loadCatalog();

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import type { Finding } from '@hinge/core/engine/checks';
-import { buildReport, parseReport, type Report } from '@hinge/core/report';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import type { Finding } from '@dobra/core/engine/checks';
+import { buildReport, parseReport, type Report } from '@dobra/core/report';
 import { run } from './main';
 
 const catalog = loadCatalog();

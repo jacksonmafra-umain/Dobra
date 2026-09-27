@@ -1,9 +1,9 @@
 import type { RefObject } from 'react';
-import type { ScreenSpec, SimulatorConfig } from '@hinge/core/config/types';
-import type { Environment } from '@hinge/core/engine/environment';
-import type { Layout } from '@hinge/core/engine/layout';
-import type { ModalKind } from '@hinge/core/engine/modal';
-import type { TextSettings } from '@hinge/core/engine/typography';
+import type { ScreenSpec, SimulatorConfig } from '@dobra/core/config/types';
+import type { Environment } from '@dobra/core/engine/environment';
+import type { Layout } from '@dobra/core/engine/layout';
+import type { ModalKind } from '@dobra/core/engine/modal';
+import type { TextSettings } from '@dobra/core/engine/typography';
 import { AndroidChrome } from '../sample/androidChrome';
 import type { Collision } from '../sample/collisions';
 import { Screen } from '../sample/Screen';

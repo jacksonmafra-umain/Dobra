@@ -1,12 +1,12 @@
 // Adapt & flag: copy a frame to another target and do the mechanical work — resize, re-decorate,
 // optionally split at the hinge, swap size/posture variants, switch variable modes — then check it.
 // Everything that needs a design decision comes back as a flag.
-import { adaptPlan, type AdaptPlan } from '@hinge/core/adapt';
-import { kindOf } from '@hinge/core/coverage';
-import type { Finding } from '@hinge/core/engine/checks';
-import { presetSpec } from '@hinge/core/presets';
-import { check } from '@hinge/core/rules';
-import { resolveTarget, type Target } from '@hinge/core/targets';
+import { adaptPlan, type AdaptPlan } from '@dobra/core/adapt';
+import { kindOf } from '@dobra/core/coverage';
+import type { Finding } from '@dobra/core/engine/checks';
+import { presetSpec } from '@dobra/core/presets';
+import { check } from '@dobra/core/rules';
+import { resolveTarget, type Target } from '@dobra/core/targets';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';
 import { toGeo } from './geo';

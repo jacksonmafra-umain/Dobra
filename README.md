@@ -17,13 +17,13 @@ dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.
 
 This is an npm workspaces monorepo:
 
-- `packages/core`: `@hinge/core`, in pure TypeScript with no DOM and no React. It holds the catalog
+- `packages/core`: `@dobra/core`, in pure TypeScript with no DOM and no React. It holds the catalog
   (`src/catalog/catalog.json`), the sample profile (`src/profiles/sample.profile.json`), the engine
   and the checks.
 - `packages/figma-plugin`: the Figma plugin. See its [README](packages/figma-plugin/README.md) for how to build and load it.
-- `packages/cli`: `@hinge/cli`, the `hinge check site` command (Playwright and Chromium). See its [README](packages/cli/README.md).
-- `apps/simulator`: `@hinge/simulator`, built with Vite, React and Tailwind.
-- `apps/report`: `@hinge/report`, the web report that opens report JSON. See its [README](apps/report/README.md).
+- `packages/cli`: `@dobra/cli`, the `hinge check site` command (Playwright and Chromium). See its [README](packages/cli/README.md).
+- `apps/simulator`: `@dobra/simulator`, built with Vite, React and Tailwind.
+- `apps/report`: `@dobra/report`, the web report that opens report JSON. See its [README](apps/report/README.md).
 - `examples/sites`: static pages that reproduce foldable failures, used by the website checks.
 - `docs`: the Android brief, design specs and implementation plans.
 

@@ -2,8 +2,8 @@
 import { realpathSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { loadCatalog } from '@hinge/core/catalog/load';
-import { toMarkdown, type Report } from '@hinge/core/report';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import { toMarkdown, type Report } from '@dobra/core/report';
 import { parseArgs } from './args';
 import { checkSite } from './checkSite';
 import { chooseTargets } from './targets';

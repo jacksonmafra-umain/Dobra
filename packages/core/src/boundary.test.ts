@@ -14,7 +14,7 @@ function sources(dir: string): string[] {
   });
 }
 
-describe('@hinge/core boundary', () => {
+describe('@dobra/core boundary', () => {
   it.each(sources(fileURLToPath(new URL('.', import.meta.url))))('%s imports no React', (file) => {
     expect(readFileSync(file, 'utf8')).not.toMatch(FORBIDDEN);
   });

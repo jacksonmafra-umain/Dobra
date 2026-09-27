@@ -1,12 +1,12 @@
 // Turns the rendered sample screen into a Hinge Report that the web report can open. The findings
 // come from core's geometry rules over what is on screen, not from the simulator's own layout checks.
-import { loadCatalog } from '@hinge/core/catalog/load';
-import type { Rect } from '@hinge/core/config/types';
-import type { Target } from '@hinge/core/engine/checks';
-import type { Environment } from '@hinge/core/engine/environment';
-import type { GeoNode, GeoRole } from '@hinge/core/geo';
-import { buildReport, type Report } from '@hinge/core/report';
-import { envConfigOf, isKnownTarget, targetKey } from '@hinge/core/targets';
+import { loadCatalog } from '@dobra/core/catalog/load';
+import type { Rect } from '@dobra/core/config/types';
+import type { Target } from '@dobra/core/engine/checks';
+import type { Environment } from '@dobra/core/engine/environment';
+import type { GeoNode, GeoRole } from '@dobra/core/geo';
+import { buildReport, type Report } from '@dobra/core/report';
+import { envConfigOf, isKnownTarget, targetKey } from '@dobra/core/targets';
 
 export interface NodeRecord {
   id: string;

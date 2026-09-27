@@ -1,7 +1,7 @@
 // Messages between the plugin panel (UI iframe) and the main thread (document access).
-import type { AdaptPlan } from '@hinge/core/adapt';
-import type { CoverageMatrix } from '@hinge/core/coverage';
-import type { Finding } from '@hinge/core/engine/checks';
+import type { AdaptPlan } from '@dobra/core/adapt';
+import type { CoverageMatrix } from '@dobra/core/coverage';
+import type { Finding } from '@dobra/core/engine/checks';
 
 export type ToMain =
   | { type: 'ready' }
