@@ -47,13 +47,14 @@ apps/report (static)                 packages/cli (Node)
   built report app (`apps/report/dist`) and routes `/api/health` and `/api/check` to the handler,
   with the local policy. It prints the URL to open. Launch uses the Playwright Chromium the CLI
   already installs.
-- **Hosted mode**: `apps/report/api/check.ts` and `api/health.ts` are Vercel functions that use
-  the same handler with the hosted policy. Launch uses `playwright-core` with a Chromium build
+- **Hosted mode**: Vercel functions for `/api/check` and `/api/health` use the same handler with
+  the hosted policy. Where they live depends on the deployment choice in §8. Launch uses `playwright-core` with a Chromium build
   packaged for serverless. Which package, and whether it supports the CDP display-feature override
   the fold emulation needs: [unverified — confirm before use], settled in the plan's first task.
 - **Report app**: `SiteCheckForm.tsx` (URL, a target picker defaulting to one representative
   device per required coverage cell, as the CLI does, and a Check button) plus `siteCheck.ts`
-  (probe, call, error mapping). On load it probes `/api/health` on its own origin. If an endpoint
+  (probe, call, error mapping), both with plain class names and no styling. On load the form
+  probes `/api/health` at the root of its own origin (the report is served under `/report/`). If an endpoint
   answers, the form checks directly. If not, it shows `CliHandoff`.
 
 ## 3. Request and response
@@ -93,8 +94,9 @@ cookies or credentials, blocks downloads, and returns only the report.
   run `npm run dobra -- report` to check it locally" for a 403 on the hosted page.
 - **Hand-off** when no endpoint answers: the command with the URL and targets filled in, a copy
   button, a GitHub Actions step, and "Open a report JSON" right below.
-- Styling follows agent/03's restyle of the report app (PR #83). This work ships the components;
-  placement and styling fit that plan.
+- Styling follows agent/03's restyle of the report app (PR #83). This work ships unstyled
+  components with plain class names; agent/03 places and styles them. If they land after the
+  restyle, a small follow-up styles them.
 
 ## 6. Error handling
 
@@ -118,7 +120,23 @@ cookies or credentials, blocks downloads, and returns only the report.
 - **Hosted:** a smoke test of the function locally (`vercel dev` or a Node harness) against a
   public fixture page. Deploying is the user's step.
 
-## 8. Ownership and delivery
+## 8. Hosted deployment: a decision for the user
+
+The report is built as one static HTML file and served at `https://dobra-five.vercel.app/report/`,
+inside the Vercel project "dobra", as part of the static site from `apps/site`. That site is
+deployed as a prebuilt static folder (`vercel deploy dist`), so it has no serverless functions
+today. A hosted `/api/check` needs one of:
+
+| Option | How | For | Against |
+|---|---|---|---|
+| **A. Functions in the "dobra" project** | Switch the site's deploy from a prebuilt folder to a Vercel build (or `vercel build` locally, then `vercel deploy --prebuilt`) that includes `api/check` and `api/health` | Same origin: the report calls `/api/check` with no CORS; one project, one domain | Changes how agent/03 deploys the site; the Chromium function's size and cold start affect that project's builds |
+| **B. A separate function project** | A second Vercel project (for example `dobra-check`) with only the two functions; the report calls its URL | The static site's deploy stays as it is; the check can be scaled, limited or turned off on its own | Cross-origin: the function sends CORS headers for `dobra-five.vercel.app` only; the report needs the function's URL at build time; two projects to manage |
+
+Recommendation: **A**, because same-origin keeps the client and the security model simple. Choose
+**B** if the site's deploy should stay a plain static upload. Either way, the local mode and the
+hand-off work without any deployment.
+
+## 9. Ownership and delivery
 
 - `packages/cli`: agent/02's area; the handler and the `report` subcommand go in new files, agreed
   with agent/02.
@@ -135,7 +153,7 @@ Delivery slices, each its own issue and PR:
 3. Hosted Vercel functions and configuration (apps/report/api, `vercel.json`); deploying is the
    user's step.
 
-## 9. Risks
+## 10. Risks
 
 - Serverless Chromium size and cold starts, and whether it honours the display-feature override.
   If it doesn't, hosted checks run size-only for folded targets and the report says so in a note.
