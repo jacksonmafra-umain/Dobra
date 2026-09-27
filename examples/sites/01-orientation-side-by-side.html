@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- §8.2 #1: side by side is chosen from orientation, not width. On the 352 dp Flip cover
+     (landscape, 339 tall) each pane gets 176 dp. -->
+<title>Side by side from orientation</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.4 system-ui, sans-serif; }
+  h2 { font-size: 18px; margin: 8px 0 0; }
+  .media { height: 120px; background: #cfd8dc; border-radius: 8px; }
+  section { padding: 8px; }
+  @media (orientation: landscape) {
+    main { display: flex; flex-direction: row; min-height: 100vh; }
+    main > section { flex: 1; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section><div class="media"></div><h2>Map</h2></section>
+  <section><div class="media"></div><h2>Store</h2></section>
+</main>
+</body>
+</html>

@@ -1,5 +1,23 @@
 {
   "$comment": "What the website checks must find on each page. expect: rule ids that must appear on that target. forbid: rule ids that must not. Rule ids outside both lists are not asserted. Transitions go from the cover display to the inner display of the same device without a reload. Checks on folded or spanned targets assume viewport-segment emulation.",
-  "pages": [],
+  "pages": [
+    {
+      "file": "01-orientation-side-by-side.html",
+      "observed": "§8.2 #1",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "landscape-not-wide"
+          ],
+          "forbid": [
+            "hinge-content",
+            "overflow-x",
+            "chrome-overlap"
+          ]
+        }
+      ]
+    }
+  ],
   "transitions": []
 }
