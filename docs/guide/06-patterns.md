@@ -426,3 +426,6 @@ reachability | Keeping frequent controls where one thumb can reach them, which i
 - https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length
 - https://drafts.csswg.org/css-env-1/
 - https://www.w3.org/WAI/WCAG22/Understanding/visual-presentation.html
+- https://drafts.csswg.org/css-conditional-5/
+- https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries
+- https://html.spec.whatwg.org/multipage/rendering.html
