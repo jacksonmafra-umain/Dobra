@@ -39,7 +39,9 @@ export function App() {
     variablesExistRef.current = v;
     setVariablesExistState(v);
   };
-  const [picked, setPicked] = useState<string[] | null>(null);
+  // The Variables tab's choices live here, so switching tabs doesn't lose a pasted profile or the picked devices.
+  const [variablesForm, setVariablesForm] = useState<VariablesForm>(DEFAULT_VARIABLES_FORM);
+  const variablesChecked = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
@@ -55,7 +57,7 @@ export function App() {
         setVariablesExist(msg.summary.collections.length > 0 || variablesExistRef.current);
       }
       if (msg.type === 'variables-status') setVariablesExist(msg.exists);
-      if (msg.type === 'targets-picked') setPicked(msg.keys);
+      if (msg.type === 'targets-picked') variablesChecked[1](new Set(msg.keys));
       if (msg.type === 'tag-candidates') setCandidates(msg.frames);
       if (msg.type === 'coverage') setMatrix(msg.matrix);
       if (msg.type === 'findings') {
@@ -98,14 +100,16 @@ export function App() {
       {tab === 'coverage' && <Coverage matrix={matrix} />}
       {tab === 'check' && <Check frames={findings} visited={visited} />}
       {tab === 'adapt' && <Adapt targets={targets} selected={selected} results={adapted} />}
-      {tab === 'variables' && <Variables targets={targets} exists={variablesExist} result={variables} picked={picked} />}
+      {tab === 'variables' && <Variables targets={targets} exists={variablesExist} result={variables} form={variablesForm} setForm={setVariablesForm} checked={variablesChecked} />}
     </main>
   );
 }
 
 /** Targets grouped by category, each with a checkbox. */
-function useTargetPicker(targets: Target[]) {
-  const [checked, setChecked] = useState<Set<string>>(new Set());
+/** Targets grouped by category. Pass `state` to keep the selection outside the component (it then survives tab switches). */
+function useTargetPicker(targets: Target[], state?: [Set<string>, React.Dispatch<React.SetStateAction<Set<string>>>]) {
+  const own = useState<Set<string>>(new Set());
+  const [checked, setChecked] = state ?? own;
   const byCategory = useMemo(() => {
     const groups = new Map<string, Target[]>();
     for (const t of targets) groups.set(t.category, [...(groups.get(t.category) ?? []), t]);
@@ -299,28 +303,46 @@ function Check({ frames, visited }: { frames: FrameFindings[] | null; visited: n
 
 const FOLDABLE = new Set(['foldable-book', 'foldable-flip', 'dual-screen', 'multi-fold']);
 
-function Variables({ targets, exists, result, picked }: { targets: Target[]; exists: boolean; result: { summary: VariablesSummary; source: string } | null; picked: string[] | null }) {
-  const { checked, setChecked, list } = useTargetPicker(targets);
-  const [sizeClasses, setSizeClasses] = useState(true);
-  const [platforms, setPlatforms] = useState<Set<'android' | 'ios'>>(new Set(['android', 'ios']));
-  const [devices, setDevices] = useState(true);
-  const [profile, setProfile] = useState('');
-  const [overwrite, setOverwrite] = useState(false);
-  const [removeStale, setRemoveStale] = useState(false);
-  useEffect(() => {
-    if (picked) setChecked(new Set(picked));
-  }, [picked]);
+interface VariablesForm {
+  sizeClasses: boolean;
+  platforms: ('android' | 'ios')[];
+  devices: boolean;
+  profile: string;
+  overwrite: boolean;
+  removeStale: boolean;
+}
+const DEFAULT_VARIABLES_FORM: VariablesForm = { sizeClasses: true, platforms: ['android', 'ios'], devices: true, profile: '', overwrite: false, removeStale: false };
+
+function Variables({
+  targets,
+  exists,
+  result,
+  form,
+  setForm,
+  checked: checkedState,
+}: {
+  targets: Target[];
+  exists: boolean;
+  result: { summary: VariablesSummary; source: string } | null;
+  form: VariablesForm;
+  setForm: React.Dispatch<React.SetStateAction<VariablesForm>>;
+  checked: [Set<string>, React.Dispatch<React.SetStateAction<Set<string>>>];
+}) {
+  const { checked, setChecked, list } = useTargetPicker(targets, checkedState);
+  const { sizeClasses, devices, profile, overwrite, removeStale } = form;
+  const platforms = new Set(form.platforms);
+  const set = <K extends keyof VariablesForm>(key: K) => (value: VariablesForm[K]) => setForm((f) => ({ ...f, [key]: value }));
+  const setSizeClasses = set('sizeClasses');
+  const setDevices = set('devices');
+  const setProfile = set('profile');
+  const setOverwrite = set('overwrite');
+  const setRemoveStale = set('removeStale');
 
   const keys = devices ? [...checked] : [];
   // Devices on with nothing picked still runs, so an earlier run's device modes are listed (and removable).
   const chosen = (sizeClasses ? platforms.size : 0) + (devices ? Math.max(keys.length, 1) : 0);
   const togglePlatform = (p: 'android' | 'ios') =>
-    setPlatforms((prev) => {
-      const next = new Set(prev);
-      if (next.has(p)) next.delete(p);
-      else next.add(p);
-      return next;
-    });
+    setForm((f) => ({ ...f, platforms: f.platforms.includes(p) ? f.platforms.filter((x) => x !== p) : [...f.platforms, p] }));
   const readFile = async (file: File) => setProfile(await file.text());
 
   return (
