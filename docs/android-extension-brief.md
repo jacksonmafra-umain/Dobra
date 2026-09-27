@@ -1,14 +1,14 @@
-# Prompt — extend the Size-Class Simulator to Android
+# Prompt — extend the Dobra simulator to Android
 
 ## Context you are given
 
-`size-class-simulator-v0.4.0-2026-09-25.html` is a single-file export (React + Tailwind v4, Vite build,
+`dobra-simulator-v0.4.0-2026-09-25.html` is a single-file export (React + Tailwind v4, Vite build,
 typeface embedded). Work in the **source project**, not
 the export.
 
 Everything the simulator renders is driven by one config object whose own `$comment` says:
 
-> "Size-Class Simulator config. Everything the simulator shows is driven from this file.
+> "Dobra simulator config. Everything the simulator shows is driven from this file.
 > All sizes are iOS points."
 
 Today that config is iOS-only:
