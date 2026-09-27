@@ -100,4 +100,16 @@ describe('config schema', () => {
     cfg.layoutRules[android].match = { pointer: 'hover' };
     expect(issuesOf(cfg).join('\n')).toMatch(/layoutRules\[\d+\]\.match\.pointer/);
   });
+
+  it('checks the layout defaults: every class, non-negative numbers and known sources', () => {
+    const missing = clone();
+    delete missing.layoutDefaults.android.medium;
+    expect(issuesOf(missing).join('\n')).toMatch(/layoutDefaults\.android.*Missing default for medium/);
+    const negative = clone();
+    negative.layoutDefaults.android.compact.margin = -1;
+    expect(issuesOf(negative).join('\n')).toMatch(/layoutDefaults\.android\.compact\.margin/);
+    const unknown = clone();
+    unknown.layoutDefaults.ios.regular.source = 'nowhere';
+    expect(issuesOf(unknown).join('\n')).toMatch(/Unknown source "nowhere"/);
+  });
 });
