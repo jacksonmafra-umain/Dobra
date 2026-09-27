@@ -1,8 +1,10 @@
 // The whole simulator state lives in the URL so a specific cell can be linked in a ticket.
-import type { Orientation, Size } from '@hinge/core/config/types';
+import { mediaFacts } from '@hinge/core/catalog/media';
+import type { DeviceSpec, Orientation, Size } from '@hinge/core/config/types';
 import type { Environment, Selection } from '@hinge/core/engine/environment';
 import type { TextSettings } from '@hinge/core/engine/typography';
 import type { Zoom } from './DeviceFrame';
+import type { MediaOverrides } from './media';
 import type { OverlayToggles } from './Overlays';
 
 export type Theme = 'light' | 'dark';
@@ -15,6 +17,8 @@ export interface UrlState {
   rtl: boolean;
   overlays: OverlayToggles;
   text: TextSettings;
+  /** Media-fact overrides; each key is left out when it follows the device. */
+  media: MediaOverrides;
 }
 
 export const FREE_MIN: Size = { width: 280, height: 320 };
@@ -42,6 +46,28 @@ const OVERLAY_KEYS: [keyof OverlayToggles, string][] = [
   ['reserved', 'reserved'],
   ['fold', 'fold'],
 ];
+
+const pick = <T extends string>(v: string | null, values: readonly T[]): T | undefined => values.find((x) => x === v);
+const flag = (v: string | null) => (v === '1' ? true : v === '0' ? false : undefined);
+
+function readMedia(q: URLSearchParams): MediaOverrides {
+  const m: MediaOverrides = {
+    pointer: pick(q.get('ptr'), ['coarse', 'fine'] as const),
+    keyboard: pick(q.get('kbd'), ['virtual', 'physical'] as const),
+    viewingDistance: pick(q.get('dist'), ['near', 'medium', 'far'] as const),
+    hasCamera: flag(q.get('cam')),
+    hasMicrophone: flag(q.get('mic')),
+  };
+  return Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)) as MediaOverrides;
+}
+
+const MEDIA_KEYS = [
+  ['pointer', 'ptr'],
+  ['keyboard', 'kbd'],
+  ['viewingDistance', 'dist'],
+  ['hasCamera', 'cam'],
+  ['hasMicrophone', 'mic'],
+] as const;
 
 export function readUrlState(search = location.search): UrlState {
   const q = new URLSearchParams(search);
@@ -79,10 +105,11 @@ export function readUrlState(search = location.search): UrlState {
     rtl: q.get('dir') === 'rtl',
     overlays,
     text: { fontScale: Number(q.get('fs') ?? 1), bold: q.get('bold') === '1', reducedMotion: q.get('motion') === 'reduced' },
+    media: readMedia(q),
   };
 }
 
-export function writeUrlState(state: UrlState, env: Environment): string {
+export function writeUrlState(state: UrlState, env: Environment, device: DeviceSpec): string {
   const { selection: sel } = state;
   const q = new URLSearchParams();
   q.set('device', sel.deviceId);
@@ -113,6 +140,12 @@ export function writeUrlState(state: UrlState, env: Environment): string {
   if (state.text.fontScale !== 1) q.set('fs', String(state.text.fontScale));
   if (state.text.bold) q.set('bold', '1');
   if (state.text.reducedMotion) q.set('motion', 'reduced');
+  const base = mediaFacts(device);
+  for (const [key, token] of MEDIA_KEYS) {
+    const v = state.media[key];
+    if (v === undefined || v === base[key]) continue;
+    q.set(token, typeof v === 'boolean' ? (v ? '1' : '0') : v);
+  }
   q.set('screen', state.screenId);
   q.set('theme', state.theme);
   q.set('zoom', state.zoom);

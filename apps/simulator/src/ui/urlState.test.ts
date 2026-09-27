@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { rawConfig as raw } from '@hinge/core/config/load';
 import { parseConfig } from '@hinge/core/config/schema';
-import { resolveEnvironment } from '@hinge/core/engine/environment';
+import { findDevice, resolveEnvironment } from '@hinge/core/engine/environment';
 import { readUrlState, writeUrlState } from './urlState';
 
 const config = parseConfig(raw);
@@ -22,7 +22,7 @@ describe('URL state', () => {
       targetSdk: 35,
     });
     const env = resolveEnvironment(config, state.selection);
-    const again = readUrlState(writeUrlState(state, env));
+    const again = readUrlState(writeUrlState(state, env, findDevice(config, state.selection.deviceId)));
     expect(again.selection).toMatchObject(state.selection);
   });
 
@@ -35,7 +35,7 @@ describe('URL state', () => {
     const state = readUrlState('?device=pixel-9&fs=1.3&bold=1&motion=reduced&screen=home');
     expect(state.text).toEqual({ fontScale: 1.3, bold: true, reducedMotion: true });
     const env = resolveEnvironment(config, state.selection);
-    expect(readUrlState(writeUrlState(state, env)).text).toEqual(state.text);
+    expect(readUrlState(writeUrlState(state, env, findDevice(config, state.selection.deviceId))).text).toEqual(state.text);
     expect(readUrlState('?device=pixel-9').text).toEqual({ fontScale: 1, bold: false, reducedMotion: false });
   });
 
@@ -43,6 +43,24 @@ describe('URL state', () => {
     const state = readUrlState('?device=chromebook&screen=home');
     state.selection.windowMode = 'fullscreen';
     const env = resolveEnvironment(config, state.selection);
-    expect(readUrlState(writeUrlState(state, env)).selection.windowMode).toBe('fullscreen');
+    expect(readUrlState(writeUrlState(state, env, findDevice(config, state.selection.deviceId))).selection.windowMode).toBe('fullscreen');
+  });
+
+  it('round-trips media overrides', () => {
+    const state = readUrlState('?device=pixel-tablet&ptr=fine&kbd=physical&dist=medium&cam=0&mic=0&screen=home');
+    expect(state.media).toEqual({ pointer: 'fine', keyboard: 'physical', viewingDistance: 'medium', hasCamera: false, hasMicrophone: false });
+    const env = resolveEnvironment(config, state.selection);
+    const device = findDevice(config, 'pixel-tablet');
+    expect(readUrlState(writeUrlState(state, env, device)).media).toEqual(state.media);
+  });
+
+  it('ignores unknown media values', () => {
+    expect(readUrlState('?device=pixel-9&ptr=blunt&dist=far-away&cam=yes').media).toEqual({});
+  });
+
+  it('does not write an override equal to the device value', () => {
+    const state = readUrlState('?device=pixel-9&ptr=coarse&screen=home');
+    const env = resolveEnvironment(config, state.selection);
+    expect(writeUrlState(state, env, findDevice(config, 'pixel-9'))).not.toContain('ptr=');
   });
 });
