@@ -7,11 +7,11 @@ dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.
 
 | Part | What it does | State |
 | --- | --- | --- |
-| Simulator (`apps/simulator`) | Renders devices, postures and window states, plus scenes and Grid/FlexBox layouts, and runs collision and rule checks | Merged |
-| Core (`packages/core`) | Holds the device catalog, the layout engine and the rule checks. Coverage and reports are in review with the plugin and web report | Merged |
-| Figma plugin (`packages/figma-plugin`) | Artboard presets with hinge overlays, Tag frames, coverage, a checker, and Adapt & flag | In review: #18, #20 |
+| Simulator (`apps/simulator`) | Renders devices, postures and window states, plus scenes and Grid/FlexBox layouts. Runs collision and rule checks, shows and overrides media facts, and compares iOS and Android side by side | Merged |
+| Core (`packages/core`) | Holds the device catalog, targets, the layout engine, the geometry rules, frame matching and coverage. Reports are in review with the web report | Merged |
+| Figma plugin (`packages/figma-plugin`) | Artboard presets with hinge overlays, Tag frames, coverage, a checker, and Adapt & flag | Merged |
 | Web report (`apps/report`) | Shows a Figma file's coverage and findings | In review: #22 |
-| CLI (`packages/cli`) | Checks websites with fold emulation | Planned |
+| CLI (`packages/cli`) | Checks websites with fold emulation | In review: #34 |
 
 ## Layout
 
@@ -20,7 +20,9 @@ This is an npm workspaces monorepo:
 - `packages/core`: `@hinge/core`, in pure TypeScript with no DOM and no React. It holds the catalog
   (`src/catalog/catalog.json`), the sample profile (`src/profiles/sample.profile.json`), the engine
   and the checks.
+- `packages/figma-plugin`: the Figma plugin. See its [README](packages/figma-plugin/README.md) for how to build and load it.
 - `apps/simulator`: `@hinge/simulator`, built with Vite, React and Tailwind.
+- `examples/sites`: static pages that reproduce foldable failures, used by the website checks.
 - `docs`: the Android brief, design specs and implementation plans.
 
 ## Quick start
