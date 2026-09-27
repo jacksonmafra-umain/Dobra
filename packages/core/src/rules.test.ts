@@ -170,6 +170,20 @@ describe('touch-target by pointer and clipping', () => {
     expect(ids(subject([clip]), 'touch-target')).toEqual(['partial']);
   });
 
+  it('still checks controls a scrolling frame can bring into view', () => {
+    const list = node('list', 'container', { x: 0, y: 0, width: 300, height: 400 }, {
+      clips: true,
+      scrollAxis: 'y',
+      children: [node('below', 'interactive', { x: 10, y: 900, width: 30, height: 30 })],
+    });
+    const carousel = node('carousel', 'container', { x: 0, y: 500, width: 300, height: 60 }, {
+      clips: true,
+      scrollAxis: 'x',
+      children: [node('offscreen', 'interactive', { x: 700, y: 510, width: 30, height: 30 })],
+    });
+    expect(ids(subject([list, carousel]), 'touch-target').sort()).toEqual(['below', 'offscreen']);
+  });
+
   it('still runs on a size-only match', () => {
     expect(ids(subject([small()], [DUO], { confidence: 'size' }), 'touch-target')).toEqual(['x']);
   });

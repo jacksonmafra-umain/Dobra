@@ -135,9 +135,21 @@ function overflowX({ subject, placed, add }: Ctx) {
   }
 }
 
-/** A node whose rect misses some clipping ancestor entirely is cropped out of view. */
+const spans = (a: number, al: number, b: number, bl: number) => a < b + bl && a + al > b;
+
+/**
+ * A node whose rect misses some clipping ancestor entirely is cropped out of view. A scrolling frame
+ * only crops across its scroll axis: content further along it scrolls into view.
+ */
 function croppedAway(p: Placed, byNode: Map<GeoNode, Placed>): boolean {
-  for (let up = p.parent; up; up = byNode.get(up)?.parent ?? null) if (up.clips && !rectsOverlap(p.node.rect, up.rect)) return true;
+  const r = p.node.rect;
+  for (let up = p.parent; up; up = byNode.get(up)?.parent ?? null) {
+    if (!up.clips) continue;
+    const c = up.rect;
+    const visible =
+      up.scrollAxis === 'y' ? spans(r.x, r.width, c.x, c.width) : up.scrollAxis === 'x' ? spans(r.y, r.height, c.y, c.height) : rectsOverlap(r, c);
+    if (!visible) return true;
+  }
   return false;
 }
 
