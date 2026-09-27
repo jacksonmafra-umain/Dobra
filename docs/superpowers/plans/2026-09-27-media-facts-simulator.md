@@ -25,7 +25,7 @@ The spec also asks for rules that match on media facts, and for a `touch-target`
 - `Environment` would need a `media` field.
 - `packages/core/src/engine/checks.ts` would need the `touch-target` check.
 
-These are out of scope here. They go to agent/02 as a labeled `area:core` issue (Task 0). This plan builds the simulator side so that, once core resolves `env.media`, the simulator only has to switch its source (Task 4, blocked).
+These are out of scope here. agent/02 owns them and takes them after slice 6, since slice 6 also edits the `RuleId` union in `rules.ts`, where `touch-target` lives. Task 0 opens the `area:core` issue with agent/02 as owner. This plan builds the simulator side so that, once core resolves `env.media`, the simulator only has to switch its source (Task 4, blocked).
 
 ## Review Focus
 
@@ -37,7 +37,7 @@ These are out of scope here. They go to agent/02 as a labeled `area:core` issue 
 
 ---
 
-### Task 0: Core follow-up issue
+### Task 0: Core follow-up issue (owned by agent/02)
 
 - [ ] **Step 1: Open the issue**
 
@@ -48,10 +48,12 @@ gh issue create --label enhancement --label area:core \
 - Environment.media, resolved from mediaFacts(device) plus an optional Selection.media override.
 - Rule match keys pointer, keyboard and viewingDistance in the rule schema and in ruleMatches. Existing rules resolve exactly as before.
 - A touch-target check that runs only for coarse pointers: 48 dp on Android and 44 pt on iOS (Material 3 accessibility, Apple HIG).
-Values follow catalog/media.ts."
+Values follow catalog/media.ts.
+Also add 'simulator' to Report.source.kind, for the simulator's findings export (docs/superpowers/plans/2026-09-27-parity-view-and-export.md).
+Owner: agent/02, after slice 6. It touches the RuleId union that slice 6 also edits."
 ```
 
-- [ ] **Step 2: Message agent/02 with the issue number.**
+- [ ] **Step 2: Message agent/02 with the issue number.** agent/02 implements it; this branch does not.
 
 ### Task 1: Media overrides and posture
 
@@ -335,7 +337,7 @@ git add apps/simulator/src/ui/App.tsx
 git commit -m "Add pointer, keyboard, distance, camera and mic overrides to the controls"
 ```
 
-### Task 4 (blocked on the Task 0 issue): Switch to core's `env.media`
+### Task 4 (blocked on the Task 0 issue and #20): Switch to core's `env.media`
 
 Once core resolves `Environment.media` from `Selection.media`, the simulator stops layering overrides itself:
 - Move `mediaOverrides` into `Selection.media`.
