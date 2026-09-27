@@ -128,5 +128,15 @@
       ]
     }
   ],
-  "transitions": []
+  "transitions": [
+    {
+      "file": "08-resize-vs-reload.html",
+      "from": "galaxy-z-flip-7/cover/closed/landscape",
+      "to": "galaxy-z-flip-7/inner/open/portrait",
+      "expect": [
+        "resize-vs-reload"
+      ],
+      "forbid": []
+    }
+  ]
 }
