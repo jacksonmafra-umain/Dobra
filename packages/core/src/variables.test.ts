@@ -49,3 +49,60 @@ describe('size-class variables', () => {
     expect(desc(a, 'layout/margin')).toMatch(/Platform default \(the profile has no rule for this class\)/);
   });
 });
+
+import { envConfigOf, resolveTarget, targetKey } from './targets';
+
+const env = envConfigOf(catalog);
+const DUO = { deviceId: 'surface-duo-2', displayId: 'spanned', pose: 'spanned', orientation: 'landscape' } as const;
+const PIXEL = { deviceId: 'pixel-9', displayId: 'main', orientation: 'portrait' } as const;
+const IPHONE = { deviceId: 'iphone-17', displayId: 'main', orientation: 'portrait' } as const;
+
+describe('device variables', () => {
+  const spec = variableSpec(catalog, { platforms: [], targets: [DUO, PIXEL, IPHONE] });
+  const d = col(spec, 'devices');
+
+  it('has one mode per target, keyed by target key', () => {
+    expect(d.name).toBe('Dobra · Devices');
+    expect(d.modes.map((m) => m.key)).toEqual([DUO, PIXEL, IPHONE].map(targetKey));
+    expect(d.modes[0].name).toMatch(/^Surface Duo 2 · /);
+    expect(d.modeCategory?.[targetKey(DUO)]).toBe('dual-screen');
+  });
+
+  it('matches the resolved window, safe area and hinge', () => {
+    const e = resolveTarget(env, DUO);
+    const k = targetKey(DUO);
+    expect(val(d, 'window/width', k)).toBe(e.width);
+    expect(val(d, 'safe-area/top', k)).toBe(e.safeArea.top);
+    const fold = e.folds.find((f) => f.separating || f.occludes)!;
+    expect(val(d, 'hinge/present', k)).toBe(true);
+    expect(val(d, 'hinge/separating', k)).toBe(fold.separating);
+    expect(val(d, 'hinge/x', k)).toBe(fold.rect.x);
+    expect(val(d, 'hinge/width', k)).toBe(fold.rect.width);
+  });
+
+  it('gives a phone no hinge and zero positions', () => {
+    const k = targetKey(PIXEL);
+    expect(val(d, 'hinge/present', k)).toBe(false);
+    expect([val(d, 'hinge/x', k), val(d, 'hinge/width', k)]).toEqual([0, 0]);
+  });
+
+  it('names the size class and media facts, iOS included', () => {
+    expect(val(d, 'size-class/width', targetKey(PIXEL))).toBe('compact');
+    expect(val(d, 'size-class/width', targetKey(IPHONE))).toBe('compact');
+    expect(val(d, 'media/pointer', targetKey(PIXEL))).toBe('coarse');
+    expect(val(d, 'window/width', targetKey(IPHONE))).toBe(resolveTarget(env, IPHONE).width);
+  });
+
+  it('resolves layout for the exact target, profile or default', () => {
+    const k = targetKey(DUO);
+    const e = resolveTarget(env, DUO);
+    const withProfile = col(variableSpec(catalog, { profile, platforms: [], targets: [DUO] }), 'devices');
+    expect(val(withProfile, 'layout/columns', k)).toBeGreaterThan(0);
+    expect(val(d, 'layout/margin', k)).toBe(Math.max(24, e.safeArea.left, e.safeArea.right));
+  });
+
+  it('keeps keys stable across runs and omits the collection without targets', () => {
+    expect(JSON.stringify(variableSpec(catalog, { platforms: ['android'], targets: [DUO] }))).toBe(JSON.stringify(variableSpec(catalog, { platforms: ['android'], targets: [DUO] })));
+    expect(variableSpec(catalog, { platforms: ['android'], targets: [] }).collections.map((c) => c.key)).toEqual(['size-classes/android']);
+  });
+});

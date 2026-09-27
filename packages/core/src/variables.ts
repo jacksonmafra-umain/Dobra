@@ -4,7 +4,8 @@ import type { Catalog, SimulatorConfig } from './config/schema';
 import type { Platform } from './config/types';
 import { resolveEnvironment } from './engine/environment';
 import { matchRuleOrNull } from './engine/layout';
-import type { Target } from './targets';
+import { presetSpec } from './presets';
+import { envConfigOf, resolveTarget, targetKey, type Target } from './targets';
 
 export type VarType = 'FLOAT' | 'BOOLEAN' | 'STRING';
 export type VarValue = number | boolean | string;
@@ -129,6 +130,97 @@ function sizeClassCollection(catalog: Catalog, opts: VariableOptions, platform: 
   };
 }
 
+interface DeviceRow {
+  key: string;
+  values: Record<string, VarValue>;
+  estimated: { window: boolean; hinge: boolean };
+  layout: ClassLayout;
+}
+
+function deviceRow(catalog: Catalog, opts: VariableOptions, t: Target): DeviceRow {
+  const config = opts.profile ?? envConfigOf(catalog);
+  const e = resolveTarget(config, t);
+  const fold = e.folds.find((f) => f.separating || f.occludes);
+  const width = e.sizeClass.system === 'window' ? e.sizeClass.width : e.sizeClass.horizontal;
+  const height = e.sizeClass.system === 'window' ? e.sizeClass.height : e.sizeClass.vertical;
+  // The exact rule for this window (height included) when a profile is loaded, else the class default.
+  const rule = opts.profile ? matchRuleOrNull(opts.profile, e) : null;
+  const layout: ClassLayout = rule
+    ? (() => {
+        const text = `Profile: ${opts.profileName ?? 'app profile'} (rule ${rule.id})`;
+        return { values: { margin: rule.pageMargin.base, gutter: rule.grid.gutter, columns: rule.grid.columns, panes: rule.panes }, describe: () => text };
+      })()
+    : defaultLayout(catalog, e.platform, width, opts.profile ? 'Platform default (the profile has no rule for this window): ' : '');
+  const mode = rule?.pageMargin.mode ?? 'max';
+  const inset = Math.max(e.safeArea.left, e.safeArea.right);
+  const base = layout.values.margin;
+  return {
+    key: targetKey(t),
+    estimated: { window: e.estimated, hinge: !!fold?.estimated },
+    layout,
+    values: {
+      'window/width': e.width,
+      'window/height': e.height,
+      'safe-area/top': e.safeArea.top,
+      'safe-area/bottom': e.safeArea.bottom,
+      'safe-area/left': e.safeArea.left,
+      'safe-area/right': e.safeArea.right,
+      'hinge/present': !!fold,
+      'hinge/separating': !!fold?.separating,
+      'hinge/x': fold?.rect.x ?? 0,
+      'hinge/y': fold?.rect.y ?? 0,
+      'hinge/width': fold?.rect.width ?? 0,
+      'hinge/height': fold?.rect.height ?? 0,
+      'layout/margin': mode === 'max' ? Math.max(base, inset) : inset + base,
+      'layout/gutter': layout.values.gutter,
+      'layout/columns': layout.values.columns,
+      'layout/panes': layout.values.panes,
+      'size-class/width': width,
+      'size-class/height': height,
+      'media/pointer': e.media.pointer,
+      'media/keyboard': e.media.keyboard,
+      'media/viewing-distance': e.media.viewingDistance,
+    },
+  };
+}
+
+const DEVICE_VARS: { name: string; type: VarType; scopes: string[]; group: 'window' | 'hinge' | 'layout' | 'fact' }[] = [
+  { name: 'window/width', type: 'FLOAT', scopes: ['WIDTH_HEIGHT'], group: 'window' },
+  { name: 'window/height', type: 'FLOAT', scopes: ['WIDTH_HEIGHT'], group: 'window' },
+  ...(['top', 'bottom', 'left', 'right'] as const).map((side) => ({ name: `safe-area/${side}`, type: 'FLOAT' as const, scopes: ['GAP'], group: 'window' as const })),
+  { name: 'hinge/present', type: 'BOOLEAN', scopes: ['ALL_SCOPES'], group: 'hinge' },
+  { name: 'hinge/separating', type: 'BOOLEAN', scopes: ['ALL_SCOPES'], group: 'hinge' },
+  ...(['x', 'y', 'width', 'height'] as const).map((f) => ({ name: `hinge/${f}`, type: 'FLOAT' as const, scopes: ['WIDTH_HEIGHT'], group: 'hinge' as const })),
+  ...LAYOUT_VARS.map(({ field, scopes }) => ({ name: `layout/${field}`, type: 'FLOAT' as const, scopes, group: 'layout' as const })),
+  ...['size-class/width', 'size-class/height', 'media/pointer', 'media/keyboard', 'media/viewing-distance'].map((name) => ({ name, type: 'STRING' as const, scopes: ['TEXT_CONTENT'], group: 'fact' as const })),
+];
+
+function deviceCollection(catalog: Catalog, opts: VariableOptions): SpecCollection {
+  const config = opts.profile ?? envConfigOf(catalog);
+  const rows = opts.targets.map((t) => deviceRow(catalog, opts, t));
+  const describe = (v: (typeof DEVICE_VARS)[number]) => {
+    if (v.group === 'layout') return joinDistinct(rows.map((r) => r.layout.describe(v.name.split('/')[1] as LayoutField)));
+    const estimated = v.group === 'window' ? rows.some((r) => r.estimated.window) : v.group === 'hinge' ? rows.some((r) => r.estimated.hinge) : false;
+    return `Dobra catalog (resolveTarget)${estimated ? ' (estimated for some devices)' : ''}`;
+  };
+  return {
+    key: 'devices',
+    name: 'Dobra · Devices',
+    modes: opts.targets.map((t, i) => ({ key: rows[i].key, name: presetSpec(config, t).name.replace(/^Screen \/ /, '') })),
+    modeCategory: Object.fromEntries(opts.targets.map((t, i) => [rows[i].key, config.devices.find((d) => d.id === t.deviceId)!.category])),
+    variables: DEVICE_VARS.map((v) => ({
+      key: v.name,
+      name: v.name,
+      type: v.type,
+      scopes: v.scopes,
+      description: describe(v),
+      values: Object.fromEntries(rows.map((r) => [r.key, r.values[v.name]])),
+    })),
+  };
+}
+
 export function variableSpec(catalog: Catalog, opts: VariableOptions): VariableSpec {
-  return { collections: opts.platforms.map((p) => sizeClassCollection(catalog, opts, p)) };
+  const collections = opts.platforms.map((p) => sizeClassCollection(catalog, opts, p));
+  if (opts.targets.length) collections.push(deviceCollection(catalog, opts));
+  return { collections };
 }
