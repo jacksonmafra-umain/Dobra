@@ -42,6 +42,51 @@ Figma desktop › Plugins › Development › Import plugin from manifest… ›
   Then it checks the copy. It never decides for you: it flags content past the new edge, pinned
   layers when the width changes by more than 20%, a bottom bar that should become a rail at 600
   and wider, images whose frame changed shape, and "decide which content goes in each pane".
+  It also switches Dobra's device collection to the target's mode (see Variables).
+- **Variables** — writes Figma variables for size classes and devices (see below).
+
+## Variables
+
+The Variables tab writes variable collections to the open file. Bind a frame's width, padding, gap
+or grid to them, then pick the frame's mode in the right panel, and the frame follows.
+
+- **Dobra · Size classes · Android**, with modes `Compact`, `Medium`, `Expanded`, `Large` and
+  `ExtraLarge`, and **Dobra · Size classes · iOS**, with modes `Compact` and `Regular`. Both hold
+  `layout/margin`, `layout/gutter`, `layout/columns`, `layout/panes`, `breakpoint/min-width` and
+  `breakpoint/max-width` (0 means unbounded).
+- **Dobra · Devices** has one mode per device and posture you pick. It holds:
+  - `window/width` and `window/height`;
+  - `safe-area/*`;
+  - `hinge/present`, `hinge/separating` and `hinge/x`, `/y`, `/width`, `/height` (0 without a hinge);
+  - `layout/*`, resolved for that exact window;
+  - `size-class/width` and `size-class/height`;
+  - `media/pointer`, `media/keyboard` and `media/viewing-distance`.
+
+Values come from the catalog's platform defaults (Material 3, Apple), or from an app profile you
+paste or pick. Every variable's description names its source and says "(estimated)" where the value
+is estimated. Mode names match size-class ids, so **Adapt frame** switches the size-class collections,
+and it switches the device collection to the adapted target.
+
+**Running it again** updates the same collections in place. Dobra finds them by the keys it stores,
+so you can rename collections and variables, and existing bindings keep working.
+- A value you changed in Figma is kept and listed ("Kept your edit"), unless you tick
+  **Overwrite my edits**.
+- Modes of devices you no longer pick are kept and listed, unless you tick **Remove modes no longer
+  selected**. A collection always keeps at least one mode.
+- Variables Dobra no longer writes are listed, never deleted.
+- The whole run is one undo step.
+
+**Mode limits.** Figma plans limit the modes per collection. When Figma refuses a mode, Dobra splits
+the device collection by category (`Dobra · Devices · Foldable book`), and then into numbered parts.
+A size-class collection is split into numbered parts. The summary explains each split. A collection
+with Dobra's name that Dobra did not create is left alone; Dobra writes `… (Dobra)` next to it.
+
+**Smoke test in Figma desktop (once per release):**
+1. Create the collections.
+2. Bind a frame's padding to `layout/margin` and switch modes.
+3. Run again and confirm nothing changes.
+4. Edit one value, run again, and confirm the edit is kept.
+5. Adapt a frame and confirm its device mode.
 
 ## Rules
 
