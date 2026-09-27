@@ -272,7 +272,14 @@ export function createFakeFigma(): FakeFigma {
     zoomedTo: null as unknown,
     collections: [] as FakeCollection[],
     currentPage: page,
-    root: { children: pages },
+    root: (() => {
+      const data = new Map<string, string>();
+      return {
+        children: pages,
+        setSharedPluginData: (ns: string, key: string, value: string) => void data.set(`${ns}:${key}`, value),
+        getSharedPluginData: (ns: string, key: string) => data.get(`${ns}:${key}`) ?? '',
+      };
+    })(),
     addPage: () => {
       const pg = makePage();
       pages.push(pg);

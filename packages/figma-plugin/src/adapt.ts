@@ -10,6 +10,7 @@ import { resolveTarget, targetKey, type Target } from '@dobra/core/targets';
 import type { FigmaApi } from './api';
 import { catalog, config } from './catalog';
 import { toGeo } from './geo';
+import { filePatterns } from './patterns';
 import { deviceModes, dobraKeyOf } from './variables';
 import { decorate, nextFreeX, OVERLAY_NAME } from './presets';
 
@@ -97,7 +98,7 @@ export async function adaptFrame(
   frame.x = x;
   frame.y = src.y;
 
-  const plan = adaptPlan(config, { width: src.width, height: src.height, root: await toGeo(src), fixed: fixedChildren(src), stretching: stretchingChildren(src) }, target, opts);
+  const plan = adaptPlan(config, { width: src.width, height: src.height, root: await toGeo(src, undefined, 500, filePatterns(api)), fixed: fixedChildren(src), stretching: stretchingChildren(src) }, target, opts);
 
   frame.children.find((c) => c.name === OVERLAY_NAME)?.remove();
   frame.resize(plan.width, plan.height);
@@ -129,6 +130,6 @@ export async function adaptFrame(
     if (modeId) frame.setExplicitVariableModeForCollection(collection, modeId);
   }
 
-  const subject = { source: 'figma' as const, ref: frame.id, targets: [target], confidence: 'tag' as const, width: frame.width, height: frame.height, root: await toGeo(frame) };
+  const subject = { source: 'figma' as const, ref: frame.id, targets: [target], confidence: 'tag' as const, width: frame.width, height: frame.height, root: await toGeo(frame, undefined, 500, filePatterns(api)) };
   return { frame, plan, findings: check(subject, config) };
 }
