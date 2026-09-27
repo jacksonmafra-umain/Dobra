@@ -17,6 +17,7 @@ export interface NodeRecord {
   fontSize?: number;
   chars?: number;
   scrollAxis?: 'x' | 'y' | 'none';
+  layout?: 'horizontal' | 'vertical' | 'none';
   clips?: boolean;
   parent: string | null;
 }
@@ -52,3 +53,72 @@ export function simulatorReport(target: Target, label: string, url: string, widt
 }
 
 export const reportFileName = (target: Target) => `hinge-report-${targetKey(target).replaceAll('/', '_')}.json`;
+
+// The element and role rules match the CLI's collector (packages/cli/src/collect.ts), so a screen
+// in the simulator and the same page in the CLI become the same geometry.
+const TEXT = 'h1,h2,h3,h4,h5,h6,p,li,label,dt,dd,td,th,figcaption,blockquote';
+const INTERACTIVE =
+  'a[href],button,input,select,textarea,summary,[role=button],[role=link],[role=tab],[role=checkbox],[role=switch],[tabindex]:not([tabindex="-1"])';
+const CHROME = 'header,nav,footer,[role=banner],[role=navigation],[role=contentinfo]';
+const MEDIA = 'img,video,picture,canvas,svg,iframe';
+
+function roleOf(el: Element, style: CSSStyleDeclaration): GeoRole | null {
+  if (el.matches(INTERACTIVE)) return 'interactive';
+  if (el.matches(CHROME) || style.position === 'fixed' || style.position === 'sticky') return 'chrome';
+  if (el.matches(MEDIA)) return 'media';
+  if (el.matches(TEXT) && (el.textContent ?? '').trim()) return 'text';
+  if (style.display.includes('flex') || style.display.includes('grid') || /auto|scroll|hidden|clip/.test(style.overflowX + style.overflowY)) return 'container';
+  return null;
+}
+
+/** Walks the rendered screen into records in window units, relative to the screen's top-left corner. */
+export function collectRecords(host: HTMLElement, env: Pick<Environment, 'width'>): NodeRecord[] {
+  const box = host.getBoundingClientRect();
+  const scale = box.width / env.width || 1;
+  const out: NodeRecord[] = [];
+  const walk = (el: Element, parent: string | null) => {
+    for (const child of Array.from(el.children)) {
+      const style = getComputedStyle(child);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      const r = child.getBoundingClientRect();
+      const role = roleOf(child, style);
+      if (!role || (r.width <= 1 && r.height <= 1)) {
+        walk(child, parent);
+        continue;
+      }
+      const id = `n${out.length}`;
+      const tag = child.tagName.toLowerCase();
+      const cls = typeof child.className === 'string' ? child.className.split(/\s+/)[0] : '';
+      const rec: NodeRecord = {
+        id,
+        name: child.getAttribute('data-name') ?? (cls ? `${tag}.${cls}` : tag),
+        role,
+        rect: { x: (r.left - box.left) / scale, y: (r.top - box.top) / scale, width: r.width / scale, height: r.height / scale },
+        scrollAxis:
+          /auto|scroll/.test(style.overflowX) && child.scrollWidth > child.clientWidth
+            ? 'x'
+            : /auto|scroll/.test(style.overflowY) && child.scrollHeight > child.clientHeight
+              ? 'y'
+              : 'none',
+        layout: style.display.includes('flex')
+          ? style.flexDirection.startsWith('row')
+            ? 'horizontal'
+            : 'vertical'
+          : style.display.includes('grid')
+            ? 'horizontal'
+            : 'none',
+        ...(/hidden|clip/.test(style.overflowX + style.overflowY) ? { clips: true } : {}),
+        parent,
+      };
+      if (role === 'text') {
+        rec.chars = (child.textContent ?? '').trim().length;
+        // Computed sizes are layout units, unaffected by the frame's zoom transform.
+        rec.fontSize = parseFloat(style.fontSize);
+      }
+      out.push(rec);
+      if (role !== 'media') walk(child, id);
+    }
+  };
+  walk(host, null);
+  return out;
+}

@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import type { ScreenSpec, SimulatorConfig } from '@hinge/core/config/types';
 import type { Environment } from '@hinge/core/engine/environment';
 import type { Layout } from '@hinge/core/engine/layout';
@@ -25,10 +26,12 @@ interface StageProps {
   onCollisions: (collisions: Collision[]) => void;
   onResize?: (width: number, height: number) => void;
   onResizeWindow?: (width: number, height: number) => void;
+  /** The element the sample screen renders into, for measuring what is on screen. */
+  hostRef?: RefObject<HTMLDivElement | null>;
 }
 
 /** One device frame with the sample screen inside it. The canvas shows one, or two when comparing platforms. */
-export function Stage({ config, env, layout, screen, theme, zoom, rtl, overlays, text, modal, onCloseModal, onCollisions, onResize, onResizeWindow }: StageProps) {
+export function Stage({ config, env, layout, screen, theme, zoom, rtl, overlays, text, modal, onCloseModal, onCollisions, onResize, onResizeWindow, hostRef }: StageProps) {
   return (
     <DeviceFrame
       env={env}
@@ -38,7 +41,7 @@ export function Stage({ config, env, layout, screen, theme, zoom, rtl, overlays,
       displayChrome={<AndroidChrome env={env} />}
       overlay={<Overlays env={env} layout={layout} show={overlays} />}
     >
-      <div className="sample" data-theme={theme} style={{ position: 'absolute', inset: 0 }}>
+      <div className="sample" ref={hostRef} data-theme={theme} style={{ position: 'absolute', inset: 0 }}>
         <Screen config={config} env={env} layout={layout} screen={screen} rtl={rtl} modal={modal} onCloseModal={onCloseModal} onCollisions={onCollisions} text={text} />
       </div>
     </DeviceFrame>
