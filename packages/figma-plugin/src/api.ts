@@ -2,5 +2,5 @@
 // does the in-memory fake in src/test/fakeFigma.ts.
 export type FigmaApi = Pick<
   PluginAPI,
-  'createFrame' | 'createRectangle' | 'currentPage' | 'viewport' | 'getNodeByIdAsync' | 'loadAllPagesAsync' | 'root' | 'variables' | 'setCurrentPageAsync'
+  'createFrame' | 'createRectangle' | 'currentPage' | 'viewport' | 'getNodeByIdAsync' | 'loadAllPagesAsync' | 'root' | 'variables' | 'setCurrentPageAsync' | 'commitUndo' | 'editorType'
 >;
