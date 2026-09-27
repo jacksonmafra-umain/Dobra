@@ -1,5 +1,6 @@
-// The simulator's view of a device's media-query facts: the catalog value, then the user's override.
-import { mediaFacts, type MediaFacts } from '@hinge/core/catalog/media';
+// The simulator's view of the media-query facts core resolved for this window (Environment.media),
+// with which facts the user overrode and whether they are category defaults.
+import { DEFAULT_MEDIA, mediaFacts, type MediaFacts } from '@hinge/core/catalog/media';
 import type { DeviceSpec } from '@hinge/core/config/types';
 import type { Environment } from '@hinge/core/engine/environment';
 
@@ -9,20 +10,24 @@ export type WindowPosture = 'Flat' | 'Book' | 'Tabletop';
 export interface ResolvedMedia extends MediaFacts {
   windowPosture: WindowPosture;
   overridden: (keyof MediaFacts)[];
-  /** True when the device has no media block, so the facts are category defaults. */
+  /** True when the facts are category defaults: the device has no media block, or the window is free. */
   estimated: boolean;
 }
 
 const KEYS: (keyof MediaFacts)[] = ['pointer', 'keyboard', 'viewingDistance', 'hasCamera', 'hasMicrophone'];
 
-export function resolveMedia(device: DeviceSpec, env: Environment, overrides: MediaOverrides): ResolvedMedia {
-  const base = mediaFacts(device);
+/** The facts a window has before any override. Core gives a free window the phone defaults. */
+export function baseMedia(device: DeviceSpec, env: Pick<Environment, 'isFree'>): MediaFacts {
+  return env.isFree ? DEFAULT_MEDIA.phone : mediaFacts(device);
+}
+
+export function resolveMedia(device: DeviceSpec, env: Environment): ResolvedMedia {
+  const base = baseMedia(device, env);
   const sep = env.folds.find((f) => f.separating);
   return {
-    ...base,
-    ...overrides,
+    ...env.media,
     windowPosture: !sep ? 'Flat' : sep.axis === 'horizontal' ? 'Tabletop' : 'Book',
-    overridden: KEYS.filter((k) => overrides[k] !== undefined && overrides[k] !== base[k]),
-    estimated: !device.media,
+    overridden: KEYS.filter((k) => env.media[k] !== base[k]),
+    estimated: env.isFree || !device.media,
   };
 }

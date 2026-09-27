@@ -31,8 +31,6 @@ export function App({ config }: { config: SimulatorConfig }) {
   const [rtl, setRtl] = useState(initial.rtl);
   const [overlays, setOverlays] = useState<OverlayToggles>(initial.overlays);
   const [text, setText] = useState<TextSettings>(initial.text);
-  // Overrides stay when the device changes: a mouse on one tablet is a mouse on the next.
-  const [mediaOverrides, setMediaOverrides] = useState<MediaOverrides>(initial.media);
   const [change, setChange] = useState<ChangeEntry | null>(null);
   const [vsId, setVsId] = useState(() => validCounterpart(config, initial.selection.deviceId, initial.vs));
   const [collisionsB, setCollisionsB] = useState<Collision[]>([]);
@@ -45,7 +43,10 @@ export function App({ config }: { config: SimulatorConfig }) {
   const env = resolveEnvironment(config, sel);
   const layout = resolveLayout(config, env, screen);
   const target = targetOf(sel, env);
-  const media = resolveMedia(device, env, mediaOverrides);
+  const media = resolveMedia(device, env);
+  // Overrides live in the selection, so they reach core's rule matching and stay when the device
+  // changes: a mouse on one tablet is a mouse on the next.
+  const setMediaOverrides = (f: (o: MediaOverrides) => MediaOverrides | undefined) => setSel((s) => ({ ...s, media: f(s.media ?? {}) }));
   const findings = [...runLayoutChecks(config, env, layout, screen, target), ...collisionsToFindings(collisions, target, env)];
 
   // Comparing platforms: the counterpart follows side A's screen, state and orientation.
@@ -79,12 +80,12 @@ export function App({ config }: { config: SimulatorConfig }) {
 
   useEffect(() => {
     try {
-      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text, media: mediaOverrides, vs }, env, device));
+      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text, vs }, env, device));
     } catch {
       // Sandboxed previews can refuse history access.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, mediaOverrides, vs]);
+  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, vs]);
 
   const toggleOverlay = (key: keyof OverlayToggles) => setOverlays((o) => ({ ...o, [key]: !o[key] }));
   const resizeFree = (w: number, h: number) => setSel((s) => ({ ...s, free: clampFree(w, h) }));
@@ -476,7 +477,7 @@ export function App({ config }: { config: SimulatorConfig }) {
           {media.overridden.length > 0 && (
             <div className="control">
               <span>Media</span>
-              <button className="seg-single" onClick={() => setMediaOverrides({})}>
+              <button className="seg-single" onClick={() => setMediaOverrides(() => undefined)}>
                 Reset
               </button>
             </div>

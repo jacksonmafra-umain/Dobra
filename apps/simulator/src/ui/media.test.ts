@@ -7,7 +7,7 @@ import { resolveMedia } from './media';
 
 const config = parseConfig(raw);
 const sel = (deviceId: string, extra: Partial<Selection> = {}): Selection => ({ deviceId, displayId: '', orientation: 'portrait', free: null, ...extra });
-const media = (s: Selection, o = {}) => resolveMedia(findDevice(config, s.deviceId), resolveEnvironment(config, s), o);
+const media = (s: Selection) => resolveMedia(findDevice(config, s.deviceId), resolveEnvironment(config, s));
 
 describe('resolveMedia', () => {
   it('uses the touch defaults on a phone', () => {
@@ -16,13 +16,17 @@ describe('resolveMedia', () => {
   it('uses the desktop defaults on a Chromebook', () => {
     expect(media(sel('chromebook'))).toMatchObject({ pointer: 'fine', keyboard: 'physical', viewingDistance: 'medium' });
   });
-  it('applies an override and names it', () => {
-    const m = media(sel('pixel-tablet'), { pointer: 'fine' });
+  it('reads overrides from the selection and names them', () => {
+    const m = media(sel('pixel-tablet', { media: { pointer: 'fine' } }));
     expect(m.pointer).toBe('fine');
     expect(m.overridden).toEqual(['pointer']);
   });
   it('does not count an override equal to the device value', () => {
-    expect(media(sel('pixel-9'), { pointer: 'coarse' }).overridden).toEqual([]);
+    expect(media(sel('pixel-9', { media: { pointer: 'coarse' } })).overridden).toEqual([]);
+  });
+  it('shows what core uses for a free window: phone defaults, not the starting device', () => {
+    const m = media(sel('chromebook', { free: { width: 700, height: 500 } }));
+    expect(m).toMatchObject({ pointer: 'coarse', keyboard: 'virtual', viewingDistance: 'near', overridden: [], estimated: true });
   });
   it('derives the posture from separating folds', () => {
     expect(media(sel('pixel-9-pro-fold', { displayId: 'inner', pose: 'tabletop' })).windowPosture).toBe('Tabletop');

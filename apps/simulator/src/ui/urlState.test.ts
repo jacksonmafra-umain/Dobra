@@ -49,14 +49,14 @@ describe('URL state', () => {
 
   it('round-trips media overrides', () => {
     const state = readUrlState('?device=pixel-tablet&ptr=fine&kbd=physical&dist=medium&cam=0&mic=0&screen=home');
-    expect(state.media).toEqual({ pointer: 'fine', keyboard: 'physical', viewingDistance: 'medium', hasCamera: false, hasMicrophone: false });
+    expect(state.selection.media).toEqual({ pointer: 'fine', keyboard: 'physical', viewingDistance: 'medium', hasCamera: false, hasMicrophone: false });
     const env = resolveEnvironment(config, state.selection);
     const device = findDevice(config, 'pixel-tablet');
-    expect(readUrlState(writeUrlState(state, env, device)).media).toEqual(state.media);
+    expect(readUrlState(writeUrlState(state, env, device)).selection.media).toEqual(state.selection.media);
   });
 
   it('ignores unknown media values', () => {
-    expect(readUrlState('?device=pixel-9&ptr=blunt&dist=far-away&cam=yes').media).toEqual({});
+    expect(readUrlState('?device=pixel-9&ptr=blunt&dist=far-away&cam=yes').selection.media).toBeUndefined();
   });
 
   it('does not write an override equal to the device value', () => {
@@ -76,5 +76,11 @@ describe('URL state', () => {
     expect(validCounterpart(config, 'iphone-17', readUrlState('?device=iphone-17&vs=iphone-air').vs)).toBeUndefined();
     expect(validCounterpart(config, 'iphone-17', readUrlState('?device=iphone-17&vs=bogus').vs)).toBeUndefined();
     expect(validCounterpart(config, 'iphone-17', 'pixel-9')).toBe('pixel-9');
+  });
+
+  it('compares a free window against the phone defaults core gives it', () => {
+    const state = readUrlState('?device=chromebook&free=700x500&ptr=fine&screen=home');
+    const env = resolveEnvironment(config, state.selection);
+    expect(writeUrlState(state, env, findDevice(config, 'chromebook'))).toContain('ptr=fine');
   });
 });
