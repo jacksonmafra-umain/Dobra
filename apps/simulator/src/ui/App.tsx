@@ -392,7 +392,7 @@ export function App({ config }: { config: SimulatorConfig }) {
           </label>
           <div className="control">
             <span>Overlays</span>
-            <div className="seg">
+            <div className="seg seg--chips">
               <button aria-pressed={overlays.safeArea} onClick={() => toggleOverlay('safeArea')}>
                 Safe areas
               </button>
