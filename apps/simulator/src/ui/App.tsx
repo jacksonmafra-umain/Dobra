@@ -501,7 +501,7 @@ export function App({ config }: { config: SimulatorConfig }) {
           <div className="control">
             <span>Findings</span>
             <button
-              className="seg-single"
+              className="seg-single seg-single--accent"
               disabled={!canExport.ok}
               title={canExport.ok ? 'Download a Dobra Report JSON for the web report. It holds the shared geometry rules over what is on screen.' : canExport.reason}
               onClick={exportReport}

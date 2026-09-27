@@ -81,3 +81,12 @@ describe('narrow windows', () => {
     expect(app.get('min-height')).toBe('100%');
   });
 });
+
+describe('primary action', () => {
+  // Spec §4: the export button is the solid fold-colored primary.
+  it('styles Export report as the accent button', () => {
+    const app = readFileSync(new URL('../ui/App.tsx', import.meta.url), 'utf8');
+    const button = app.slice(app.lastIndexOf('<button', app.indexOf('onClick={exportReport}')), app.indexOf('onClick={exportReport}'));
+    expect(button).toContain('className="seg-single seg-single--accent"');
+  });
+});
