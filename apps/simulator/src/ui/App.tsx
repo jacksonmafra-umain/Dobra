@@ -12,6 +12,7 @@ import { AndroidChrome } from '../sample/androidChrome';
 import { Screen } from '../sample/Screen';
 import { DeviceFrame, type Zoom } from './DeviceFrame';
 import { Inspector } from './Inspector';
+import { resolveMedia } from './media';
 import { Overlays, type OverlayToggles } from './Overlays';
 import { clampFree, FREE_MAX, FREE_MIN, readUrlState, writeUrlState, type Theme } from './urlState';
 import { WhatChanged, type ChangeEntry } from './WhatChanged';
@@ -39,6 +40,7 @@ export function App({ config }: { config: SimulatorConfig }) {
   const env = resolveEnvironment(config, sel);
   const layout = resolveLayout(config, env, screen);
   const target = targetOf(sel, env);
+  const media = resolveMedia(device, env, {});
   const findings = [...runLayoutChecks(config, env, layout, screen, target), ...collisionsToFindings(collisions, target, env)];
 
   const previous = useRef<Snapshot | null>(null);
@@ -480,6 +482,7 @@ export function App({ config }: { config: SimulatorConfig }) {
             findings={findings}
             modal={modal}
             rtl={rtl}
+            media={media}
           />
           <WhatChanged entry={change} />
         </aside>
