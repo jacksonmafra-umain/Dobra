@@ -227,3 +227,19 @@ describe('touch-target by pointer and clipping', () => {
     expect(ids(subject([small()], [DUO], { confidence: 'size' }), 'touch-target')).toEqual(['x']);
   });
 });
+
+describe('marked layers', () => {
+  // A plain rectangle across the Duo's hinge (x 537–563): not text, not a control.
+  const shape = (extra: Partial<GeoNode> = {}) => node('chart', 'container', { x: 500, y: 100, width: 120, height: 80 }, extra);
+
+  it('checks a layer marked important on the hinge, whatever its role', () => {
+    expect(ids(subject([shape()]), 'hinge-content')).toEqual([]);
+    expect(ids(subject([shape({ important: true })]), 'hinge-content')).toEqual(['chart']);
+  });
+
+  it('skips a layer marked not important in the hinge and touch-target checks', () => {
+    const button = node('deco', 'interactive', { x: 500, y: 100, width: 30, height: 30 }, { ignore: true });
+    expect(ids(subject([button]), 'hinge-content')).toEqual([]);
+    expect(ids(subject([button]), 'touch-target')).toEqual([]);
+  });
+});
