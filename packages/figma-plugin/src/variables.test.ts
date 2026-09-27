@@ -240,3 +240,37 @@ describe('review fixes', () => {
     expect(s.collections.find((c) => c.name === 'Dobra · Devices · Tablet')?.stale).toEqual(['Target 2']);
   });
 });
+
+describe('review minors', () => {
+  it('keeps scopes a designer changed, and only rewrites them when Dobra changes its own', async () => {
+    const api = createFakeFigma();
+    await applyVariables(api, spec(), OFF);
+    const margin = (await variablesOf(api)).find((v) => v.name === 'layout/margin')!;
+    margin.scopes = ['ALL_SCOPES'];
+    await applyVariables(api, spec(), OFF);
+    expect(margin.scopes).toEqual(['ALL_SCOPES']);
+    const rescoped: VariableSpec = { collections: [{ ...spec().collections[0], variables: spec().collections[0].variables.map((v) => (v.key === 'layout/margin' ? { ...v, scopes: ['GAP', 'WIDTH_HEIGHT'] } : v)) }] };
+    await applyVariables(api, rescoped, OFF);
+    expect(margin.scopes).toEqual(['GAP', 'WIDTH_HEIGHT']);
+  });
+
+  it('reports other creation failures as they are, not as missing edit access', async () => {
+    const api = createFakeFigma();
+    api.variables.createVariableCollection = () => {
+      throw new Error('Something else went wrong');
+    };
+    const s = await applyVariables(api, spec(), OFF);
+    expect(s.errors).toEqual([{ collection: 'size-classes/android', message: 'Something else went wrong' }]);
+  });
+
+  it('reuses a numbered split on the next run without retrying or warning again', async () => {
+    const api = createFakeFigma();
+    api.modeLimit = 2;
+    const three: VariableSpec = { collections: [{ ...spec().collections[0], modes: [{ key: 'compact', name: 'Compact' }, { key: 'medium', name: 'Medium' }, { key: 'expanded', name: 'Expanded' }], variables: [{ ...spec().collections[0].variables[0], values: { compact: 16, medium: 24, expanded: 24 } }] }] };
+    expect((await applyVariables(api, three, OFF)).warnings).toHaveLength(1);
+    const again = await applyVariables(api, three, OFF);
+    expect(again.warnings).toEqual([]);
+    expect(again.errors).toEqual([]);
+    expect((await api.variables.getLocalVariableCollectionsAsync()).map((c) => c.modes.length)).toEqual([2, 1]);
+  });
+});
