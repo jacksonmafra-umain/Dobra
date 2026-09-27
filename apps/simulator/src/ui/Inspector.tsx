@@ -6,6 +6,7 @@ import { placeModal, type ModalKind } from '@hinge/core/engine/modal';
 import { formatSizeClass } from '@hinge/core/engine/sizeClass';
 import type { Finding } from '@hinge/core/engine/checks';
 import type { Collision } from '../sample/collisions';
+import type { ResolvedMedia } from './media';
 
 interface InspectorProps {
   config: SimulatorConfig;
@@ -16,6 +17,7 @@ interface InspectorProps {
   findings: Finding[];
   modal: ModalKind | null;
   rtl: boolean;
+  media: ResolvedMedia;
 }
 
 const NAVIGATION_LABEL: Record<Layout['navigation']['pattern'], string> = {
@@ -27,8 +29,20 @@ const NAVIGATION_LABEL: Record<Layout['navigation']['pattern'], string> = {
 };
 
 
+export function formatMedia(m: ResolvedMedia): string {
+  const o = (k: keyof ResolvedMedia, s: string) => (m.overridden.includes(k as never) ? `${s} (override)` : s);
+  return [
+    o('pointer', `${capitalize(m.pointer)} pointer`),
+    o('keyboard', `${m.keyboard} keyboard`),
+    o('viewingDistance', m.viewingDistance),
+    o('hasCamera', m.hasCamera ? 'camera' : 'no camera'),
+    o('hasMicrophone', m.hasMicrophone ? 'mic' : 'no mic'),
+    `${m.windowPosture}${m.estimated ? ' (category default, estimated)' : ''}`,
+  ].join(' · ');
+}
+
 const COVER_POLICY = { 'user-granted': 'User must allow it', 'any-app': 'Any app', 'allow-list': 'Allow-listed apps only' } as const;
-export function Inspector({ config, env, layout, screen, collisions, findings, modal, rtl }: InspectorProps) {
+export function Inspector({ config, env, layout, screen, collisions, findings, modal, rtl, media }: InspectorProps) {
   const u = env.unit;
   const safe = env.safeArea;
   const android = config.platforms.android;
@@ -43,6 +57,7 @@ export function Inspector({ config, env, layout, screen, collisions, findings, m
       ? [['Keyboard', `${env.ime} ${u}: ${env.height - env.safeArea.top - env.ime} ${u} left for content; the window size class does not change`] as [string, string]]
       : []),
     ['Orientation', env.orientation],
+    ['Media', formatMedia(media)],
     ['Pose', env.pose ? `${env.pose.label}${env.pose.estimated ? ' (estimated)' : ''}` : '— (foldable devices only)'],
     [
       'Available space',
