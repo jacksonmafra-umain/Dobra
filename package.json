@@ -15,6 +15,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "dev:report": "npm run dev -w @hinge/report --",
-    "build:report": "npm run build -w @hinge/report"
+    "build:report": "npm run build -w @hinge/report",
+    "hinge": "node packages/cli/dist/hinge.mjs",
+    "build:cli": "npm run build -w @hinge/cli"
   }
 }
