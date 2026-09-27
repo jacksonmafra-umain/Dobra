@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadCatalog } from './catalog/load';
 import type { GeoNode, Subject } from './geo';
 import { check } from './rules';
-import { envConfigOf, resolveTarget, type Target } from './targets';
+import { enumerateTargets, envConfigOf, resolveTarget, type Target } from './targets';
 
 const config = envConfigOf(loadCatalog());
 const DUO: Target = { deviceId: 'surface-duo-2', displayId: 'spanned', pose: 'spanned', orientation: 'landscape' };
@@ -143,5 +143,34 @@ describe('no false positives in ordinary layouts', () => {
       children: [node('Photo', 'media', { x: -50, y: 0, width: 600, height: 200 })],
     });
     expect(ids(subject([crop], [PIXEL], { width: 411, height: 923 }), 'overflow-x')).toEqual([]);
+  });
+});
+
+describe('touch-target by pointer and clipping', () => {
+  const small = () => node('x', 'interactive', { x: 10, y: 10, width: 30, height: 30 });
+
+  it('skips windows with a fine pointer', () => {
+    const desk = enumerateTargets(config).find((t) => config.devices.find((d) => d.id === t.deviceId)?.category === 'desktop')!;
+    expect(ids(subject([small()], [desk], { width: 1280, height: 800 }), 'touch-target')).toEqual([]);
+  });
+
+  it('skips a control a clipping container crops out entirely', () => {
+    const clip = node('clip', 'container', { x: 0, y: 0, width: 1, height: 1 }, {
+      clips: true,
+      children: [node('hidden', 'interactive', { x: 5, y: 5, width: 30, height: 18 })],
+    });
+    expect(ids(subject([clip]), 'touch-target')).toEqual([]);
+  });
+
+  it('still checks a control that a clip only partly crops', () => {
+    const clip = node('clip', 'container', { x: 0, y: 0, width: 20, height: 20 }, {
+      clips: true,
+      children: [node('partial', 'interactive', { x: 10, y: 10, width: 30, height: 18 })],
+    });
+    expect(ids(subject([clip]), 'touch-target')).toEqual(['partial']);
+  });
+
+  it('still runs on a size-only match', () => {
+    expect(ids(subject([small()], [DUO], { confidence: 'size' }), 'touch-target')).toEqual(['x']);
   });
 });

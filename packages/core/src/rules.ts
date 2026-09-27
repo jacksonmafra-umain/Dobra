@@ -135,9 +135,19 @@ function overflowX({ subject, placed, add }: Ctx) {
   }
 }
 
+/** A node whose rect misses some clipping ancestor entirely is cropped out of view. */
+function croppedAway(p: Placed, byNode: Map<GeoNode, Placed>): boolean {
+  for (let up = p.parent; up; up = byNode.get(up)?.parent ?? null) if (up.clips && !rectsOverlap(p.node.rect, up.rect)) return true;
+  return false;
+}
+
 function touchTarget({ env, placed, add }: Ctx) {
+  // Mouse and trackpad windows (desktop, or a fine-pointer override) have no touch-target minimum.
+  if (env.media.pointer !== 'coarse') return;
   const min = TOUCH_TARGET[env.platform];
+  const byNode = new Map(placed.map((p) => [p.node, p]));
   for (const p of outermost(placed, (n) => n.role === 'interactive')) {
+    if (croppedAway(p, byNode)) continue;
     const r = p.node.rect;
     if (r.width < min || r.height < min) {
       add({
