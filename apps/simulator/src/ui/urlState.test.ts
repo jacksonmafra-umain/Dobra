@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { rawConfig as raw } from '@hinge/core/config/load';
 import { parseConfig } from '@hinge/core/config/schema';
 import { findDevice, resolveEnvironment } from '@hinge/core/engine/environment';
+import { validCounterpart } from './parity';
 import { readUrlState, writeUrlState } from './urlState';
 
 const config = parseConfig(raw);
@@ -62,5 +63,18 @@ describe('URL state', () => {
     const state = readUrlState('?device=pixel-9&ptr=coarse&screen=home');
     const env = resolveEnvironment(config, state.selection);
     expect(writeUrlState(state, env, findDevice(config, 'pixel-9'))).not.toContain('ptr=');
+  });
+
+  it('round-trips the parity counterpart', () => {
+    const state = readUrlState('?device=iphone-17&vs=pixel-9&screen=home');
+    expect(state.vs).toBe('pixel-9');
+    const env = resolveEnvironment(config, state.selection);
+    expect(writeUrlState(state, env, findDevice(config, 'iphone-17'))).toContain('vs=pixel-9');
+  });
+
+  it('drops a counterpart on the same platform or an unknown one', () => {
+    expect(validCounterpart(config, 'iphone-17', readUrlState('?device=iphone-17&vs=iphone-air').vs)).toBeUndefined();
+    expect(validCounterpart(config, 'iphone-17', readUrlState('?device=iphone-17&vs=bogus').vs)).toBeUndefined();
+    expect(validCounterpart(config, 'iphone-17', 'pixel-9')).toBe('pixel-9');
   });
 });
