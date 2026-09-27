@@ -77,12 +77,13 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
           const role = roleOf(child, style, r);
           // A zero-size wrapper (a custom element, a positioned child's parent) still renders its children.
           if (role && offScreen(style, r)) continue;
+          // Count a node before its children, so a container never lands past the cap.
+          if (role) count++;
           const inner = role === 'media' ? [] : convert(child);
           if (!role) {
             out.push(...inner);
             continue;
           }
-          count++;
           const g: GeoNode = {
             id: pathOf(child),
             name: nameOf(child),
