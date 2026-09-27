@@ -43,6 +43,8 @@ export interface VariableOptions {
   profileName?: string;
   platforms: Platform[];
   targets: Target[];
+  /** Write the device collection even with no targets, so an earlier run's device modes are reported. */
+  devices?: boolean;
 }
 
 type LayoutField = 'margin' | 'gutter' | 'columns' | 'panes';
@@ -53,11 +55,6 @@ interface ClassLayout {
 
 const PLATFORM_LABEL: Record<Platform, string> = { android: 'Android', ios: 'iOS' };
 const capital = (id: string) => id[0].toUpperCase() + id.slice(1);
-/** A window that sits in each class, for matching profile rules: the class's lower bound, regular height. */
-const REPRESENTATIVE: Record<Platform, Record<string, number>> = {
-  android: { compact: 360, medium: 600, expanded: 840, large: 1200, extraLarge: 1600 },
-  ios: { compact: 390, regular: 820 },
-};
 const LAYOUT_VARS: { field: LayoutField; scopes: string[] }[] = [
   { field: 'margin', scopes: ['GAP'] },
   { field: 'gutter', scopes: ['GAP'] },
@@ -82,13 +79,27 @@ export function defaultLayout(catalog: Catalog, platform: Platform, classId: str
   };
 }
 
-function profileLayout(catalog: Catalog, opts: VariableOptions, platform: Platform, classId: string): ClassLayout {
+/**
+ * A window inside a width class, for matching profile rules, from the catalog's breakpoints: the middle
+ * of the class (its lower bound when unbounded), at a regular height (Android's medium height class,
+ * iOS's regular height threshold).
+ */
+function representativeWindow(catalog: Catalog, platform: Platform, bound: { min: number; max: number }): { width: number; height: number } {
+  const width = bound.max ? Math.floor((bound.min + bound.max) / 2) : bound.min;
+  if (platform === 'ios') return { width, height: catalog.platforms.ios.sizeClasses.free.regularHeightMin };
+  const heights = catalog.platforms.android.sizeClasses.height;
+  const medium = heights.find((h) => h.id === 'medium') ?? heights[0];
+  const next = heights[heights.indexOf(medium) + 1];
+  return { width, height: next ? Math.floor((medium.min + next.min) / 2) : medium.min };
+}
+
+function profileLayout(catalog: Catalog, opts: VariableOptions, platform: Platform, classId: string, bound: { min: number; max: number }): ClassLayout {
   const profile = opts.profile!;
   const env = resolveEnvironment(profile, {
     deviceId: '',
     displayId: '',
     orientation: 'portrait',
-    free: { width: REPRESENTATIVE[platform][classId], height: 900 },
+    free: representativeWindow(catalog, platform, bound),
     freePlatform: platform,
   });
   const rule = matchRuleOrNull(profile, env);
@@ -108,7 +119,7 @@ function sizeClassCollection(catalog: Catalog, opts: VariableOptions, platform: 
             { id: 'regular', min: at, max: 0 },
           ];
         })();
-  const layouts = Object.fromEntries(bounds.map((b) => [b.id, opts.profile ? profileLayout(catalog, opts, platform, b.id) : defaultLayout(catalog, platform, b.id)]));
+  const layouts = Object.fromEntries(bounds.map((b) => [b.id, opts.profile ? profileLayout(catalog, opts, platform, b.id, b) : defaultLayout(catalog, platform, b.id)]));
   const per = (f: (id: string) => VarValue) => Object.fromEntries(bounds.map((b) => [b.id, f(b.id)]));
   const breakpoints = `Window size class breakpoints: ${sourceLabel(catalog, platform === 'android' ? catalog.platforms.android.sizeClasses.source : 'apple-device')}`;
   return {
@@ -221,6 +232,6 @@ function deviceCollection(catalog: Catalog, opts: VariableOptions): SpecCollecti
 
 export function variableSpec(catalog: Catalog, opts: VariableOptions): VariableSpec {
   const collections = opts.platforms.map((p) => sizeClassCollection(catalog, opts, p));
-  if (opts.targets.length) collections.push(deviceCollection(catalog, opts));
+  if (opts.targets.length || opts.devices) collections.push(deviceCollection(catalog, opts));
   return { collections };
 }

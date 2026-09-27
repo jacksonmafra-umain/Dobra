@@ -106,3 +106,18 @@ describe('device variables', () => {
     expect(variableSpec(catalog, { platforms: ['android'], targets: [] }).collections.map((c) => c.key)).toEqual(['size-classes/android']);
   });
 });
+
+describe('review fixes', () => {
+  it('keeps an empty device collection when devices are on but none is picked', () => {
+    const spec = variableSpec(catalog, { platforms: [], targets: [], devices: true });
+    expect(col(spec, 'devices').modes).toEqual([]);
+    expect(variableSpec(catalog, { platforms: [], targets: [] }).collections).toEqual([]);
+  });
+
+  it('matches profile rules at windows taken from the catalog, including medium height', () => {
+    const rule = { ...profile.layoutRules.find((r) => r.id === 'android-medium')!, id: 'medium-tall', match: { width: ['medium'], height: ['medium'] }, grid: { columns: 99, gutter: 7 } };
+    const custom = { ...profile, layoutRules: [rule, ...profile.layoutRules] };
+    const a = col(variableSpec(catalog, { profile: custom, platforms: ['android'], targets: [] }), 'size-classes/android');
+    expect(val(a, 'layout/columns', 'medium')).toBe(99);
+  });
+});
