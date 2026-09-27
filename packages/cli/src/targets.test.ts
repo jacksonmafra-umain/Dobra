@@ -18,6 +18,10 @@ describe('chooseTargets', () => {
     expect(() => chooseTargets(catalog, { targets: ['nope/x/-/portrait'], categories: [] })).toThrow(/nope\/x\/-\/portrait/);
   });
 
+  it('drops repeated keys', () => {
+    expect(chooseTargets(catalog, { targets: ['pixel-9/main/-/portrait', 'pixel-9/main/-/portrait'], categories: [] }).map(targetKey)).toEqual(['pixel-9/main/-/portrait']);
+  });
+
   it('expands categories to all their targets', () => {
     const keys = chooseTargets(catalog, { targets: null, categories: ['dual-screen'] }).map(targetKey);
     expect(keys.length).toBeGreaterThan(0);

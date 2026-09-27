@@ -57,6 +57,26 @@ describe('collectLayout', () => {
     expect(truncated).toBe(true);
   });
 
+  it('never collects more nodes than the cap, containers included', async () => {
+    await page.goto(`${server.url}/nested.html`);
+    const { root, truncated } = await collectLayout(page, 20);
+    // The document node is the wrapper the collector adds; everything under it counts against the cap.
+    expect(nodes(root).filter((n) => n.id !== 'document').length).toBeLessThanOrEqual(20);
+    expect(truncated).toBe(true);
+  });
+
+  it('names and counts text that starts after blank lines', async () => {
+    await page.goto(`${server.url}/spaced.html`);
+    const { root } = await collectLayout(page);
+    expect(byName(root, 'p')).toMatchObject({ role: 'text', name: 'p "Text that starts after a"' });
+  });
+
+  it('collects a page nested far deeper than real sites', async () => {
+    await page.goto(`${server.url}/wordy.html`);
+    const { root } = await collectLayout(page);
+    expect(nodes(root).length).toBeGreaterThan(2000);
+  });
+
   it('feeds the shared rules: the hinge, a wide element, but not a clipped image', async () => {
     await page.goto(`${server.url}/layout.html`);
     const { root } = await collectLayout(page);

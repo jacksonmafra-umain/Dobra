@@ -59,11 +59,13 @@ describe('run', () => {
     expect(h.files.get('r.md')).toMatch(/^# /);
   });
 
-  it('lists unloaded targets and fails unless --fail-on never', async () => {
+  it('lists unloaded targets and fails even with --fail-on never', async () => {
     const h = harness(report(undefined, true));
     expect(await run(site, h.io)).toBe(1);
     expect(h.err.join('\n')).toContain('HTTP 500');
-    expect(await run([...site, '--fail-on', 'never'], harness(report(undefined, true)).io)).toBe(0);
+    // A site that did not load is an outage, not a clean run.
+    expect(await run([...site, '--fail-on', 'never'], harness(report(undefined, true)).io)).toBe(1);
+    expect(await run([...site, '--fail-on', 'never'], harness(report('error')).io)).toBe(0);
   });
 
   it('names an unknown target and returns 2', async () => {

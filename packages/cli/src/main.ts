@@ -57,10 +57,11 @@ export async function run(argv: string[], io: Io): Promise<number> {
   summarise(report, io);
   io.out(`Report: ${opts.out}${opts.md ? `, ${opts.md}` : ''}`);
 
+  // A target that did not load always fails: CI must not read an outage as a clean run.
+  if (report.unloaded.length) return 1;
   if (opts.failOn === 'never') return 0;
   const floor = RANK[opts.failOn];
-  const failing = report.frames.some((f) => f.findings.some((x) => RANK[x.severity] >= floor));
-  return failing || report.unloaded.length ? 1 : 0;
+  return report.frames.some((f) => f.findings.some((x) => RANK[x.severity] >= floor)) ? 1 : 0;
 }
 
 const isEntry = (() => {

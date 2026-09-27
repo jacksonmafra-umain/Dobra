@@ -7,13 +7,16 @@ export interface CollectedLayout {
   root: GeoNode[];
   scrollWidth: number;
   truncated: boolean;
+  /** The visual viewport's zoom: below 1 when mobile emulation zooms out to fit wide content. */
+  scale: number;
 }
 
 export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLayout> {
   // Under mobile emulation Chrome widens the layout viewport to wide content, so the window width
   // comes from the emulated viewport, not innerWidth.
   const viewport = page.viewportSize() ?? (await page.evaluate(() => ({ width: innerWidth, height: innerHeight })));
-  return page.evaluate(
+  // The tree goes back as JSON text: Playwright refuses results nested deeper than about 100 references.
+  const json = await page.evaluate(
     ({ limit, width }) => {
       const TEXT = 'h1,h2,h3,h4,h5,h6,p,li,label,dt,dd,td,th,figcaption,blockquote';
       const INTERACTIVE =
@@ -25,16 +28,6 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
       const fixed: GeoNode[] = [];
       // Rects are read at the top of the page, so fixed elements and the document share coordinates.
       scrollTo(0, 0);
-      /** The parent across a shadow boundary: a shadow root's host. */
-      const up = (e: Element): Element | null => e.parentElement ?? ((e.parentNode as ShadowRoot | null)?.host ?? null);
-      const pathOf = (el: Element): string => {
-        const parts: string[] = [];
-        for (let e: Element | null = el; e && e !== document.body; e = up(e)) {
-          const siblings = e.parentNode ? Array.from(e.parentNode.children) : [];
-          parts.unshift(`${e.tagName.toLowerCase()}:${Math.max(0, siblings.indexOf(e))}`);
-        }
-        return parts.join('/');
-      };
       /** What an element renders: its shadow tree, a slot's assigned elements, or its children. */
       const childrenOf = (el: Element): Element[] => {
         if (el.shadowRoot) return Array.from(el.shadowRoot.children);
@@ -53,20 +46,35 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
         if (el.matches(INTERACTIVE)) return 'interactive';
         if (el.matches(CHROME) || style.position === 'fixed' || style.position === 'sticky') return 'chrome';
         if (el.matches(MEDIA)) return 'media';
-        if (el.matches(TEXT) && (el.textContent ?? '').trim()) return 'text';
+        if (el.matches(TEXT) && textStart(el, 1)) return 'text';
         if (style.display.includes('flex') || style.display.includes('grid') || /auto|scroll|hidden|clip/.test(style.overflowX + style.overflowY)) return 'container';
         // A plain box that runs past the window is kept, so overflow-x can report it.
         if (rect.right + scrollX > width + 1) return 'container';
         return null;
       };
+      /**
+       * The first `n` non-blank characters of an element's text. It stops early, instead of reading
+       * textContent, which on a big container copies all the text below it: quadratic on long pages.
+       */
+      const textStart = (el: Element, n: number): string => {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        let out = '';
+        // Leading blanks are dropped as they come, so whitespace-only nodes never fill the budget.
+        for (let t = walker.nextNode(); t && out.length < n; t = walker.nextNode()) out = (out + (t.nodeValue ?? '')).replace(/^\s+/, '');
+        return out.slice(0, n).trimEnd();
+      };
       const nameOf = (el: Element): string => {
-        const text = (el.textContent ?? '').trim();
+        const text = textStart(el, 24);
         const base = el.getAttribute('aria-label') || el.getAttribute('alt') || el.id || el.tagName.toLowerCase();
         return base + (text ? ` "${text.slice(0, 24)}"` : '');
       };
-      const convert = (el: Element): GeoNode[] => {
+      /** `path` is the element's id: tag:index steps from the body, built as the walk goes down. */
+      const convert = (el: Element, path: string): GeoNode[] => {
         const out: GeoNode[] = [];
-        for (const child of childrenOf(el)) {
+        const children = childrenOf(el);
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          const id = `${path ? `${path}/` : ''}${child.tagName.toLowerCase()}:${i}`;
           if (count >= limit) {
             truncated = true;
             break;
@@ -77,14 +85,15 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
           const role = roleOf(child, style, r);
           // A zero-size wrapper (a custom element, a positioned child's parent) still renders its children.
           if (role && offScreen(style, r)) continue;
-          const inner = role === 'media' ? [] : convert(child);
+          // Count a node before its children, so a container never lands past the cap.
+          if (role) count++;
+          const inner = role === 'media' ? [] : convert(child, id);
           if (!role) {
             out.push(...inner);
             continue;
           }
-          count++;
           const g: GeoNode = {
-            id: pathOf(child),
+            id,
             name: nameOf(child),
             role,
             rect: { x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: r.height },
@@ -114,7 +123,7 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
         }
         return out;
       };
-      const content = convert(document.body);
+      const content = convert(document.body, '');
       const scrollHeight = document.documentElement.scrollHeight;
       // The document scrolls vertically: content below the first screen can still pass the hinge.
       const doc: GeoNode = {
@@ -126,8 +135,10 @@ export async function collectLayout(page: Page, cap = 4000): Promise<CollectedLa
         layout: 'vertical',
         children: content,
       };
-      return { root: [doc, ...fixed], scrollWidth: document.documentElement.scrollWidth, truncated };
+      const scale = window.visualViewport?.scale ?? 1;
+      return JSON.stringify({ root: [doc, ...fixed], scrollWidth: document.documentElement.scrollWidth, truncated, scale });
     },
     { limit: cap, width: viewport.width },
   );
+  return JSON.parse(json) as CollectedLayout;
 }

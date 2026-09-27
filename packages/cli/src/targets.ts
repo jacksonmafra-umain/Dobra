@@ -8,7 +8,7 @@ import type { CliOptions } from './args';
 export function chooseTargets(catalog: Catalog, opts: Pick<CliOptions, 'targets' | 'categories'>): Target[] {
   const config = envConfigOf(catalog);
   if (opts.targets) {
-    return opts.targets.map((key) => {
+    return [...new Set(opts.targets)].map((key) => {
       const t = parseTargetKey(key);
       if (!t || !isKnownTarget(config, t)) throw new Error(`Unknown target ${key}`);
       return t;

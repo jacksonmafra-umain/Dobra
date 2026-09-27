@@ -26,7 +26,7 @@ npm run hinge -- check site https://example.com --md foldable-report.md
 | `--out <file>` | Report JSON path, default `foldable-report.json` |
 | `--md <file>` | Also write a Markdown summary |
 | `--wait <ms>` | Settle time after the page's `load` event, default `500` |
-| `--fail-on <level>` | Exit 1 on findings of this level or worse: `error` (default), `warn` or `never` |
+| `--fail-on <level>` | Exit 1 on findings of this level or worse: `error` (default), `warn` or `never`. A target that could not load always exits 1 |
 | `--no-transitions` | Skip the unfold pass |
 
 Without `--targets` or `--category`, the check visits one representative device for every
@@ -60,15 +60,16 @@ The CLI adds one more:
 
 - `resize-vs-reload`: on an Android device with a cover display, the page is loaded on the cover,
   resized to the inner display without reloading (as unfolding does), and compared with a fresh
-  load at that size. Three or more elements that sit more than 4 px apart mean the page only lays
-  itself out on load. Both thresholds are estimated.
+  load at that size. Three or more elements whose left or right edge sits more than 4 px apart mean the
+  page only lays itself out on load. Vertical shifts are ignored: late banners, lazy images and
+  carousels move content between any two loads. Both thresholds are estimated.
 
 ## Known limits
 
 - A horizontal fold (tabletop) does not flag content that scrolls with the page, since it moves
   past the crease. Fixed elements and pages that do not scroll are still checked.
-- Pages zoomed out to fit content wider than the window (which `overflow-x` already reports) get
-  approximate hinge positions.
+- A page without `initial-scale=1` that a mobile browser zooms out to fit wide content gets
+  approximate hinge positions; the report notes the zoom.
 - Iframes are treated as media and not entered.
 
 ## Exit codes
@@ -79,7 +80,7 @@ The CLI adds one more:
 | `1` | Findings at or above `--fail-on`, or a target that could not load (network error, HTTP 4xx/5xx) |
 | `2` | Help, bad arguments, an unknown target key, or a crash |
 
-With `--fail-on never` the exit code is always `0` after a run.
+With `--fail-on never`, findings never fail the run, but a target that could not load still exits `1`.
 
 ## CI
 
