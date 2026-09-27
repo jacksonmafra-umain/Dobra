@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadCatalog } from './catalog/load';
 import type { GeoNode, Subject } from './geo';
 import { check } from './rules';
-import { envConfigOf, resolveTarget, type Target } from './targets';
+import { enumerateTargets, envConfigOf, resolveTarget, type Target } from './targets';
 
 const config = envConfigOf(loadCatalog());
 const DUO: Target = { deviceId: 'surface-duo-2', displayId: 'spanned', pose: 'spanned', orientation: 'landscape' };
@@ -143,5 +143,48 @@ describe('no false positives in ordinary layouts', () => {
       children: [node('Photo', 'media', { x: -50, y: 0, width: 600, height: 200 })],
     });
     expect(ids(subject([crop], [PIXEL], { width: 411, height: 923 }), 'overflow-x')).toEqual([]);
+  });
+});
+
+describe('touch-target by pointer and clipping', () => {
+  const small = () => node('x', 'interactive', { x: 10, y: 10, width: 30, height: 30 });
+
+  it('skips windows with a fine pointer', () => {
+    const desk = enumerateTargets(config).find((t) => config.devices.find((d) => d.id === t.deviceId)?.category === 'desktop')!;
+    expect(ids(subject([small()], [desk], { width: 1280, height: 800 }), 'touch-target')).toEqual([]);
+  });
+
+  it('skips a control a clipping container crops out entirely', () => {
+    const clip = node('clip', 'container', { x: 0, y: 0, width: 1, height: 1 }, {
+      clips: true,
+      children: [node('hidden', 'interactive', { x: 5, y: 5, width: 30, height: 18 })],
+    });
+    expect(ids(subject([clip]), 'touch-target')).toEqual([]);
+  });
+
+  it('still checks a control that a clip only partly crops', () => {
+    const clip = node('clip', 'container', { x: 0, y: 0, width: 20, height: 20 }, {
+      clips: true,
+      children: [node('partial', 'interactive', { x: 10, y: 10, width: 30, height: 18 })],
+    });
+    expect(ids(subject([clip]), 'touch-target')).toEqual(['partial']);
+  });
+
+  it('still checks controls a scrolling frame can bring into view', () => {
+    const list = node('list', 'container', { x: 0, y: 0, width: 300, height: 400 }, {
+      clips: true,
+      scrollAxis: 'y',
+      children: [node('below', 'interactive', { x: 10, y: 900, width: 30, height: 30 })],
+    });
+    const carousel = node('carousel', 'container', { x: 0, y: 500, width: 300, height: 60 }, {
+      clips: true,
+      scrollAxis: 'x',
+      children: [node('offscreen', 'interactive', { x: 700, y: 510, width: 30, height: 30 })],
+    });
+    expect(ids(subject([list, carousel]), 'touch-target').sort()).toEqual(['below', 'offscreen']);
+  });
+
+  it('still runs on a size-only match', () => {
+    expect(ids(subject([small()], [DUO], { confidence: 'size' }), 'touch-target')).toEqual(['x']);
   });
 });

@@ -333,6 +333,10 @@ const layoutRule = z.strictObject({
     height: z.array(z.string()).min(1).optional(),
     // Either platform. Keying a layout on orientation is what the landscape ≠ wide check flags.
     orientation: orientation.optional(),
+    // Either platform: media-query facts (catalog/media.ts), for rules that differ by input or distance.
+    pointer: z.enum(['coarse', 'fine']).optional(),
+    keyboard: z.enum(['virtual', 'physical']).optional(),
+    viewingDistance: z.enum(['near', 'medium', 'far']).optional(),
   }),
   pageMargin: z.strictObject({ base: nonNeg, mode: z.enum(['max', 'add']) }),
   grid: z.strictObject({ columns: z.number().int().positive(), gutter: nonNeg, proposed: z.boolean().optional() }),

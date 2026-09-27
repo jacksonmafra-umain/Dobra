@@ -34,7 +34,7 @@ export function unionInsets(parts: InsetPart[]): Insets {
   return out;
 }
 
-export function resolveAndroidDevice(config: EnvConfig, spec: DeviceSpec, sel: Selection): Environment {
+export function resolveAndroidDevice(config: EnvConfig, spec: DeviceSpec, sel: Selection): Omit<Environment, 'media'> {
   const device = spec as AndroidDeviceSpec;
   const profile = config.platforms.android;
   const app = config.app.android;

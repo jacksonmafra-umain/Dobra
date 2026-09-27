@@ -135,9 +135,31 @@ function overflowX({ subject, placed, add }: Ctx) {
   }
 }
 
+const spans = (a: number, al: number, b: number, bl: number) => a < b + bl && a + al > b;
+
+/**
+ * A node whose rect misses some clipping ancestor entirely is cropped out of view. A scrolling frame
+ * only crops across its scroll axis: content further along it scrolls into view.
+ */
+function croppedAway(p: Placed, byNode: Map<GeoNode, Placed>): boolean {
+  const r = p.node.rect;
+  for (let up = p.parent; up; up = byNode.get(up)?.parent ?? null) {
+    if (!up.clips) continue;
+    const c = up.rect;
+    const visible =
+      up.scrollAxis === 'y' ? spans(r.x, r.width, c.x, c.width) : up.scrollAxis === 'x' ? spans(r.y, r.height, c.y, c.height) : rectsOverlap(r, c);
+    if (!visible) return true;
+  }
+  return false;
+}
+
 function touchTarget({ env, placed, add }: Ctx) {
+  // Mouse and trackpad windows (desktop, or a fine-pointer override) have no touch-target minimum.
+  if (env.media.pointer !== 'coarse') return;
   const min = TOUCH_TARGET[env.platform];
+  const byNode = new Map(placed.map((p) => [p.node, p]));
   for (const p of outermost(placed, (n) => n.role === 'interactive')) {
+    if (croppedAway(p, byNode)) continue;
     const r = p.node.rect;
     if (r.width < min || r.height < min) {
       add({

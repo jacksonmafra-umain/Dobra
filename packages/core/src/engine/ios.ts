@@ -16,7 +16,7 @@ function findDisplay(device: IosDeviceSpec, id: string): DisplaySpec {
   return display;
 }
 
-export function resolveIosDevice(config: EnvConfig, spec: DeviceSpec, sel: Selection): Environment {
+export function resolveIosDevice(config: EnvConfig, spec: DeviceSpec, sel: Selection): Omit<Environment, 'media'> {
   const device = spec as IosDeviceSpec;
   const profile = config.platforms.ios;
   const poses = device.poses ?? [];

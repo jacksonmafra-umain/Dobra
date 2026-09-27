@@ -25,7 +25,7 @@ export interface ReportFrame {
 export interface Report {
   version: 1;
   generatedAt: string;
-  source: { kind: 'figma' | 'web'; ref: string; name: string; fileVersion?: string };
+  source: { kind: 'figma' | 'web' | 'simulator'; ref: string; name: string; fileVersion?: string };
   catalogVersion: string;
   frames: ReportFrame[];
   coverage: CoverageMatrix;
@@ -54,7 +54,7 @@ const requirement = z.object({ category: z.string(), kind: z.string(), orientati
 export const reportSchema = z.object({
   version: z.literal(1),
   generatedAt: z.string(),
-  source: z.object({ kind: z.enum(['figma', 'web']), ref: z.string(), name: z.string(), fileVersion: z.string().optional() }),
+  source: z.object({ kind: z.enum(['figma', 'web', 'simulator']), ref: z.string(), name: z.string(), fileVersion: z.string().optional() }),
   catalogVersion: z.string(),
   frames: z.array(
     z.object({

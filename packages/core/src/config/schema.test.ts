@@ -84,4 +84,13 @@ describe('config schema', () => {
     flip.displays.cover.coverScreen.policy = 'sometimes';
     expect(issuesOf(cfg).join('\n')).toMatch(/coverScreen\.policy/);
   });
+
+  it('accepts media match keys and rejects unknown values with the path', () => {
+    const cfg = clone();
+    const android = cfg.layoutRules.findIndex((r: { platform: string }) => r.platform === 'android');
+    cfg.layoutRules.splice(android, 0, { ...cfg.layoutRules[android], id: 'fine-pointer', match: { pointer: 'fine' } });
+    expect(issuesOf(cfg)).toEqual([]);
+    cfg.layoutRules[android].match = { pointer: 'hover' };
+    expect(issuesOf(cfg).join('\n')).toMatch(/layoutRules\[\d+\]\.match\.pointer/);
+  });
 });
