@@ -36,7 +36,7 @@ Success looks like this:
 | Site stack | Astro in `apps/site`: Vite-based, native Markdown, heading anchors, static HTML that search engines index. |
 | Landing page content | Real content only: what Dobra is, the four tools, quick start, links to the simulator and the report. |
 | Guide content | Written in `docs/guide/` by two sessions, split as agreed with agent/02 (§8). |
-| Out of scope | Changing what any tool does; the simulated app's look (`apps/simulator/src/styles/sample-app.css`); hosting and domain; in-site search. |
+| Out of scope | Changing what any tool does; the simulated app's look (`apps/simulator/src/styles/sample-app.css`); a custom domain; in-site search. |
 
 ## 3. `@dobra/brand`
 
@@ -185,11 +185,14 @@ Astro, static output, React available for islands.
   one sentence on what Dobra is; the four tools (simulator, Figma plugin, web report, CLI), each
   with a short description and its entry point; the quick-start commands; links to open the
   simulator and the report and to read the guide.
+- **Video.** The launch video (21.5 s, 1080p with a 720p fallback and a poster) plays inline with
+  controls, muted, never autoplaying.
 - **Bundled tools.** The site build copies the simulator's production build to `/simulator/` and
-  the report's to `/report/`, so the whole thing deploys as one static folder. Hosting is decided
-  later (the repo is private, and the Vercel connector is not signed in).
+  the report's to `/report/`, so the whole thing deploys as one static folder. It deploys to the
+  Vercel project `dobra` (scope `jacksonmafra-1855s-projects`) at https://dobra-five.vercel.app,
+  which is also the canonical URL.
 - **Docs.** Routes `/guide/<slug>/` from `docs/guide/*.md` in file-name order (`00-index` to
-  `08-faq`). A sidebar from each page's title and its `##` headings. Every heading gets a stable,
+  `09-faq`; `00-index` is `/guide/` and the rest drop their number). A sidebar from each page's title and its `##` headings. Every heading gets a stable,
   unique id and a visible anchor link. Tables get brand styling and scroll horizontally on narrow
   screens. The final `## Sources` section of each page renders as a distinct sources block.
   `[unverified — confirm before use]` renders as an amber callout. The Part 8 glossary table gets a

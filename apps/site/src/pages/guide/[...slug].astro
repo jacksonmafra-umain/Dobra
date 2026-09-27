@@ -1,0 +1,29 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import { guideHref, guideSlug } from '../../lib/guide';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('guide')).sort((a, b) => a.id.localeCompare(b.id));
+  return entries.map((entry) => ({ params: { slug: guideSlug(entry.id) || undefined }, props: { entry, entries } }));
+}
+
+const { entry, entries } = Astro.props;
+const { Content, headings } = await render(entry);
+const title = headings.find((h) => h.depth === 1)?.text ?? 'Guide';
+const summary = (entry.body ?? '').split('\n\n').find((b) => b && !b.startsWith('#'))?.replace(/\s+/g, ' ').slice(0, 200) ?? '';
+const pages = await Promise.all(
+  entries.map(async (e) => {
+    const r = await render(e);
+    return { href: guideHref(guideSlug(e.id)), title: r.headings.find((h) => h.depth === 1)?.text ?? e.id, sections: r.headings.filter((h) => h.depth === 2) };
+  }),
+);
+const path = guideHref(guideSlug(entry.id));
+---
+<Base title={title} description={summary} path={path}>
+  <Sidebar slot="aside" pages={pages} current={path} />
+  <article class="prose">
+    <Content />
+  </article>
+</Base>

@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+
+const tools = [
+  { name: 'Simulator', href: '/simulator/', text: 'Renders phones, book and flip foldables, dual-screen devices, multi-folds, tablets and desktop windows on iOS and Android, with postures, window states, overlays, collision checks and a side-by-side platform comparison.' },
+  { name: 'Figma plugin', href: 'https://github.com/jacksonmafra-umain/Dobra/tree/main/packages/figma-plugin', text: 'Creates tagged artboards with hinge overlays and grids, shows which device postures a file covers, checks frames against the foldable rules and adapts a frame to another target.' },
+  { name: 'Web report', href: '/report/', text: "Opens a Figma file or a report JSON and shows the file's coverage and the rule findings per frame, with thumbnails and downloads." },
+  { name: 'CLI', href: 'https://github.com/jacksonmafra-umain/Dobra/tree/main/packages/cli', text: 'Checks a website in Chromium at every device target with fold emulation, and writes the same report the other tools read.' },
+];
+---
+<Base title="Dobra" description="Tools for designing foldable and dual-screen UIs on iOS and Android: a simulator, a Figma plugin, a web report and a website checker." path="/">
+  <section class="hero">
+    <h1>Design for every fold.</h1>
+    <p class="hero__lede">Dobra covers phones, book and flip foldables, dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.</p>
+    <div class="hero__actions">
+      <a class="button button--primary" href="/simulator/">Open the simulator</a>
+      <a class="button" href="/guide/">Read the guide</a>
+    </div>
+    <video class="hero__video" controls muted playsinline preload="metadata" poster="/media/dobra-launch-poster.jpg">
+      <source src="/media/dobra-launch-720.mp4" type="video/mp4" media="(max-width: 800px)" />
+      <source src="/media/dobra-launch.mp4" type="video/mp4" />
+    </video>
+  </section>
+  <section class="tools" aria-labelledby="tools-title">
+    <h2 id="tools-title">The tools</h2>
+    <div class="tools__grid">
+      {
+        tools.map((t) => (
+          <a class="tool" href={t.href}>
+            <h3>{t.name}</h3>
+            <p>{t.text}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+  <section class="quickstart" aria-labelledby="qs-title">
+    <h2 id="qs-title">Quick start</h2>
+    <pre><code>npm install
+npm run dev            # simulator
+npm run dev:report     # web report
+npm run build:cli && npm run dobra -- check site https://example.com</code></pre>
+  </section>
+</Base>

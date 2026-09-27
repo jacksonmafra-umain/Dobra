@@ -6,3 +6,5 @@ matrix-out/
 .DS_Store
 # Build exports of the simulator. They are build output.
 /dobra-simulator-v*.html
+apps/site/.astro/
+apps/site/.vercel/

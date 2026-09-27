@@ -17,6 +17,8 @@
     "dev:report": "npm run dev -w @dobra/report --",
     "build:report": "npm run build -w @dobra/report",
     "dobra": "node packages/cli/dist/dobra.mjs",
-    "build:cli": "npm run build -w @dobra/cli"
+    "build:cli": "npm run build -w @dobra/cli",
+    "dev:site": "npm run dev -w @dobra/site --",
+    "build:site": "npm run build -w @dobra/simulator && npm run build -w @dobra/report && npm run build -w @dobra/site"
   }
 }

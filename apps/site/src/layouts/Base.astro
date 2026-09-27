@@ -1,0 +1,57 @@
+---
+import favicon from '@dobra/brand/favicon.svg?url';
+import logoDark from '@dobra/brand/logo.svg?url';
+import logoLight from '@dobra/brand/logo-light.svg?url';
+import '@dobra/brand/fonts.css';
+import '@dobra/brand/tokens.css';
+import '../styles/site.css';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import { THEME_SCRIPT } from '../lib/theme';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+}
+const { title, description, path } = Astro.props;
+const canonical = new URL(path, Astro.site).href;
+const pageTitle = title === 'Dobra' ? title : `${title} · Dobra`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dobra" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/media/dobra-launch-poster.jpg', Astro.site).href} />
+    <script is:inline set:html={THEME_SCRIPT} />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-header__home" href="/" aria-label="Dobra home">
+        <img class="logo logo--on-dark" src={logoDark} alt="Dobra" />
+        <img class="logo logo--on-light" src={logoLight} alt="Dobra" />
+      </a>
+      <nav class="site-header__nav" aria-label="Site">
+        <a href="/guide/">Guide</a>
+        <a href="/simulator/">Simulator</a>
+        <a href="/report/">Report</a>
+        <a href="https://github.com/jacksonmafra-umain/Dobra">GitHub</a>
+      </nav>
+      <ThemeToggle />
+    </header>
+    <div class="site-body">
+      <slot name="aside" />
+      <main class="site-main"><slot /></main>
+    </div>
+    <footer class="site-footer">Dobra · tools for foldable and dual-screen UIs on iOS and Android</footer>
+  </body>
+</html>

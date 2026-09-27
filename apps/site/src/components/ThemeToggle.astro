@@ -1,0 +1,21 @@
+---
+---
+<button class="theme-toggle" type="button" aria-label="Switch between light and dark">
+  <span aria-hidden="true">◐</span>
+</button>
+<script>
+  import { themeStore } from '../lib/theme';
+  let storage: Storage | null = null;
+  try {
+    storage = localStorage;
+  } catch {
+    storage = null;
+  }
+  const store = themeStore(storage);
+  const root = document.documentElement;
+  document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    store.write(next);
+  });
+</script>

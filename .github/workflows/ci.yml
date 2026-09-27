@@ -46,3 +46,5 @@ jobs:
           npm run build:report
           npm run build:cli
           npm run build -w @dobra/figma-plugin
+          npm run build -w @dobra/site
+          npm run test:dist -w @dobra/site
