@@ -184,6 +184,45 @@ describe('touch-target by pointer and clipping', () => {
     expect(ids(subject([list, carousel]), 'touch-target').sort()).toEqual(['below', 'offscreen']);
   });
 
+  it('skips a control that nested clips hide together, though each clip alone shows part of it', () => {
+    const outer = node('outer', 'container', { x: 0, y: 0, width: 10, height: 100 }, {
+      clips: true,
+      children: [
+        node('inner', 'container', { x: 20, y: 0, width: 10, height: 100 }, {
+          clips: true,
+          children: [node('button', 'interactive', { x: 5, y: 10, width: 20, height: 20 })],
+        }),
+      ],
+    });
+    expect(ids(subject([outer]), 'touch-target')).toEqual([]);
+  });
+
+  it('intersects only across the scroll axis for a scrolling clip', () => {
+    // The y-scroller brings rows into view vertically, but the outer clip hides everything below 100.
+    const outer = node('outer', 'container', { x: 0, y: 0, width: 300, height: 100 }, {
+      clips: true,
+      children: [
+        node('list', 'container', { x: 0, y: 0, width: 300, height: 400 }, {
+          clips: true,
+          scrollAxis: 'y',
+          children: [node('row', 'interactive', { x: 10, y: 900, width: 30, height: 30 })],
+        }),
+      ],
+    });
+    expect(ids(subject([outer]), 'touch-target')).toEqual([]);
+  });
+
+  it('reports a 0×0 control inside a clip instead of treating it as cropped away', () => {
+    const clip = node('clip', 'container', { x: 0, y: 0, width: 100, height: 100 }, {
+      clips: true,
+      // On the clip's left edge: a strict overlap test never matches a zero-size rect there.
+      children: [node('dot', 'interactive', { x: 0, y: 40, width: 0, height: 0 })],
+    });
+    const f = check(subject([clip]), config).filter((x) => x.ruleId === 'touch-target');
+    expect(f.map((x) => x.nodeId)).toEqual(['dot']);
+    expect(f[0].message).toContain('0×0');
+  });
+
   it('still runs on a size-only match', () => {
     expect(ids(subject([small()], [DUO], { confidence: 'size' }), 'touch-target')).toEqual(['x']);
   });
