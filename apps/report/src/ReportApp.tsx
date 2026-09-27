@@ -8,34 +8,27 @@ import { envConfigOf, parseTargetKey, type Target } from '@hinge/core/targets';
 import { download } from './download';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
+import { tokenStore } from './tokenStore';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
-const TOKEN_KEY = 'hinge.token';
 const ICON = { error: '⛔', warn: '⚠️', info: 'ℹ️' } as const;
 const STATUS = { present: '✓', 'present-by-size': '~', missing: '✗' } as const;
 
-function readSavedToken(): string {
+function sessionTokens() {
   try {
-    return sessionStorage.getItem(TOKEN_KEY) ?? '';
+    return tokenStore(sessionStorage);
   } catch {
-    return '';
+    return tokenStore({ getItem: () => null, setItem: () => {}, removeItem: () => {} });
   }
 }
-
-function saveToken(token: string, remember: boolean) {
-  try {
-    if (remember) sessionStorage.setItem(TOKEN_KEY, token);
-    else sessionStorage.removeItem(TOKEN_KEY);
-  } catch {
-    // Storage blocked (private mode): the token simply is not remembered.
-  }
-}
+const tokens = sessionTokens();
 
 export function ReportApp() {
   const [url, setUrl] = useState('');
-  const [token, setToken] = useState(readSavedToken);
-  const [remember, setRemember] = useState(() => readSavedToken() !== '');
+  const [token, setToken] = useState(tokens.read);
+  const [remember, setRemember] = useState(() => tokens.read() !== '');
+  const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<Report | null>(null);
@@ -44,11 +37,13 @@ export function ReportApp() {
   async function checkFile() {
     setBusy(true);
     setError(null);
-    saveToken(token.trim(), remember);
+    setNotice(null);
+    if (remember) tokens.remember(token);
     try {
       const result = await loadFigmaReport(createFigmaClient(token), url.trim());
       setReport(result.report);
       setThumbnails(result.thumbnails);
+      setNotice(result.notice ?? null);
     } catch (e) {
       // FigmaError messages are already redacted; anything else is shown without the token.
       const message = e instanceof Error ? e.message : String(e);
@@ -84,7 +79,16 @@ export function ReportApp() {
         </label>
         <div className="row">
           <label className="row">
-            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember for this tab
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => {
+                setRemember(e.target.checked);
+                if (e.target.checked) tokens.remember(token);
+                else tokens.forget();
+              }}
+            />{' '}
+            Remember for this tab
           </label>
           <button className="primary" disabled={busy || !url.trim() || !token.trim()} onClick={checkFile}>
             {busy ? 'Checking…' : 'Check file'}
@@ -100,6 +104,7 @@ export function ReportApp() {
           {error}
         </p>
       )}
+      {notice && <p className="banner">{notice}</p>}
       {report && <ReportView report={report} thumbnails={thumbnails} />}
     </main>
   );

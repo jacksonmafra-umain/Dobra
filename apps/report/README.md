@@ -17,24 +17,25 @@ npm run build:report        # one self-contained dist/index.html to open or host
    (Figma › Settings › Security › Personal access tokens).
 3. Press **Check file**.
 
-The report reads the file's pages, the frames on them (including frames inside Sections), each
-frame's layers and the tag the Hinge plugin stores (`hinge` / `target`). Frames without a tag are
+The report reads the file's pages, the frames on them (it opens each Section and Group to find the
+frames inside), each frame's layers and the tag the Hinge plugin stores (`hinge` / `target`). Frames without a tag are
 matched by name, then by size, and marked as lower confidence.
 
 ### The token
 
 - It stays in the page's memory. Tick **Remember for this tab** to keep it in this tab's session
-  storage; it is never put in the URL and never shown in errors.
+  storage (unticking removes it); it is never put in the URL and never shown in errors.
 - It is only sent to `api.figma.com`, in the `X-Figma-Token` header.
 
 ### Limits and errors
 
-- Figma rate-limits its API. The report makes one file call, then loads frames in batches of 50,
-  and caches the result for each file version, so checking the same unchanged file again costs one
-  call. A rate-limited batch does not stop the report: those frames are listed under
-  **Could not load** with the wait time.
-- **403** means the token is invalid or lacks the scope; **404** means the file is not shared with
-  the token's account.
+- Figma rate-limits its API. The report makes one file call, opens top-level Sections, then loads
+  frames in batches of 50. A complete result is cached for each file version, so checking the same
+  unchanged file again costs one call. A rate-limited batch does not stop the report: those frames
+  are listed under **Could not load** with the wait time, and checking again loads them.
+- **401 / 403** mean the token is invalid, expired or lacks the scope; **404** means the file is
+  not shared with the token's account.
+- If thumbnails cannot be loaded, the report still shows, with a note.
 - If the browser cannot reach `api.figma.com` (network, or a browser blocking the request), run
   the report behind a local proxy on `127.0.0.1`.
 
