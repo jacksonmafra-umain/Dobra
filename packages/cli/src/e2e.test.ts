@@ -1,0 +1,88 @@
+// End-to-end acceptance: builds the real `dobra` binary and runs it the way CI does, against the
+// example sites, checking exit codes and the report files it writes.
+import { execFile, execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { parseReport } from '@dobra/core/report';
+import { startFixtureServer } from './test/server';
+
+const CLI_DIR = fileURLToPath(new URL('..', import.meta.url));
+const BIN = join(CLI_DIR, 'dist/dobra.mjs');
+const SITES = fileURLToPath(new URL('../../../examples/sites/', import.meta.url));
+const DUO = 'surface-duo-2/spanned/spanned/landscape';
+const FLIP_INNER = 'galaxy-z-flip-7/inner/open/portrait';
+
+let server: Awaited<ReturnType<typeof startFixtureServer>>;
+let out: string;
+
+beforeAll(async () => {
+  execFileSync(process.execPath, ['build.mjs'], { cwd: CLI_DIR, stdio: 'ignore' });
+  server = await startFixtureServer(SITES);
+  out = mkdtempSync(join(tmpdir(), 'dobra-e2e-'));
+}, 120_000);
+afterAll(async () => {
+  await server?.close();
+  if (out) rmSync(out, { recursive: true, force: true });
+});
+
+function dobra(...args: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
+  return new Promise((resolve) => {
+    execFile(process.execPath, [BIN, ...args], { timeout: 120_000 }, (error, stdout, stderr) => {
+      const code = error ? (typeof error.code === 'number' ? error.code : 1) : 0;
+      resolve({ code, stdout, stderr });
+    });
+  });
+}
+
+const site = (file: string) => `${server.url}/${file}`;
+const readReport = (file: string) => parseReport(JSON.parse(readFileSync(join(out, file), 'utf8')));
+
+describe('dobra check site (built binary)', () => {
+  it('exits 1 on a hinge error and writes a valid report and Markdown', async () => {
+    const r = await dobra('check', 'site', site('06-hinge-content.html'), '--targets', DUO, '--out', join(out, 'hinge.json'), '--md', join(out, 'hinge.md'), '--no-transitions');
+    expect(r.code).toBe(1);
+    expect(r.stdout).toMatch(/Coverage: \d+\/\d+ required cells/);
+    const report = readReport('hinge.json');
+    expect(report.source.kind).toBe('web');
+    expect(report.frames.map((f) => f.targets[0])).toEqual([DUO]);
+    expect(report.frames[0].findings.map((f) => f.ruleId)).toContain('hinge-content');
+    const md = readFileSync(join(out, 'hinge.md'), 'utf8');
+    expect(md).toMatch(/^# /);
+    expect(md).toContain('hinge-content');
+  });
+
+  it('exits 0 on a page that handles the hinge', async () => {
+    const r = await dobra('check', 'site', site('good.html'), '--targets', DUO, '--out', join(out, 'good.json'), '--no-transitions');
+    expect(r.code).toBe(0);
+    expect(readReport('good.json').frames[0].findings.filter((f) => f.severity === 'error')).toEqual([]);
+  });
+
+  it('lets --fail-on decide which findings fail the run', async () => {
+    const never = await dobra('check', 'site', site('06-hinge-content.html'), '--targets', DUO, '--out', join(out, 'never.json'), '--fail-on', 'never', '--no-transitions');
+    expect(never.code).toBe(0);
+    // The unfold pass flags a page that lays itself out only on load; resize-vs-reload is a warning.
+    const warn = await dobra('check', 'site', site('08-resize-vs-reload.html'), '--targets', FLIP_INNER, '--out', join(out, 'unfold.json'), '--fail-on', 'warn');
+    expect(warn.code).toBe(1);
+    expect(readReport('unfold.json').frames[0].findings.map((f) => f.ruleId)).toContain('resize-vs-reload');
+  });
+
+  it('exits 1 and says why when the site cannot be reached', async () => {
+    const r = await dobra('check', 'site', 'http://127.0.0.1:1/', '--targets', DUO, '--out', join(out, 'down.json'), '--no-transitions');
+    expect(r.code).toBe(1);
+    expect(r.stderr).toContain(DUO);
+    expect(readReport('down.json').unloaded).toHaveLength(1);
+  });
+
+  it('exits 2 for help, an unknown target and a bad option', async () => {
+    const help = await dobra('--help');
+    expect(help.code).toBe(2);
+    expect(help.stdout).toMatch(/Usage: dobra check site/);
+    const unknown = await dobra('check', 'site', site('good.html'), '--targets', 'nope/x/-/portrait');
+    expect(unknown.code).toBe(2);
+    expect(unknown.stderr).toContain('nope/x/-/portrait');
+    expect((await dobra('check', 'site', site('good.html'), '--fail-on', 'loud')).code).toBe(2);
+  });
+});
