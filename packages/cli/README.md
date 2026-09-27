@@ -26,7 +26,7 @@ npm run hinge -- check site https://example.com --md foldable-report.md
 | `--out <file>` | Report JSON path, default `foldable-report.json` |
 | `--md <file>` | Also write a Markdown summary |
 | `--wait <ms>` | Settle time after the page's `load` event, default `500` |
-| `--fail-on <level>` | Exit 1 on findings of this level or worse: `error` (default), `warn` or `never` |
+| `--fail-on <level>` | Exit 1 on findings of this level or worse: `error` (default), `warn` or `never`. A target that could not load always exits 1 |
 | `--no-transitions` | Skip the unfold pass |
 
 Without `--targets` or `--category`, the check visits one representative device for every
@@ -79,7 +79,7 @@ The CLI adds one more:
 | `1` | Findings at or above `--fail-on`, or a target that could not load (network error, HTTP 4xx/5xx) |
 | `2` | Help, bad arguments, an unknown target key, or a crash |
 
-With `--fail-on never` the exit code is always `0` after a run.
+With `--fail-on never`, findings never fail the run, but a target that could not load still exits `1`.
 
 ## CI
 

@@ -22,7 +22,8 @@ export const USAGE = `Usage: hinge check site <url> [options]
   --out <file>         Report JSON path (default foldable-report.json)
   --md <file>          Also write a Markdown summary
   --wait <ms>          Settle time after load (default 500)
-  --fail-on <level>    Exit 1 on findings of this level: error, warn or never (default error)
+  --fail-on <level>    Exit 1 on findings of this level: error, warn or never (default error);
+                       a target that could not load always exits 1
   --no-transitions     Skip the unfold (resize without reload) pass`;
 
 const FAIL_ON: readonly FailOn[] = ['error', 'warn', 'never'];
