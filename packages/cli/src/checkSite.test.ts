@@ -58,6 +58,26 @@ describe('checkSite', () => {
     expect(r.frames).toHaveLength(1);
   });
 
+  it('checks a page whose load event never fires, with a note', async () => {
+    const r = await checkSite(`${server.url}/stuck.html`, [PIXEL], { ...opts, browser, loadTimeout: 1000 });
+    expect(r.frames).toHaveLength(1);
+    expect(r.notes?.join('\n')).toMatch(/load event did not fire/);
+  });
+
+  it('gives up on a page whose script never yields, instead of hanging', async () => {
+    const start = Date.now();
+    const r = await checkSite(`${server.url}/busy.html`, [PIXEL], { ...opts, browser, wait: 300, collectTimeout: 2000 });
+    expect(Date.now() - start).toBeLessThan(15_000);
+    expect(r.unloaded[0]?.reason).toMatch(/did not respond/);
+  });
+
+  it('unfolds a Flip from its landscape-only cover', async () => {
+    const FLIP = { deviceId: 'galaxy-z-flip-7', displayId: 'inner', pose: 'open', orientation: 'portrait' } as const;
+    const progress: string[] = [];
+    await checkSite(`${server.url}/flip.html`, [FLIP], { ...opts, transitions: true, browser, onProgress: (m) => progress.push(m) });
+    expect(progress.some((m) => m.startsWith('Unfolding galaxy-z-flip-7/cover/'))).toBe(true);
+  });
+
   it('lists targets it could not load, with the reason, instead of throwing', async () => {
     const down = await checkSite('http://127.0.0.1:1/', [DUO, PIXEL], { ...opts, browser });
     expect(down.frames).toHaveLength(0);
