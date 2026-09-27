@@ -1,4 +1,4 @@
-# Hinge CLI — website checks
+# Dobra CLI — website checks
 
 `dobra check site <url>` opens a website in Chromium at each device target, emulates the hinge
 where the device has one, and runs the same foldable rules as the Figma plugin and the web report.

@@ -1,6 +1,6 @@
-# Hinge
+# Dobra
 
-Tools for designing foldable and dual-screen UIs. Hinge covers phones, book and flip foldables,
+Tools for designing foldable and dual-screen UIs. Dobra covers phones, book and flip foldables,
 dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.
 
 ## What's here
