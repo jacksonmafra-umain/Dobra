@@ -39,3 +39,11 @@ describe('simulator chrome styles', () => {
     for (const [prop, value] of custom) expect(value, prop).toMatch(/var\(--dobra-/);
   });
 });
+
+describe('simulator page', () => {
+  it('links the brand favicon in SVG and PNG', () => {
+    const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+    expect(html).toContain('<link rel="icon" type="image/svg+xml" href="../../packages/brand/favicon.svg" />');
+    expect(html).toContain('<link rel="icon" type="image/png" sizes="32x32" href="../../packages/brand/png/favicon-32.png" />');
+  });
+});
