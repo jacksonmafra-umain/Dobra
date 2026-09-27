@@ -74,8 +74,13 @@ export function ruleMatches(rule: LayoutRule, env: Environment): boolean {
   return true;
 }
 
+/** The first layout rule that fits the window, or null when none does. */
+export function matchRuleOrNull(config: SimulatorConfig, env: Environment): LayoutRule | null {
+  return config.layoutRules.find((r) => ruleMatches(r, env)) ?? null;
+}
+
 export function matchRule(config: SimulatorConfig, env: Environment): LayoutRule {
-  const rule = config.layoutRules.find((r) => ruleMatches(r, env));
+  const rule = matchRuleOrNull(config, env);
   if (!rule) throw new Error(`No ${env.platform} layout rule matched. Add a ${env.platform} rule with "match": {} as a fallback.`);
   return rule;
 }
