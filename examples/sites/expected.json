@@ -34,6 +34,29 @@
           ]
         }
       ]
+    },
+    {
+      "file": "03-floating-tab-bar.html",
+      "observed": "§8.2 #3",
+      "checks": [
+        {
+          "target": "galaxy-z-flip-7/cover/closed/landscape",
+          "expect": [
+            "chrome-overlap"
+          ],
+          "forbid": [
+            "overflow-x",
+            "touch-target"
+          ]
+        },
+        {
+          "target": "galaxy-z-flip-7/inner/open/portrait",
+          "expect": [],
+          "forbid": [
+            "chrome-overlap"
+          ]
+        }
+      ]
     }
   ],
   "transitions": []
