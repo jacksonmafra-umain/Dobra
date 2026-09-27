@@ -47,4 +47,9 @@ describe('report', () => {
     expect(parseReport(JSON.parse(JSON.stringify(r))).notes).toBeUndefined();
     expect(toMarkdown(noted)).toContain('page truncated at 4000 elements');
   });
+
+  it('accepts a report from the simulator', () => {
+    const sim = buildReport(catalog, { kind: 'simulator', ref: 'http://localhost:5173/?d=pixel-9', name: 'Simulator' }, []);
+    expect(parseReport(JSON.parse(JSON.stringify(sim))).source.kind).toBe('simulator');
+  });
 });
