@@ -3,13 +3,18 @@
   "private": true,
   "version": "0.5.0",
   "type": "module",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "dev": "npm run dev -w @hinge/simulator --",
     "build": "npm run build -w @hinge/simulator",
     "build:single": "npm run build:single -w @hinge/simulator",
     "preview": "npm run preview -w @hinge/simulator --",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "dev:report": "npm run dev -w @hinge/report --",
+    "build:report": "npm run build -w @hinge/report"
   }
 }
