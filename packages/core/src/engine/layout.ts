@@ -61,6 +61,9 @@ export function ruleMatches(rule: LayoutRule, env: Environment): boolean {
   const m = rule.match;
   const sc = env.sizeClass;
   if (m.orientation && m.orientation !== env.orientation) return false;
+  if (m.pointer && m.pointer !== env.media.pointer) return false;
+  if (m.keyboard && m.keyboard !== env.media.keyboard) return false;
+  if (m.viewingDistance && m.viewingDistance !== env.media.viewingDistance) return false;
   if (sc.system === 'uikit') {
     if (m.horizontal && m.horizontal !== sc.horizontal) return false;
     if (m.vertical && m.vertical !== sc.vertical) return false;
