@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
-import type { Rect } from '../config/types';
-import type { Environment } from '../engine/environment';
+import type { Rect } from '@hinge/core/config/types';
+import type { Environment } from '@hinge/core/engine/environment';
 
 const BEZEL = 12;
 

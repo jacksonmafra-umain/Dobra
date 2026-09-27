@@ -1,8 +1,8 @@
 // Android navigation patterns (NavigationSuiteScaffold): bottom bar, navigation rail, navigation drawer.
 // They reuse the Sample tab items; only the container changes with the window size class.
 import type { CSSProperties } from 'react';
-import type { TabItemSpec } from '../config/types';
-import type { Navigation } from '../engine/layout';
+import type { TabItemSpec } from '@hinge/core/config/types';
+import type { Navigation } from '@hinge/core/engine/layout';
 import { TabIcon } from './tabBar';
 
 interface NavProps {

@@ -1,4 +1,4 @@
-import type { ToolbarItemSpec, ToolbarSpec } from '../config/types';
+import type { ToolbarItemSpec, ToolbarSpec } from '@hinge/core/config/types';
 import { asset } from './assets';
 import { Icon } from './icons';
 import { MymLogo } from './illustrations';

@@ -1,4 +1,4 @@
-import type { ConfigError } from '../config/schema';
+import type { ConfigError } from '@hinge/core/config/schema';
 
 /** Shown instead of the simulator when simulator.config.json does not validate. */
 export function ConfigErrorPage({ error }: { error: ConfigError }) {

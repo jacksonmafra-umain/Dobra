@@ -1,4 +1,4 @@
-import type { Layout } from '../../engine/layout';
+import type { Layout } from '@hinge/core/engine/layout';
 import { OrderBottomButtonBar, OrderItem, OrderSummary, SectionHeader } from '../components';
 import { BAG_LINES } from '../content';
 

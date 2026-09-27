@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { PLATFORMS, type SimulatorConfig } from '../config/types';
+import { PLATFORMS, type SimulatorConfig } from '@hinge/core/config/types';
 import { runLayoutChecks, targetOf } from '@hinge/core/engine/checks';
-import { describeChanges, type Snapshot } from '../engine/diff';
-import { findDevice, resolveEnvironment, type Selection } from '../engine/environment';
-import { resolveLayout } from '../engine/layout';
-import type { ModalKind } from '../engine/modal';
+import { describeChanges, type Snapshot } from '@hinge/core/engine/diff';
+import { findDevice, resolveEnvironment, type Selection } from '@hinge/core/engine/environment';
+import { resolveLayout } from '@hinge/core/engine/layout';
+import type { ModalKind } from '@hinge/core/engine/modal';
 import type { TextSettings } from '@hinge/core/engine/typography';
 import { collisionsToFindings } from '@hinge/core/collisions';
 import type { Collision } from '../sample/collisions';

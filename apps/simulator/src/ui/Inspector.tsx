@@ -1,9 +1,9 @@
-import type { GridRule, ScreenSpec, SimulatorConfig } from '../config/types';
-import { capitalize, type Environment } from '../engine/environment';
-import { foldThickness } from '../engine/folds';
-import type { Layout } from '../engine/layout';
-import { placeModal, type ModalKind } from '../engine/modal';
-import { formatSizeClass } from '../engine/sizeClass';
+import type { GridRule, ScreenSpec, SimulatorConfig } from '@hinge/core/config/types';
+import { capitalize, type Environment } from '@hinge/core/engine/environment';
+import { foldThickness } from '@hinge/core/engine/folds';
+import type { Layout } from '@hinge/core/engine/layout';
+import { placeModal, type ModalKind } from '@hinge/core/engine/modal';
+import { formatSizeClass } from '@hinge/core/engine/sizeClass';
 import type { Finding } from '@hinge/core/engine/checks';
 import type { Collision } from '../sample/collisions';
 
