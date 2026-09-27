@@ -1,0 +1,19 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body { margin: 0; }
+  #probe { display: none; }
+  @media (horizontal-viewport-segments: 2) { #probe { display: block; } }
+</style>
+<div id="probe">two segments</div>
+<script>
+  window.report = () => ({
+    width: innerWidth,
+    height: innerHeight,
+    dpr: devicePixelRatio,
+    twoSegments: matchMedia('(horizontal-viewport-segments: 2)').matches,
+    // Chromium ships the segments list as window.viewport.segments.
+    segments: (window.viewport?.segments ?? []).map((s) => [s.x, s.width]),
+    ua: navigator.userAgent,
+  });
+</script>

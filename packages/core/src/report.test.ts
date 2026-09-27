@@ -40,4 +40,11 @@ describe('report', () => {
     expect(md).toContain('hinge-content');
     expect(md).toContain('Could not load');
   });
+
+  it('keeps optional notes, and still reads reports without them', () => {
+    const noted = { ...r, notes: ['pixel-9/main/-/portrait: page truncated at 4000 elements'] };
+    expect(parseReport(JSON.parse(JSON.stringify(noted))).notes).toEqual(noted.notes);
+    expect(parseReport(JSON.parse(JSON.stringify(r))).notes).toBeUndefined();
+    expect(toMarkdown(noted)).toContain('page truncated at 4000 elements');
+  });
 });
