@@ -101,4 +101,8 @@ finding per device.
 npm test -w @dobra/cli
 ```
 
-The browser tests start Chromium against local fixture pages in `src/test/fixtures`.
+The browser tests start Chromium against local fixture pages in `src/test/fixtures`. Two
+acceptance suites use the repo's `examples/sites`:
+- `sites.test.ts` runs every check in `examples/sites/expected.json`;
+- `e2e.test.ts` builds `dist/dobra.mjs` and runs the real command, checking its exit codes, the
+  report JSON and the Markdown.
