@@ -1,0 +1,73 @@
+/* Dobra design tokens. Theme tokens: dark on :root and under [data-theme='dark'], light under
+   [data-theme='light'], on any element, so a subtree can switch either way. Shared tokens sit in
+   :where(:root) so they never outrank a theme block. tokens.ts mirrors the two theme blocks; a test keeps them equal. */
+:root, [data-theme='dark'] {
+  color-scheme: dark;
+  --dobra-bg: #0B0F17;
+  --dobra-panel: rgb(17 24 39 / 0.85);
+  --dobra-flyout: rgb(31 41 55 / 0.92);
+  --dobra-field: #0F172A;
+  --dobra-text: #DFE2EE;
+  --dobra-muted: #9AA8B8;
+  --dobra-border: rgb(255 255 255 / 0.08);
+  --dobra-border-strong: #334155;
+  --dobra-fold: #00F0FF;
+  --dobra-on-fold: #0B0F17;
+  --dobra-accent-2: #818CF8;
+  --dobra-pass: #10B981;
+  --dobra-warn: #F59E0B;
+  --dobra-hinge: #F062A8;
+  --dobra-glow: 0 0 12px rgb(0 240 255 / 0.35);
+  --dobra-shadow-2: 0 8px 32px -4px rgb(0 0 0 / 0.6);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --dobra-bg: #F6F7FA;
+  --dobra-panel: rgb(255 255 255 / 0.85);
+  --dobra-flyout: rgb(255 255 255 / 0.96);
+  --dobra-field: #FFFFFF;
+  --dobra-text: #0F131C;
+  --dobra-muted: #4B5565;
+  --dobra-border: rgb(15 19 28 / 0.12);
+  --dobra-border-strong: #CBD2DC;
+  --dobra-fold: #007C85;
+  --dobra-on-fold: #FFFFFF;
+  --dobra-accent-2: #4F46E5;
+  --dobra-pass: #047857;
+  --dobra-warn: #B45309;
+  --dobra-hinge: #BE185D;
+  --dobra-glow: 0 0 0 1px rgb(0 124 133 / 0.35);
+  --dobra-shadow-2: 0 8px 24px -8px rgb(15 19 28 / 0.18);
+}
+
+:where(:root) {
+  --dobra-radius-sm: 2px;
+  --dobra-radius: 4px;
+  --dobra-radius-lg: 8px;
+  --dobra-radius-xl: 12px;
+  --dobra-space-xs: 4px;
+  --dobra-space-sm: 8px;
+  --dobra-space-md: 12px;
+  --dobra-space-lg: 20px;
+  --dobra-space-xl: 32px;
+  --dobra-font-display: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --dobra-font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --dobra-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Type scale from DESIGN.md: use as `font: var(--dobra-type-…)` plus the matching tracking. */
+  --dobra-type-headline-lg: 600 32px/40px var(--dobra-font-display);
+  --dobra-type-headline-md: 600 22px/28px var(--dobra-font-display);
+  --dobra-type-headline-sm: 600 18px/24px var(--dobra-font-display);
+  --dobra-type-body-lg: 400 15px/22px var(--dobra-font-body);
+  --dobra-type-body-md: 400 13px/18px var(--dobra-font-body);
+  --dobra-type-body-sm: 400 11px/16px var(--dobra-font-body);
+  --dobra-type-label-lg: 500 12px/16px var(--dobra-font-mono);
+  --dobra-type-label-md: 500 11px/14px var(--dobra-font-mono);
+  --dobra-type-label-sm: 400 10px/12px var(--dobra-font-mono);
+  --dobra-tracking-headline-lg: -0.02em;
+  --dobra-tracking-headline-md: -0.01em;
+  --dobra-tracking-headline-sm: -0.005em;
+  --dobra-tracking-label-lg: 0.02em;
+  --dobra-tracking-label-md: 0.03em;
+  --dobra-tracking-label-sm: 0.04em;
+}
