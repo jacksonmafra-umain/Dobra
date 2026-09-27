@@ -1,0 +1,18 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body { margin: 0; font: 16px sans-serif; }
+  #scroller { overflow-x: auto; width: 400px; white-space: nowrap; }
+  #scroller span { display: inline-block; width: 300px; }
+  #wide { width: 1400px; height: 20px; background: #ddd; }
+  #clip { overflow: hidden; width: 300px; }
+  #clip img { width: 2000px; height: 40px; display: block; }
+  #deep { position: absolute; left: 530px; top: 1500px; width: 80px; height: 48px; }
+</style>
+<header><nav><a href="#top">Home</a></nav></header>
+<h1>Layout fixture</h1>
+<p>This paragraph holds exactly eighty characters of plain text for the layout test</p>
+<div id="scroller"><span>one</span><span>two</span><span>three</span></div>
+<div id="wide"></div>
+<div id="clip"><img alt="wide picture" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></div>
+<button id="deep">Deep</button>
