@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { loadCatalog } from '@dobra/core/catalog/load';
 import { representativeTarget } from '@dobra/core/coverage';
 import { presetSpec } from '@dobra/core/presets';
@@ -16,6 +16,8 @@ import { ReportNotes } from './ReportNotes';
 import { PassChip } from './SeverityChip';
 import { UnloadedList } from './UnloadedList';
 import { tokenStore } from './tokenStore';
+import { SiteCheckForm } from './SiteCheckForm';
+import { probe, type Health } from './siteCheck';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
@@ -39,6 +41,12 @@ export function ReportApp() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<Report | null>(null);
   const [thumbnails, setThumbnails] = useState<Record<string, string | null>>({});
+  const [input, setInput] = useState<'figma' | 'website'>('figma');
+  // undefined while probing; null when this host has no site-check endpoint.
+  const [health, setHealth] = useState<Health | null | undefined>(undefined);
+  useEffect(() => {
+    probe(fetch.bind(globalThis)).then(setHealth);
+  }, []);
 
   async function checkFile() {
     setBusy(true);
@@ -74,31 +82,55 @@ export function ReportApp() {
       <ReportHeader catalogVersion={catalog.version} />
 
       <section className="panel inputs">
-        <label>
-          Figma file link
-          <input type="url" placeholder="https://www.figma.com/design/…" value={url} onChange={(e) => setUrl(e.target.value)} />
-        </label>
-        <label>
-          Personal access token <span className="muted">(scope file_content:read; stays in this tab)</span>
-          <input type="password" autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)} />
-        </label>
-        <div className="row">
-          <label className="row">
-            <input
-              type="checkbox"
-              checked={remember}
-              onChange={(e) => {
-                setRemember(e.target.checked);
-                if (e.target.checked) tokens.remember(token);
-                else tokens.forget();
-              }}
-            />{' '}
-            Remember for this tab
-          </label>
-          <button className="primary" disabled={busy || !url.trim() || !token.trim()} onClick={checkFile}>
-            {busy ? 'Checking…' : 'Check file'}
+        <div className="input-switch" role="group" aria-label="What to check">
+          <button aria-pressed={input === 'figma'} onClick={() => setInput('figma')}>
+            Figma file
+          </button>
+          <button aria-pressed={input === 'website'} onClick={() => setInput('website')}>
+            Website
           </button>
         </div>
+        {/* Kept mounted while hidden, so a running site check keeps its fields and state. */}
+        <div hidden={input !== 'website'}>
+          <SiteCheckForm
+            health={health}
+            onReport={(r) => {
+              setError(null);
+              setNotice(null);
+              setReport(r);
+              setThumbnails({});
+            }}
+          />
+        </div>
+        {input === 'figma' && (
+          <>
+            <label>
+              Figma file link
+              <input type="url" placeholder="https://www.figma.com/design/…" value={url} onChange={(e) => setUrl(e.target.value)} />
+            </label>
+            <label>
+              Personal access token <span className="muted">(scope file_content:read; stays in this tab)</span>
+              <input type="password" autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)} />
+            </label>
+            <div className="row">
+              <label className="row">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => {
+                    setRemember(e.target.checked);
+                    if (e.target.checked) tokens.remember(token);
+                    else tokens.forget();
+                  }}
+                />{' '}
+                Remember for this tab
+              </label>
+              <button className="primary" disabled={busy || !url.trim() || !token.trim()} onClick={checkFile}>
+                {busy ? 'Checking…' : 'Check file'}
+              </button>
+            </div>
+          </>
+        )}
         <label className="drop">
           <span>Or open a report JSON</span>
           <span className="muted">made by the command-line checker or the simulator</span>
