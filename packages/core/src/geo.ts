@@ -19,6 +19,10 @@ export interface GeoNode {
   layout?: 'horizontal' | 'vertical' | 'none';
   /** This node crops its children (Figma clipsContent, CSS overflow hidden). */
   clips?: boolean;
+  /** The designer marked this layer important: the hinge check treats it like text or a control. */
+  important?: boolean;
+  /** The designer marked this layer (and what's inside it) not important: the hinge and touch-target checks skip it. */
+  ignore?: boolean;
   children?: GeoNode[];
 }
 

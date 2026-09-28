@@ -17,6 +17,8 @@ import type { AdaptResult, FrameFindings, ToMain, ToUi } from './messages';
 import { applyPreset, NAMESPACE } from './presets';
 import { applyTag, tagCandidates, topLevelFrames } from './tagging';
 import { applyVariables, hasDobraVariables } from './variables';
+import { DEFAULT_PATTERNS } from '@dobra/core/namePatterns';
+import { filePatterns, markSelection, saveFilePatterns } from './patterns';
 
 
 /** Frames on the page that stand for a target: tagged ones first-class, the rest by name or size. */
@@ -94,11 +96,12 @@ async function framesToCheck(api: FigmaApi, scope: 'selection' | 'page' | 'all-p
 
 async function checkFrames(api: FigmaApi, scope: 'selection' | 'page' | 'all-pages', onProgress?: (visited: number) => void): Promise<FrameFindings[]> {
   const out: FrameFindings[] = [];
+  const patterns = filePatterns(api);
   for (const frame of await framesToCheck(api, scope)) {
     const tag = frame.getSharedPluginData(NAMESPACE, 'target');
     const m = matchFrame({ tag: tag || undefined, name: frame.name, width: frame.width, height: frame.height }, config);
     if (m.by === 'none') continue;
-    const root = await toGeo(frame, onProgress);
+    const root = await toGeo(frame, onProgress, 500, patterns);
     const subject = { source: 'figma' as const, ref: frame.id, targets: m.targets, confidence: m.by, width: frame.width, height: frame.height, root };
     out.push({ frameId: frame.id, name: frame.name, confidence: m.by, findings: check(subject, config) });
   }
@@ -173,6 +176,14 @@ export async function handle(api: FigmaApi, msg: ToMain, onProgress?: (visited: 
         return { type: 'variables-status', exists: await hasDobraVariables(api) };
       case 'required-targets':
         return { type: 'targets-picked', keys: requiredTargets().map(targetKey) };
+      case 'mark': {
+        const count = markSelection(api, msg.importance);
+        return { type: 'marked', count, importance: msg.importance };
+      }
+      case 'get-patterns':
+        return { type: 'patterns', patterns: filePatterns(api), defaults: DEFAULT_PATTERNS };
+      case 'set-patterns':
+        return { type: 'patterns', patterns: saveFilePatterns(api, msg.patterns), defaults: DEFAULT_PATTERNS };
       case 'create-missing': {
         const matrix = coverage(catalog, presentFrames(api, config));
         const targets = matrix.cells

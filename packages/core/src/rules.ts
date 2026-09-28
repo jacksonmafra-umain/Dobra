@@ -19,7 +19,7 @@ export const MIN_TEXT_CHARS = 20;
 /** Material 3 and Apple HIG minimum touch targets. */
 export const TOUCH_TARGET = { android: 48, ios: 44 } as const;
 
-const IMPORTANT = (n: GeoNode) => n.role === 'interactive' || n.role === 'text';
+const IMPORTANT = (n: GeoNode) => !n.ignore && (n.important || n.role === 'interactive' || n.role === 'text');
 const SIZE_TOLERANCE = 1;
 
 /** A size-only match might be any posture of that display: assume the fold splits and hides content. */
@@ -169,7 +169,7 @@ function touchTarget({ env, placed, add }: Ctx) {
   if (env.media.pointer !== 'coarse') return;
   const min = TOUCH_TARGET[env.platform];
   const byNode = new Map(placed.map((p) => [p.node, p]));
-  for (const p of outermost(placed, (n) => n.role === 'interactive')) {
+  for (const p of outermost(placed, (n) => n.role === 'interactive' && !n.ignore)) {
     if (croppedAway(p, byNode)) continue;
     const r = p.node.rect;
     if (r.width < min || r.height < min) {

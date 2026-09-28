@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { frameCandidates, parseFileKey, restToGeo, tagOf, type RestNode } from './figmaRest';
+import { frameCandidates, parseFileKey, patternsFromDocument, restToGeo, tagOf, type RestNode } from './figmaRest';
 
 const box = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
 
@@ -48,5 +48,27 @@ describe('Figma REST adapter', () => {
       { id: '2:2', name: 'Buy button', role: 'interactive', rect: { x: 530, y: 300, width: 80, height: 48 }, scrollAxis: 'none', layout: 'none' },
       { id: '2:5', name: 'Hero', role: 'container', rect: { x: 0, y: 150, width: 1100, height: 200 }, scrollAxis: 'x', layout: 'horizontal', clips: true },
     ]);
+  });
+
+  it("honours the file's name patterns and the layers marked important or not important", () => {
+    const frame: RestNode = {
+      id: '1:1', name: 'Home', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 756),
+      children: [
+        { id: '3:1', name: 'Masthead', type: 'FRAME', absoluteBoundingBox: box(0, 0, 1100, 60) },
+        { id: '3:2', name: 'Chart', type: 'FRAME', absoluteBoundingBox: box(500, 100, 120, 80), sharedPluginData: { dobra: { importance: 'important' } } },
+        {
+          id: '3:3', name: 'Decor', type: 'FRAME', absoluteBoundingBox: box(0, 300, 1100, 100), sharedPluginData: { dobra: { importance: 'ignore' } },
+          children: [{ id: '3:4', name: 'Swirl button', type: 'FRAME', absoluteBoundingBox: box(520, 320, 40, 40) }],
+        },
+      ],
+    };
+    const document: RestNode = { id: '0:0', name: 'Document', type: 'DOCUMENT', sharedPluginData: { dobra: { patterns: JSON.stringify({ controls: ['button'], chrome: ['masthead'] }) } } };
+    const geo = restToGeo(frame, patternsFromDocument(document));
+    expect(geo.map((g) => [g.name, g.role, g.important ?? false, g.ignore ?? false])).toEqual([
+      ['Masthead', 'chrome', false, false],
+      ['Chart', 'container', true, false],
+      ['Decor', 'container', false, true],
+    ]);
+    expect(geo[2].children![0]).toMatchObject({ role: 'interactive', ignore: true });
   });
 });

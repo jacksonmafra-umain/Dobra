@@ -1,6 +1,6 @@
 // Figma file → foldable check report, with thumbnails. Complete results are cached per file version.
 import { loadCatalog } from '@dobra/core/catalog/load';
-import { frameCandidates, parseFileKey, restToGeo, type RestNode } from '@dobra/core/figmaRest';
+import { frameCandidates, parseFileKey, patternsFromDocument, restToGeo, type RestNode } from '@dobra/core/figmaRest';
 import { buildReport, type Report } from '@dobra/core/report';
 import { FigmaError, type FigmaClient } from './figmaClient';
 
@@ -41,10 +41,12 @@ export async function loadFigmaReport(client: FigmaClient, url: string): Promise
   const frames = frameCandidates(expanded.document);
   const { loaded, failed } = await client.nodes(key, frames.map((f) => f.id));
   const reasons = new Map(failed.map((f) => [f.id, f.reason]));
+  // The plugin stores the team's name words on the document; classify layers with them.
+  const patterns = patternsFromDocument(file.document);
   const report = buildReport(
     catalog,
     { kind: 'figma', ref: key, name: file.name, fileVersion: file.version },
-    frames.map((f) => ({ ref: f.id, name: f.name, page: f.page, width: f.width, height: f.height, tag: f.tag, root: loaded[f.id] ? restToGeo(loaded[f.id]) : null, reason: reasons.get(f.id) })),
+    frames.map((f) => ({ ref: f.id, name: f.name, page: f.page, width: f.width, height: f.height, tag: f.tag, root: loaded[f.id] ? restToGeo(loaded[f.id], patterns) : null, reason: reasons.get(f.id) })),
   );
 
   let thumbnails: Record<string, string | null> = {};

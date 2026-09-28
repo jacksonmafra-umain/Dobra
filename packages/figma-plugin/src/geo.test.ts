@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OVERLAY_NAME } from './presets';
+import { NAMESPACE, OVERLAY_NAME } from './presets';
 import { roleOf, toGeo } from './geo';
 import { createFakeFigma } from './test/fakeFigma';
 
@@ -89,5 +89,30 @@ describe('toGeo', () => {
     crop.clipsContent = true;
     frame.appendChild(crop);
     expect((await toGeo(frame as never))[0].clips).toBe(true);
+  });
+
+  it('follows a team\'s name words and the layers marked important or not important', async () => {
+    const api = createFakeFigma();
+    const frame = api.createFrame();
+    frame.resize(1100, 756);
+    const add = (name: string, parent = frame) => {
+      const n = api.createFrame();
+      n.name = name;
+      n.resize(100, 50);
+      parent.appendChild(n);
+      return n;
+    };
+    add('Masthead');
+    add('Chart').setSharedPluginData(NAMESPACE, 'importance', 'important');
+    const decor = add('Decor');
+    decor.setSharedPluginData(NAMESPACE, 'importance', 'ignore');
+    add('Swirl button', decor);
+    const geo = await toGeo(frame as never, undefined, 500, { controls: ['button'], chrome: ['masthead'] });
+    expect(geo.map((g) => [g.name, g.role, g.important ?? false, g.ignore ?? false])).toEqual([
+      ['Masthead', 'chrome', false, false],
+      ['Chart', 'container', true, false],
+      ['Decor', 'container', false, true],
+    ]);
+    expect(geo[2].children![0]).toMatchObject({ role: 'interactive', ignore: true });
   });
 });

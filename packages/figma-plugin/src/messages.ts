@@ -2,6 +2,7 @@
 import type { AdaptPlan } from '@dobra/core/adapt';
 import type { CoverageMatrix } from '@dobra/core/coverage';
 import type { Finding } from '@dobra/core/engine/checks';
+import type { Importance, NamePatterns } from '@dobra/core/namePatterns';
 import type { VariablesSummary } from './variableTypes';
 
 export type ToMain =
@@ -17,7 +18,10 @@ export type ToMain =
   | { type: 'adapt'; frameId: string; keys: string[]; split: boolean }
   | { type: 'variables'; platforms: ('android' | 'ios')[]; keys: string[]; devices: boolean; profile: string | null; overwrite: boolean; removeStale: boolean }
   | { type: 'variables-status' }
-  | { type: 'required-targets' };
+  | { type: 'required-targets' }
+  | { type: 'mark'; importance: Importance | null }
+  | { type: 'get-patterns' }
+  | { type: 'set-patterns'; patterns: NamePatterns | null };
 
 export interface TagCandidate {
   id: string;
@@ -56,5 +60,7 @@ export type ToUi = (
   | { type: 'variables-done'; summary: VariablesSummary; source: string }
   | { type: 'variables-status'; exists: boolean }
   | { type: 'targets-picked'; keys: string[] }
+  | { type: 'marked'; count: number; importance: Importance | null }
+  | { type: 'patterns'; patterns: NamePatterns; defaults: NamePatterns }
   | { type: 'error'; message: string }
 ) & { command?: Command };

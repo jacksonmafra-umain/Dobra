@@ -198,4 +198,59 @@ describe('plugin handlers', () => {
       expect(reply.keys).toContain(DUO);
     });
   });
+
+  describe('importance marks and name patterns', () => {
+    it('marks the selected layers, clears them, and says how many', async () => {
+      const api = createFakeFigma();
+      const a = api.createFrame();
+      const b = api.createFrame();
+      api.currentPage.selection = [a, b];
+      expect(await handle(api, { type: 'mark', importance: 'important' })).toEqual({ type: 'marked', count: 2, importance: 'important' });
+      expect(a.getSharedPluginData(NAMESPACE, 'importance')).toBe('important');
+      await handle(api, { type: 'mark', importance: null });
+      expect(b.getSharedPluginData(NAMESPACE, 'importance')).toBe('');
+    });
+
+    it('asks for a selection before marking', async () => {
+      expect(await handle(createFakeFigma(), { type: 'mark', importance: 'ignore' })).toMatchObject({ type: 'error', message: expect.stringMatching(/Select/) });
+    });
+
+    it('saves the file\'s name words on the document, and resets them to the defaults', async () => {
+      const api = createFakeFigma();
+      const first = await handle(api, { type: 'get-patterns' });
+      if (first?.type !== 'patterns') throw new Error(JSON.stringify(first));
+      expect(first.patterns).toEqual(first.defaults);
+      const saved = await handle(api, { type: 'set-patterns', patterns: { controls: ['cta'], chrome: ['masthead'] } });
+      expect(saved).toMatchObject({ type: 'patterns', patterns: { controls: ['cta'], chrome: ['masthead'] } });
+      expect(JSON.parse(api.root.getSharedPluginData(NAMESPACE, 'patterns'))).toEqual({ controls: ['cta'], chrome: ['masthead'] });
+      const reset = await handle(api, { type: 'set-patterns', patterns: null });
+      if (reset?.type !== 'patterns') throw new Error(JSON.stringify(reset));
+      expect(reset.patterns).toEqual(reset.defaults);
+    });
+
+    it('checks with the file\'s words and the marks', async () => {
+      const api = createFakeFigma();
+      await handle(api, { type: 'create-presets', keys: ['surface-duo-2/spanned/spanned/landscape'] });
+      const artboard = api.page.children[0];
+      const chart = api.createFrame();
+      chart.name = 'Chart';
+      chart.resize(120, 80);
+      artboard.appendChild(chart as never);
+      chart.x = 500;
+      chart.y = 100;
+      const run = async () => {
+        api.currentPage.selection = [];
+        const r = await handle(api, { type: 'check', scope: 'page' });
+        if (r?.type !== 'findings') throw new Error(JSON.stringify(r));
+        return r.frames[0].findings.filter((f) => f.nodeId === chart.id).map((f) => f.ruleId);
+      };
+      expect(await run()).toEqual([]);
+      api.currentPage.selection = [chart];
+      await handle(api, { type: 'mark', importance: 'important' });
+      expect(await run()).toContain('hinge-content');
+      chart.setSharedPluginData(NAMESPACE, 'importance', '');
+      await handle(api, { type: 'set-patterns', patterns: { controls: ['chart'], chrome: [] } });
+      expect(await run()).toContain('hinge-content');
+    });
+  });
 });

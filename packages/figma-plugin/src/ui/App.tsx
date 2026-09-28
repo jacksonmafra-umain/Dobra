@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CoverageMatrix } from '@dobra/core/coverage';
 import type { AdaptResult, Command, FrameFindings, TagCandidate, ToMain, ToUi } from '../messages';
+import type { NamePatterns } from '@dobra/core/namePatterns';
 import type { VariablesSummary } from '../variableTypes';
 import { summaryLines } from './variablesSummary';
 import './app.css';
@@ -42,6 +43,7 @@ export function App() {
   // The Variables tab's choices live here, so switching tabs doesn't lose a pasted profile or the picked devices.
   const [variablesForm, setVariablesForm] = useState<VariablesForm>(DEFAULT_VARIABLES_FORM);
   const variablesChecked = useState<Set<string>>(new Set());
+  const [patterns, setPatterns] = useState<{ patterns: NamePatterns; defaults: NamePatterns } | null>(null);
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
@@ -68,6 +70,12 @@ export function App() {
       if (msg.type === 'selection') setSelected(msg.frames);
       if (msg.type === 'adapted') setAdapted(msg.results);
       if (msg.type === 'error') setNotice({ kind: 'error', text: msg.message });
+      if (msg.type === 'patterns') setPatterns({ patterns: msg.patterns, defaults: msg.defaults });
+      if (msg.type === 'marked') {
+        const what = msg.importance === 'important' ? 'important' : msg.importance === 'ignore' ? 'not important' : 'unmarked';
+        setNotice({ kind: 'info', text: `${msg.count} layer${msg.count === 1 ? '' : 's'} ${msg.importance ? `marked ${what}` : what}. Check again to see the effect.` });
+      }
+      if (msg.command === 'check' || msg.type === 'findings') post({ type: 'get-patterns' });
       if (msg.type === 'created') {
         setNotice({ kind: 'info', text: msg.frameIds.length ? `Created ${msg.frameIds.length} artboard(s).` : 'Nothing missing: no artboards created.' });
         post({ type: 'coverage' });
@@ -98,7 +106,7 @@ export function App() {
       {tab === 'presets' && <Presets targets={targets} />}
       {tab === 'tag' && <TagFrames candidates={candidates} />}
       {tab === 'coverage' && <Coverage matrix={matrix} />}
-      {tab === 'check' && <Check frames={findings} visited={visited} />}
+      {tab === 'check' && <Check frames={findings} visited={visited} patterns={patterns} />}
       {tab === 'adapt' && <Adapt targets={targets} selected={selected} results={adapted} />}
       {tab === 'variables' && <Variables targets={targets} exists={variablesExist} result={variables} form={variablesForm} setForm={setVariablesForm} checked={variablesChecked} />}
     </main>
@@ -265,7 +273,39 @@ const SCOPES = [
   ['all-pages', 'All pages'],
 ] as const;
 
-function Check({ frames, visited }: { frames: FrameFindings[] | null; visited: number }) {
+/** Comma-separated words ↔ a list, for the name-word fields. */
+const toWords = (text: string) => text.split(',').map((w) => w.trim()).filter(Boolean);
+
+function NameWords({ patterns }: { patterns: { patterns: NamePatterns; defaults: NamePatterns } | null }) {
+  const [controls, setControls] = useState('');
+  const [chrome, setChrome] = useState('');
+  useEffect(() => {
+    if (!patterns) return;
+    setControls(patterns.patterns.controls.join(', '));
+    setChrome(patterns.patterns.chrome.join(', '));
+  }, [patterns]);
+  if (!patterns) return null;
+  return (
+    <details>
+      <summary>Name words</summary>
+      <p className="muted">Layers whose names contain these words (whole words, any case) are checked as controls or as chrome. Saved in this file for everyone, and used by the web report.</p>
+      <label>
+        Controls
+        <input value={controls} onChange={(e) => setControls(e.target.value)} />
+      </label>
+      <label>
+        Chrome
+        <input value={chrome} onChange={(e) => setChrome(e.target.value)} />
+      </label>
+      <div className="row">
+        <button onClick={() => post({ type: 'set-patterns', patterns: { controls: toWords(controls), chrome: toWords(chrome) } })}>Save</button>
+        <button onClick={() => post({ type: 'set-patterns', patterns: null })}>Reset to defaults</button>
+      </div>
+    </details>
+  );
+}
+
+function Check({ frames, visited, patterns }: { frames: FrameFindings[] | null; visited: number; patterns: { patterns: NamePatterns; defaults: NamePatterns } | null }) {
   return (
     <section>
       <div className="row">
@@ -275,6 +315,16 @@ function Check({ frames, visited }: { frames: FrameFindings[] | null; visited: n
           </button>
         ))}
       </div>
+      <div className="row">
+        <button onClick={() => post({ type: 'mark', importance: 'important' })} title="Always check the selected layers, whatever their names">
+          Mark as important
+        </button>
+        <button onClick={() => post({ type: 'mark', importance: 'ignore' })} title="Skip the selected layers and what's inside them in the hinge and touch-target checks">
+          Mark as not important
+        </button>
+        <button onClick={() => post({ type: 'mark', importance: null })}>Clear mark</button>
+      </div>
+      <NameWords patterns={patterns} />
       {visited > 0 && <p className="muted">Checked {visited} layers…</p>}
       {!frames ? (
         <p className="muted">Pick what to check.</p>
