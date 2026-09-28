@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { DEVICE_CATEGORIES } from '@dobra/core/config/schema';
 import type { Report } from '@dobra/core/report';
+import { withScheme } from '@dobra/core/siteAddress';
 import { actionsStep, cliCommand, runCheck, type CheckRequest, type Fetch, type Health } from './siteCheck';
 
 export interface SiteCheckFormProps {
@@ -17,8 +18,9 @@ function Handoff({ req, reason }: { req: CheckRequest; reason?: string }) {
     <div className="site-check__handoff">
       {reason && <p className="site-check__error" role="alert">{reason}</p>}
       <p>
-        Run the check on your machine, then open the report JSON below. Or run <code>npm run dobra -- report</code> and open
-        the address it prints, to check from there.
+        Run the check on your machine, then drop the <code>foldable-report.zip</code> it writes below: it has the findings,
+        the Markdown and a screenshot of each device. Or run <code>npm run dobra -- report</code> and open the address it
+        prints, to check from there.
       </p>
       <p className="muted">
         From the Dobra repo, once: <code>npm run build:cli &amp;&amp; npx playwright install chromium</code>
@@ -46,7 +48,7 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
   // when the form goes away.
   const pending = useRef<AbortController | null>(null);
   useEffect(() => () => pending.current?.abort(), []);
-  const req: CheckRequest = { url: url.trim() || 'https://example.com/', ...(categories.length ? { categories } : {}) };
+  const req: CheckRequest = { url: withScheme(url) || 'https://example.com/', ...(categories.length ? { categories } : {}) };
 
   if (health === undefined) return <p className="site-check site-check__probing muted">Looking for a check endpoint…</p>;
 
@@ -55,7 +57,7 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
     <>
       <label>
         Website address
-        <input className="site-check__url" type="url" placeholder="https://…" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <input className="site-check__url" type="url" placeholder="www.example.com" value={url} onChange={(e) => setUrl(e.target.value)} />
       </label>
       <fieldset className="site-check__targets">
         <legend>Devices</legend>
@@ -86,7 +88,7 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
     pending.current = ctrl;
     setBusy(true);
     setError(null);
-    const outcome = await runCheck(f, { url: url.trim(), ...(categories.length ? { categories } : {}) }, health!.mode, undefined, ctrl.signal);
+    const outcome = await runCheck(f, { url: withScheme(url), ...(categories.length ? { categories } : {}) }, health!.mode, undefined, ctrl.signal);
     if (pending.current !== ctrl) return;
     pending.current = null;
     setBusy(false);
