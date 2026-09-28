@@ -47,6 +47,7 @@ describe('Figma client', () => {
     expect(Object.keys(loaded)).toHaveLength(70);
     expect(failed).toHaveLength(50);
     expect(failed[0].reason).toMatch(/12 s/);
+    expect(failed[0]).toMatchObject({ status: 429, retryAfter: 12 });
   });
 
   it('never lets the token reach an error message', async () => {

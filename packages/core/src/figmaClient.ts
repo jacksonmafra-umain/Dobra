@@ -17,10 +17,18 @@ export class FigmaError extends Error {
   }
 }
 
+/** A node Figma did not return, with the HTTP status when its batch failed, so callers can retry a 429. */
+export interface FailedNode {
+  id: string;
+  reason: string;
+  status?: FigmaError['status'];
+  retryAfter?: number;
+}
+
 export interface FigmaClient {
   me(): Promise<{ handle: string }>;
   file(key: string): Promise<{ name: string; version: string; document: RestNode }>;
-  nodes(key: string, ids: string[]): Promise<{ loaded: Record<string, RestNode>; failed: { id: string; reason: string }[] }>;
+  nodes(key: string, ids: string[]): Promise<{ loaded: Record<string, RestNode>; failed: FailedNode[] }>;
   /** PNG render URLs at `scale` (Figma accepts 0.01–4; clamped to 0.1–4). */
   images(key: string, ids: string[], scale?: number): Promise<Record<string, string | null>>;
 }
@@ -64,7 +72,7 @@ export function createFigmaClient(rawToken: string, fetchImpl: typeof fetch = fe
     },
     async nodes(key, ids) {
       const loaded: Record<string, RestNode> = {};
-      const failed: { id: string; reason: string }[] = [];
+      const failed: FailedNode[] = [];
       for (const batch of chunks(ids, BATCH)) {
         try {
           const r = await request<{ nodes: Record<string, { document: RestNode } | null> }>(`/files/${key}/nodes?ids=${batch.join(',')}&plugin_data=shared`);
@@ -75,7 +83,8 @@ export function createFigmaClient(rawToken: string, fetchImpl: typeof fetch = fe
           }
         } catch (e) {
           const reason = e instanceof FigmaError ? e.message : redact(String(e), token);
-          for (const id of batch) failed.push({ id, reason });
+          const status = e instanceof FigmaError ? { status: e.status, ...(e.retryAfter !== undefined ? { retryAfter: e.retryAfter } : {}) } : {};
+          for (const id of batch) failed.push({ id, reason, ...status });
         }
       }
       return { loaded, failed };
