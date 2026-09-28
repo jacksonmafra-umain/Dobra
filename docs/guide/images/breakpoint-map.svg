@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-labelledby="t">
+  <title id="t">Breakpoint map by window width: Android's classes compact below 600 dp, medium to 840, expanded to 1200, large to 1600, extra-large beyond; iOS size classes only line up approximately, compact for narrow windows and regular for wide ones, because the system assigns them; the web has no standard set</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.f{fill:#007C85}.fs{stroke:#007C85}.h{fill:#BE185D}.hs{stroke:#BE185D}
+    .p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}.ok{fill:#047857}.warn{fill:#B45309}
+    @media (prefers-color-scheme:dark){.t{fill:#DFE2EE}.s{fill:#9AA8B8}.b{stroke:#334155}.f{fill:#00F0FF}.fs{stroke:#00F0FF}.h{fill:#F062A8}.hs{stroke:#F062A8}.p{fill:#818CF8;stroke:#818CF8}.ok{fill:#10B981}.warn{fill:#F59E0B}}
+  </style>
+  <text class="t" x="20" y="28">Android (dp, thresholds)</text>
+  <rect class="p" x="20" y="38" width="228" height="34"/><text class="t" x="134" y="60" text-anchor="middle">Compact</text>
+  <rect class="p" x="250" y="38" width="92" height="34"/><text class="t" x="296" y="60" text-anchor="middle">Medium</text>
+  <rect class="p" x="344" y="38" width="136" height="34"/><text class="t" x="412" y="60" text-anchor="middle">Expanded</text>
+  <rect class="p" x="482" y="38" width="136" height="34"/><text class="t" x="550" y="60" text-anchor="middle">Large</text>
+  <rect class="p" x="620" y="38" width="120" height="34"/><text class="t" x="680" y="60" text-anchor="middle">Extra-large</text>
+  <text class="s" x="250" y="90" text-anchor="middle">600</text><text class="s" x="344" y="90" text-anchor="middle">840</text><text class="s" x="482" y="90" text-anchor="middle">1200</text><text class="s" x="620" y="90" text-anchor="middle">1600</text>
+  <text class="t" x="20" y="124">iOS (pt, assigned by the system — approximate)</text>
+  <rect class="p" x="20" y="134" width="228" height="34" stroke-dasharray="5 4"/><text class="t" x="134" y="156" text-anchor="middle">compact width</text>
+  <rect class="p" x="250" y="134" width="490" height="34" stroke-dasharray="5 4"/><text class="t" x="495" y="156" text-anchor="middle">regular width (iPad full screen, large iPhones in landscape)</text>
+  <text class="s" x="134" y="186" text-anchor="middle">iPhones, narrow iPad windows</text>
+  <text class="t" x="20" y="222">Web</text>
+  <text class="s" x="64" y="222">no standard set: pick thresholds from the content, and prefer container queries for components</text>
+</svg>
