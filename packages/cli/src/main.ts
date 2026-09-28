@@ -39,6 +39,10 @@ export async function run(argv: string[], io: Io): Promise<number> {
     io.out(opts.help);
     return 2;
   }
+  if (opts.command === 'report') {
+    io.err('dobra report is not available yet');
+    return 2;
+  }
   let targets;
   try {
     targets = chooseTargets(loadCatalog(), opts);
