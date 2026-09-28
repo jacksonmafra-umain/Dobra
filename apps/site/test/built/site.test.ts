@@ -65,6 +65,19 @@ describe('built site', () => {
     }
   });
 
+  // The site's own links (header, landing page); guide articles keep their links as written.
+  it('opens the tools and outside sites in a new tab, safely', () => {
+    for (const file of pages) {
+      const html = readFileSync(file, 'utf8');
+      const chrome = html.includes('<article') ? html.slice(0, html.indexOf('<article')) + html.slice(html.indexOf('</article>')) : html;
+      for (const [a, href] of chrome.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>/g)) {
+        if (!/^(\/simulator\/|\/report\/|https?:)/.test(href)) continue;
+        expect(a, `${route(file)} ${href}`).toContain('target="_blank"');
+        expect(a, `${route(file)} ${href}`).toMatch(/rel="noopener[^"]*"/);
+      }
+    }
+  });
+
   it('bundles the simulator and the report with their assets', () => {
     const sim = readFileSync(join(dist, 'simulator/index.html'), 'utf8');
     const assets = [...sim.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g)].map((m) => m[1]);
