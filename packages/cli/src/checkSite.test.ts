@@ -106,4 +106,46 @@ describe('checkSite', () => {
     const missing = await checkSite(`${server.url}/missing.html`, [PIXEL], { ...opts, browser });
     expect(missing.unloaded[0].reason).toMatch(/HTTP 404/);
   });
+
+  it('aborts requests the guard refuses and reports the target as not loaded', async () => {
+    const r = await checkSite(`${server.url}/layout.html`, [PIXEL], { ...opts, browser, allowRequest: async () => false });
+    expect(r.frames).toEqual([]);
+    expect(r.unloaded[0].reason).toMatch(/blocked|refused|ERR_/i);
+  });
+
+  it('puts a redirect through the guard too', async () => {
+    const seen: string[] = [];
+    const guard = async (u: string) => (seen.push(u), !u.endsWith('/layout.html'));
+    const r = await checkSite(`${server.url}/redirect?to=/layout.html`, [PIXEL], { ...opts, browser, allowRequest: guard });
+    expect(seen.some((u) => u.endsWith('/layout.html'))).toBe(true);
+    expect(r.frames).toEqual([]);
+    expect(r.unloaded).toHaveLength(1);
+  });
+
+  it('stops at the deadline and names the skipped targets in a note', async () => {
+    const r = await checkSite(`${server.url}/layout.html`, [PIXEL, DUO], { ...opts, browser, deadline: Date.now() - 1 });
+    expect(r.frames).toEqual([]);
+    expect(r.notes?.join(' ')).toMatch(/time budget/);
+    expect(r.notes?.join(' ')).toContain(targetKey(DUO));
+  });
+
+  it('skips the fold override when fold emulation is off, and says so', async () => {
+    const r = await checkSite(`${server.url}/segments.html`, [DUO], { ...opts, browser, foldEmulation: false });
+    expect(r.notes?.join(' ')).toMatch(/size only/);
+  });
+
+  it('cuts a slow target short at the deadline instead of running past it', async () => {
+    const t0 = Date.now();
+    const r = await checkSite(`${server.url}/slow`, [PIXEL, DUO], { ...opts, browser, deadline: t0 + 7_000 });
+    expect(Date.now() - t0).toBeLessThan(10_000);
+    expect(r.frames).toEqual([]);
+    expect(r.unloaded.map((u) => u.name)).toContain(targetKey(PIXEL));
+    expect(r.notes?.join(' ')).toContain(targetKey(DUO));
+  });
+
+  it('puts WebSockets through the guard too', async () => {
+    const seen: string[] = [];
+    await checkSite(`${server.url}/socket.html`, [PIXEL], { ...opts, browser, allowRequest: async (u) => (seen.push(u), !u.startsWith('ws')) });
+    expect(seen.some((u) => u.startsWith('ws://127.0.0.1:9/'))).toBe(true);
+  });
 });

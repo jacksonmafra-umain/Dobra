@@ -6,6 +6,9 @@ import { loadCatalog } from '@dobra/core/catalog/load';
 import { toMarkdown, type Report } from '@dobra/core/report';
 import { parseArgs } from './args';
 import { checkSite } from './checkSite';
+import { isLoopback, startLocalServer } from './localServer';
+import { LOCAL } from './policy';
+import { createCheckHandler } from './server';
 import { chooseTargets } from './targets';
 
 export interface Io {
@@ -13,7 +16,11 @@ export interface Io {
   err(s: string): void;
   writeFile(path: string, data: string): Promise<void>;
   check?: typeof checkSite;
+  serve?: typeof startLocalServer;
 }
+
+/** The built report app, next to this package in the repo: apps/report/dist. */
+const REPORT_DIR = fileURLToPath(new URL('../../../apps/report/dist/', import.meta.url));
 
 const RANK = { info: 0, warn: 1, error: 2 } as const;
 
@@ -38,6 +45,22 @@ export async function run(argv: string[], io: Io): Promise<number> {
   if ('help' in opts) {
     io.out(opts.help);
     return 2;
+  }
+  if (opts.command === 'report') {
+    const handler = createCheckHandler({
+      policy: LOCAL,
+      // Loaded on first use, so starting the server and its tests never need a browser.
+      launch: async () => (await import('playwright')).chromium.launch(),
+      ...(io.check ? { check: io.check } : {}),
+    });
+    const server = await (io.serve ?? startLocalServer)({ port: opts.port, host: opts.host, dir: opts.dir ?? REPORT_DIR, handler });
+    io.out(`Foldable Check: ${server.url}`);
+    io.out('Checks run on this machine, so local and staging addresses work. Press Ctrl+C to stop.');
+    if (!isLoopback(opts.host))
+      io.err(`Listening on ${opts.host}: other machines on your network can open this page and check any address, including private ones.`);
+    process.once('SIGINT', () => void server.close());
+    await server.closed;
+    return 0;
   }
   let targets;
   try {

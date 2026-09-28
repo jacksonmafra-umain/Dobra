@@ -12,6 +12,8 @@ import { deviceProfile, openTarget } from './emulate';
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
 const CAP = 4000;
+/** The least time a target needs to be worth starting under a deadline. */
+const MIN_TARGET_MS = 3_000;
 const NO_ANSWER = (ms: number) => `The page did not respond within ${ms / 1000} s (a script may be stuck).`;
 
 export interface CheckOptions {
@@ -24,6 +26,12 @@ export interface CheckOptions {
   loadTimeout?: number;
   /** How long the page may take to answer the collector, in ms. Default 30 000. */
   collectTimeout?: number;
+  /** Sees every request, redirects included; refused ones are blocked. Hosted checks use it to stay off private networks. */
+  allowRequest?: (url: string) => Promise<boolean>;
+  /** Epoch ms after which no further target is started; the skipped ones are named in a note. */
+  deadline?: number;
+  /** False where the browser can't emulate a fold: folded targets are then checked for size only. Default true. */
+  foldEmulation?: boolean;
 }
 
 const firstLine = (e: unknown) => (e instanceof Error ? e.message : String(e)).split('\n')[0];
@@ -76,9 +84,19 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
   const notes: string[] = [];
   const loadTimeout = opts.loadTimeout ?? 30_000;
   const collectTimeout = opts.collectTimeout ?? 30_000;
+  const skipped: string[] = [];
+  // With a deadline, every wait is capped by the time left, and a target isn't started without enough of it.
+  const left = () => (opts.deadline === undefined ? Infinity : opts.deadline - Date.now());
+  const pastDeadline = () => left() < MIN_TARGET_MS;
+  const capped = (ms: number) => Math.max(1, Math.min(ms, left()));
+  const fold = (f: Parameters<Awaited<ReturnType<typeof openTarget>>['applyFold']>[0]) => (opts.foldEmulation === false ? null : f);
   try {
     for (const t of targets) {
       const key = targetKey(t);
+      if (pastDeadline()) {
+        skipped.push(key);
+        continue;
+      }
       opts.onProgress?.(`Checking ${key}`);
       const profile = deviceProfile(config, t);
       const base = { ref: `${url}#${key}`, name: key, page: url, width: profile.width, height: profile.height, tag: key };
@@ -89,17 +107,18 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       }
       let opened;
       try {
-        opened = await openTarget(browser, profile);
+        opened = await openTarget(browser, profile, opts.allowRequest);
       } catch (e) {
         inputs.push({ ...base, root: null, reason: firstLine(e) });
         continue;
       }
       const { context, page, applyFold } = opened;
       try {
-        await applyFold(profile.fold);
-        const note = await load(page, url, opts.wait, loadTimeout);
+        await applyFold(fold(profile.fold));
+        if (profile.fold && opts.foldEmulation === false) notes.push(`${key}: fold not emulated here, size only`);
+        const note = await load(page, url, opts.wait, capped(loadTimeout));
         if (note) notes.push(`${key}: ${note}`);
-        const { root, truncated, scale } = await within(collectLayout(page, CAP), collectTimeout, NO_ANSWER(collectTimeout));
+        const { root, truncated, scale } = await within(collectLayout(page, CAP), capped(collectTimeout), NO_ANSWER(collectTimeout));
         inputs.push({ ...base, root });
         if (truncated) notes.push(`${key}: page truncated at ${CAP} elements`);
         if (scale < 0.99)
@@ -111,24 +130,24 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       }
       await close(context);
 
-      const cover = opts.transitions ? coverOf(t) : null;
+      const cover = opts.transitions && !pastDeadline() ? coverOf(t) : null;
       if (!cover) continue;
       opts.onProgress?.(`Unfolding ${targetKey(cover)} to ${key}`);
       const from = deviceProfile(config, cover);
       let unfold;
       try {
-        unfold = await openTarget(browser, from);
+        unfold = await openTarget(browser, from, opts.allowRequest);
       } catch (e) {
         notes.push(`${key}: the unfold pass failed (${firstLine(e)})`);
         continue;
       }
       try {
-        await unfold.applyFold(from.fold);
-        await load(unfold.page, url, opts.wait, loadTimeout);
+        await unfold.applyFold(fold(from.fold));
+        await load(unfold.page, url, opts.wait, capped(loadTimeout));
         await unfold.page.setViewportSize({ width: profile.width, height: profile.height });
-        await unfold.applyFold(profile.fold);
+        await unfold.applyFold(fold(profile.fold));
         await unfold.page.waitForTimeout(opts.wait);
-        const resized = await within(collectLayout(unfold.page, CAP), collectTimeout, NO_ANSWER(collectTimeout));
+        const resized = await within(collectLayout(unfold.page, CAP), capped(collectTimeout), NO_ANSWER(collectTimeout));
         const reloaded = inputs[inputs.length - 1].root!;
         extra.set(base.ref, resizeVsReload(resized.root, reloaded, t));
       } catch (e) {
@@ -140,6 +159,7 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
   } finally {
     if (!opts.browser && browser.isConnected()) await browser.close();
   }
+  if (skipped.length) notes.push(`time budget reached; not checked: ${skipped.join(', ')}`);
   const report = buildReport(catalog, { kind: 'web', ref: url, name: url }, inputs);
   for (const f of report.frames) f.findings.push(...(extra.get(f.ref) ?? []));
   return notes.length ? { ...report, notes } : report;

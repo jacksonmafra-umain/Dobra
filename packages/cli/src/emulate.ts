@@ -68,14 +68,25 @@ export interface OpenTarget {
   applyFold(fold: Fold | null): Promise<void>;
 }
 
-export async function openTarget(browser: Browser, profile: DeviceProfile): Promise<OpenTarget> {
+/** `allowRequest`, when given, sees every request the page makes, redirects included, and blocks the refused ones. */
+export async function openTarget(browser: Browser, profile: DeviceProfile, allowRequest?: (url: string) => Promise<boolean>): Promise<OpenTarget> {
   const context = await browser.newContext({
     viewport: { width: profile.width, height: profile.height },
     deviceScaleFactor: profile.deviceScaleFactor,
     userAgent: profile.userAgent,
     isMobile: profile.isMobile,
     hasTouch: profile.hasTouch,
+    // Guarded checks: service workers' requests would skip route(), and nothing is downloaded.
+    ...(allowRequest ? { serviceWorkers: 'block' as const, acceptDownloads: false } : {}),
   });
+  if (allowRequest) {
+    await context.route('**/*', async (route) => ((await allowRequest(route.request().url())) ? route.continue() : route.abort('blockedbyclient')));
+    // WebSockets don't pass through route(); guard them separately.
+    await context.routeWebSocket(/.*/, async (ws) => {
+      if (await allowRequest(ws.url())) ws.connectToServer();
+      else await ws.close();
+    });
+  }
   const page = await context.newPage();
   const cdp: CDPSession = await context.newCDPSession(page);
   return {

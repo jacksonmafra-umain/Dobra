@@ -454,6 +454,19 @@ Issue: "Host the site check on Vercel" (enhancement, area:web, area:cli). Branch
 
 ### Task 8: Vercel function adapter and packaging
 
+**Gate (from the slice 1 review):** the hosted guard resolves a host in Node, then Chromium resolves
+it again, so a DNS-rebinding host can answer public to the guard and private to Chromium. That is
+SSRF with read access, because the page stays same-origin. Before any hosted deploy, route the
+hosted browser through an in-process pinning proxy:
+- Launch with `proxy: { server: <local proxy> }` and `--proxy-bypass-list=<-loopback>`; Chromium
+  bypasses loopback by default, so the flag is required.
+- The proxy resolves each host once, checks `isPublicAddress` on the exact IP it connects to, and
+  connects to that IP.
+- Add `--force-webrtc-ip-handling-policy=disable_non_proxied_udp`.
+
+Test it with a resolver stub that answers public first and `127.0.0.1` second. The route guard
+stays, for friendly error messages.
+
 **Files:**
 - Create: `packages/cli/src/hosted.ts`
 - Modify: `packages/cli/build.mjs` (a second entry that bundles `hosted.ts` to `dist/api/check.mjs` and `dist/api/health.mjs`), `packages/cli/package.json` (the serverless Chromium package and `playwright-core` pinned to Task 0's versions), and `apps/site/scripts/copy-tools.mjs` (copy `packages/cli/dist/api/` to the site's `dist/api/`, and write `dist/package.json` with those two dependencies)

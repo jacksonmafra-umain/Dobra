@@ -3,9 +3,9 @@
 import type { Catalog } from '@dobra/core/config/schema';
 import { representativeTarget } from '@dobra/core/coverage';
 import { enumerateTargets, envConfigOf, isKnownTarget, parseTargetKey, targetKey, type Target } from '@dobra/core/targets';
-import type { CliOptions } from './args';
+import type { SiteOptions } from './args';
 
-export function chooseTargets(catalog: Catalog, opts: Pick<CliOptions, 'targets' | 'categories'>): Target[] {
+export function chooseTargets(catalog: Catalog, opts: Pick<SiteOptions, 'targets' | 'categories'>): Target[] {
   const config = envConfigOf(catalog);
   if (opts.targets) {
     return [...new Set(opts.targets)].map((key) => {

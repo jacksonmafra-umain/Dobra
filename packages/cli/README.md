@@ -37,6 +37,27 @@ or keep beacons open still finish. If `load` has not fired after 30 s (one slow 
 resource), the page is checked as it is and the report notes it. A page whose script stops
 answering for 30 s is listed under **Could not load**.
 
+## Check sites from the report
+
+`dobra report` serves Foldable Check with a local site-check endpoint, so a website can be checked
+from the report page. The check runs on your machine, so `localhost` and staging addresses work.
+
+```bash
+npm run build:report                # once: the page it serves
+npm run dobra -- report             # prints http://127.0.0.1:5301/
+```
+
+| Option | Meaning |
+| --- | --- |
+| `--port <n>` | Port to listen on, default `5301`; `0` picks a free one |
+| `--host <addr>` | Address to listen on, default `127.0.0.1` |
+| `--dir <folder>` | The built report app to serve, default `apps/report/dist` |
+
+It answers `GET /api/health` and `POST /api/check` with a JSON body
+`{ "url": "…", "targets": ["…"], "categories": ["…"] }`. Both lists are optional; without them the
+representative set is checked, as with `check site`. The response is the report JSON. The page is
+served at `/` and `/report/`; if it isn't built yet, those paths say so and the endpoint still works.
+
 ## What is emulated
 
 - **Size, scale and user agent** of each target: the window in CSS px, the display density (Android)

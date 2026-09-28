@@ -44,4 +44,17 @@ describe('parseArgs', () => {
     expect(parseArgs(['check', 'site', 'https://x.test', '--wait', '-1'])).toHaveProperty('help');
     expect(parseArgs(['check', 'site', 'https://x.test', '--fail-on', 'loud'])).toHaveProperty('help');
   });
+
+  it('parses dobra report with defaults', () => {
+    expect(parseArgs(['report'])).toEqual({ command: 'report', port: 5301, host: '127.0.0.1', dir: null });
+  });
+
+  it('parses a port, a host and a report folder', () => {
+    expect(parseArgs(['report', '--port', '0', '--host', '0.0.0.0', '--dir', 'apps/report/dist'])).toEqual({ command: 'report', port: 0, host: '0.0.0.0', dir: 'apps/report/dist' });
+  });
+
+  it('rejects a bad port', () => {
+    expect(parseArgs(['report', '--port', 'x'])).toHaveProperty('help');
+    expect(parseArgs(['report', '--port', '70000'])).toHaveProperty('help');
+  });
 });
