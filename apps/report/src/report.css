@@ -118,6 +118,18 @@ h2 { overflow-wrap: anywhere; }
 .site-check__probing { margin: 0; font: var(--dobra-type-label-md); }
 .report-zip__note { font: var(--dobra-type-body-sm); }
 
+/* Report tabs: the findings, the package's Markdown and the report JSON. */
+.report-tabs { margin: 20px 0 4px; }
+.markdown { max-width: 72rem; }
+.markdown h1 { font: var(--dobra-type-headline-md); letter-spacing: var(--dobra-tracking-headline-md); margin: 16px 0 8px; }
+.markdown h3 { font: var(--dobra-type-body-lg); font-weight: 600; margin: 20px 0 6px; }
+.markdown ul { padding-inline-start: 20px; }
+.markdown li { margin: 4px 0; }
+.markdown code, .report-json code { font-family: var(--dobra-font-mono); font-size: 0.92em; }
+.markdown__shot { display: block; max-width: min(100%, 480px); max-height: 420px; width: auto; height: auto; margin: 8px 0 12px; border: 1px solid var(--border); border-radius: var(--dobra-radius); }
+.report-json { display: grid; gap: 8px; justify-items: start; margin-top: 12px; }
+.report-json pre { margin: 0; width: 100%; box-sizing: border-box; max-height: 70vh; overflow: auto; padding: 12px 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--dobra-radius); font: 12px/1.6 var(--dobra-font-mono); }
+
 /* JetBrains Mono joins "://" and "--" into ligatures, which misreads URLs and flags. `font` shorthand resets
    font-variant-ligatures on every element that sets it, so this has to win over those. */
 *, ::before, ::after { font-variant-ligatures: no-contextual !important; }
