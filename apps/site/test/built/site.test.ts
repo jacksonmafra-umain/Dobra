@@ -48,6 +48,23 @@ describe('built site', () => {
     }
   });
 
+  it('renders every guide image with alt text and a file that exists', () => {
+    for (const f of readdirSync(guideDir).filter((x) => x.endsWith('.md'))) {
+      const refs = [...readFileSync(join(guideDir, f), 'utf8').matchAll(/!\[[^\]]*\]\((images\/[^)\s]+)\)/g)];
+      if (!refs.length) continue;
+      const slug = f.replace(/\.md$/, '').replace(/^\d{2}-/, '');
+      const page = readFileSync(join(dist, slug === 'index' ? 'guide' : `guide/${slug}`, 'index.html'), 'utf8');
+      const article = page.slice(page.indexOf('<article'), page.indexOf('</article>'));
+      const imgs = [...article.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
+      expect(imgs, f).toHaveLength(refs.length);
+      for (const img of imgs) {
+        expect(img, `${f}: ${img}`).toMatch(/\salt="[^"]+"/);
+        const src = /\ssrc="([^"]+)"/.exec(img)?.[1] ?? '';
+        expect(src.startsWith('data:') || existsSync(join(dist, src.split('?')[0])), `${f}: ${src}`).toBe(true);
+      }
+    }
+  });
+
   it('bundles the simulator and the report with their assets', () => {
     const sim = readFileSync(join(dist, 'simulator/index.html'), 'utf8');
     const assets = [...sim.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g)].map((m) => m[1]);
