@@ -109,6 +109,19 @@ describe('dobra check site --zip (built binary)', () => {
     for (const f of opened.report.frames) expect(f.ref in index.screenshots || f.ref in index.missing).toBe(true);
     expect(opened.images.size).toBe(opened.report.frames.length);
   });
+
+  it('checks a window two targets share once, with one screenshot, and covers both', async () => {
+    const book = ['galaxy-z-fold-7/inner/tabletop/portrait', 'galaxy-z-fold-7/inner/tabletop/landscape'];
+    const zipPath = join(out, 'shared.zip');
+    const r = await dobra('check', 'site', site('good.html'), '--targets', book.join(','), '--out', join(out, 'shared.json'), '--zip', zipPath, '--no-transitions');
+    expect(r.stderr).toContain('Checking galaxy-z-fold-7/inner/tabletop (portrait, landscape)');
+    expect(r.stdout).toContain('galaxy-z-fold-7/inner/tabletop (portrait, landscape):');
+    const opened = readReportZip(new Uint8Array(readFileSync(zipPath)));
+    expect(opened.report.frames.map((f) => f.targets)).toEqual([book]);
+    expect(opened.images.size).toBe(1);
+    const cell = opened.report.coverage.cells.find((c) => c.requirement.category === 'foldable-book' && c.requirement.kind === 'tabletop' && c.requirement.orientation === 'landscape');
+    expect(cell?.status).toBe('present');
+  });
 });
 
 describe('dobra report (built binary)', () => {

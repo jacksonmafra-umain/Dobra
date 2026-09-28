@@ -41,6 +41,8 @@ export interface ReportInput {
   width: number;
   height: number;
   tag: string;
+  /** Every target key the frame stands for, when it is one window several targets share. Overrides `tag`. */
+  tags?: string[];
   /** null when the frame could not be loaded. */
   root: GeoNode[] | null;
   reason?: string;
@@ -83,6 +85,17 @@ export function parseReport(json: unknown): Report {
   return result.data as Report;
 }
 
+/** Keeps the first of findings that differ only in their target: one window, one finding. */
+function onceEach(findings: Finding[]): Finding[] {
+  const seen = new Set<string>();
+  return findings.filter(({ target: _, ...rest }) => {
+    const key = JSON.stringify(rest);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function buildReport(catalog: Catalog, source: Report['source'], inputs: ReportInput[], now = new Date()): Report {
   const config = envConfigOf(catalog);
   const frames: ReportFrame[] = [];
@@ -93,13 +106,14 @@ export function buildReport(catalog: Catalog, source: Report['source'], inputs: 
       unloaded.push({ ref: f.ref, name: f.name, reason: f.reason ?? 'Not loaded' });
       continue;
     }
-    const m = matchFrame({ tag: f.tag || undefined, name: f.name, width: f.width, height: f.height }, config);
+    const m = matchFrame({ tag: f.tag || undefined, ...(f.tags ? { tags: f.tags } : {}), name: f.name, width: f.width, height: f.height }, config);
     const base = { ref: f.ref, name: f.name, page: f.page, width: f.width, height: f.height };
     if (m.by === 'none') {
       frames.push({ ...base, confidence: 'none', targets: [], ...(m.nearest ? { nearest: m.nearest.key } : {}), findings: [] });
       continue;
     }
-    const findings = check({ source: source.kind, ref: f.ref, targets: m.targets, confidence: m.by, width: f.width, height: f.height, root: f.root }, config);
+    const checked = check({ source: source.kind, ref: f.ref, targets: m.targets, confidence: m.by, width: f.width, height: f.height, root: f.root }, config);
+    const findings = f.tags && m.by === 'tag' ? onceEach(checked) : checked;
     frames.push({ ...base, confidence: m.by, targets: m.targets.map(targetKey), findings });
     present.push({ frameId: f.ref, targets: m.targets, confidence: m.by });
   }
