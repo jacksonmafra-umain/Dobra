@@ -21,6 +21,14 @@
   --info: var(--dobra-accent-2);
   --info-soft: color-mix(in srgb, var(--dobra-accent-2) 14%, transparent);
 }
+/* On the light canvas a 14% tint is too dark behind small colored text; 6% keeps chips at 4.5:1. */
+:root[data-theme='light'] {
+  --accent-soft: color-mix(in srgb, var(--dobra-fold) 6%, transparent);
+  --bad-soft: color-mix(in srgb, var(--dobra-hinge) 6%, transparent);
+  --warn-soft: color-mix(in srgb, var(--dobra-warn) 6%, transparent);
+  --ok-soft: color-mix(in srgb, var(--dobra-pass) 6%, transparent);
+  --info-soft: color-mix(in srgb, var(--dobra-accent-2) 6%, transparent);
+}
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: var(--dobra-type-body-lg); }
 main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
