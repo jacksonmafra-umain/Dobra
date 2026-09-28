@@ -5,14 +5,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repository contains
 
 Dobra is a set of tools for designing foldable and dual-screen UIs on iOS and Android. It is an npm
-workspaces monorepo; see `README.md` for the parts, the layout and the commands.
+workspaces monorepo; each part has its own README with its build and options.
 
 - `packages/core` (`@dobra/core`): the device catalog, targets, the layout engine, the geometry rules, frame matching, coverage, reports and resize transitions. Pure TypeScript, no DOM, no React.
 - `packages/figma-plugin` (`@dobra/figma-plugin`): artboard presets, tagging, coverage, the checker and Adapt & flag. Tags live in the `dobra` shared plugin data namespace.
 - `packages/cli` (`@dobra/cli`): `dobra check site <url>`, website checks with fold emulation.
 - `apps/simulator` (`@dobra/simulator`): the Dobra simulator (Vite, React, Tailwind v4).
 - `apps/report` (`@dobra/report`): the web report that opens report JSON.
-- `docs`: the Android brief (`docs/android-extension-brief.md`), specs and plans.
+- `packages/brand` (`@dobra/brand`): design tokens, fonts, logo and icon shared by every surface.
+- `apps/site` (`@dobra/site`): the Astro site with the landing page, the guide and the bundled tools. Deploys from `main` via Vercel.
+- `docs/guide`: the cross-platform responsive design guide the site renders. `docs/android-extension-brief.md`: the Android brief.
 
 Commands: `npm test`, `npm run typecheck`, `npm run dev`, `npm run build`, `npm run build:single`,
 `npm run dev:report`, `npm run build:report`, `npm run build:cli`, then `npm run dobra -- check site <url>`.
