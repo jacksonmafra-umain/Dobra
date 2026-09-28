@@ -115,3 +115,14 @@ describe('monospace ligatures', () => {
     expect(read('./app.css')).toMatch(/\*, ::before, ::after \{ font-variant-ligatures: no-contextual !important; \}/);
   });
 });
+
+describe('Figma screen states on a foldable', () => {
+  // Centred, the Sign in to load message sits under a book-posture hinge; it starts at the top left,
+  // inside the first region, instead.
+  it('places the state message at the start, not the centre', () => {
+    const css = read('./app.css');
+    const block = css.slice(css.indexOf('.figma-screen__state {'), css.indexOf('}', css.indexOf('.figma-screen__state {')));
+    expect(block).not.toMatch(/place-items: center|text-align: center|align-content: center/);
+    expect(block).toMatch(/justify-items: start/);
+  });
+});

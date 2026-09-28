@@ -788,18 +788,21 @@ body {
   font: var(--dobra-type-label-sm);
   letter-spacing: var(--dobra-tracking-label-sm);
 }
+/* Top left and narrow, so on a book-posture foldable the message stays in the first region, clear of
+   the hinge in the middle. */
 .figma-screen__state {
   display: grid;
-  place-items: center;
-  align-content: center;
+  justify-items: start;
+  align-content: start;
   gap: var(--dobra-space-sm);
   min-height: 100%;
+  box-sizing: border-box;
   padding: var(--dobra-space-lg);
-  text-align: center;
   color: var(--ui-muted);
   background: var(--ui-bg);
   font: var(--dobra-type-body-md);
 }
+.figma-screen__state > * { max-width: 36ch; }
 .figma-screens {
   position: fixed;
   inset: 0;
