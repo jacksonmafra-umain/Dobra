@@ -30,7 +30,7 @@ describe('runCheck', () => {
     expect(r).toEqual({ ok: true, report: sample });
   });
   it('explains a refused private address with the local command', async () => {
-    const r = await runCheck(reply(403, { error: 'This address is on a private network.' }), { url: 'http://10.0.0.1/' });
+    const r = await runCheck(reply(403, { error: 'This address is on a private network.' }), { url: 'http://10.0.0.1/' }, 'hosted');
     expect(r).toMatchObject({ ok: false });
     expect(!r.ok && r.message).toContain('npm run dobra -- report');
   });
@@ -41,6 +41,20 @@ describe('runCheck', () => {
   it('reports a network failure', async () => {
     const r = await runCheck((async () => { throw new TypeError('Failed to fetch'); }) as never, { url: 'https://example.com/' });
     expect(r).toMatchObject({ ok: false, message: expect.stringMatching(/reach/) });
+  });
+});
+
+describe('hand-off and cancelling', () => {
+  it('offers the hand-off only when running the check yourself would help', async () => {
+    expect(await runCheck(reply(429, { error: 'A check is already running' }), { url: 'http://x/' }, 'local')).toMatchObject({ ok: false, handoff: false });
+    expect(await runCheck(reply(400, { error: 'bad' }), { url: 'http://x/' }, 'local')).toMatchObject({ ok: false, handoff: false });
+    expect(await runCheck(reply(403, { error: 'private' }), { url: 'http://10.0.0.1/' }, 'hosted')).toMatchObject({ ok: false, handoff: true });
+  });
+  it('returns an aborted outcome when the request is cancelled', async () => {
+    const ctrl = new AbortController();
+    ctrl.abort();
+    const f = (async (_u: string, init?: RequestInit) => { init?.signal?.throwIfAborted(); return new Response('{}'); }) as never;
+    expect(await runCheck(f, { url: 'http://x/' }, 'local', '', ctrl.signal)).toEqual({ ok: false, aborted: true, handoff: false, message: '' });
   });
 });
 
@@ -64,6 +78,14 @@ describe('cliCommand and actionsStep', () => {
 });
 
 describe('messageFor', () => {
+  it('tells a busy local server from a hosted rate limit', () => {
+    expect(messageFor(429, 'A check is already running', 'local')).toMatch(/already running/);
+    expect(messageFor(429, 'Too many', 'local')).not.toMatch(/minute/);
+  });
+  it('only suggests running locally when the check was not local', () => {
+    expect(messageFor(403, 'Checks can only be started from this page.', 'local')).not.toContain('npm run dobra -- report');
+    expect(messageFor(403, 'This address is on a private network.', 'hosted')).toContain('npm run dobra -- report');
+  });
   it('names the limit on a 413 and the wait on a 429', () => {
     expect(messageFor(413, 'At most 6 devices', 'hosted')).toMatch(/6 devices/);
     expect(messageFor(429, 'Too many', 'hosted')).toMatch(/minute/);

@@ -18,7 +18,8 @@ export interface CheckRequest {
   categories?: string[];
 }
 
-export type CheckOutcome = { ok: true; report: Report } | { ok: false; message: string };
+/** `handoff`: whether running the command yourself would help. `aborted`: the request was cancelled. */
+export type CheckOutcome = { ok: true; report: Report } | { ok: false; message: string; handoff: boolean; aborted?: true };
 
 const LOCAL_HINT = 'Run `npm run dobra -- report` to check it on your machine.';
 
@@ -35,31 +36,42 @@ export async function probe(fetch: Fetch, origin = globalThis.location?.origin ?
 }
 
 export function messageFor(status: number, error: string, mode: 'local' | 'hosted'): string {
-  if (status === 403) return `${error.replace(/ ?Run `npm run dobra -- report`.*$/, '')} ${LOCAL_HINT}`.trim();
-  if (status === 413) return error;
-  if (status === 429) return 'Too many checks from this address. Wait a minute and try again.';
-  if (status === 400) return error;
-  return `The check failed: ${error}${mode === 'hosted' ? ` ${LOCAL_HINT}` : ''}`;
+  const hint = mode === 'hosted' ? ` ${LOCAL_HINT}` : '';
+  const plain = error.replace(/ ?Run `npm run dobra -- report`.*$/, '');
+  if (status === 429) return mode === 'local' ? 'A check is already running; try again when it finishes.' : 'Too many checks from this address. Wait a minute and try again.';
+  if (status === 403 || status === 413) return `${plain || `The check was refused (status ${status}).`}${hint}`;
+  if (status === 400) return plain || 'The check endpoint could not read that request.';
+  return `The check failed: ${plain || `status ${status}`}.${hint}`;
 }
 
-export async function runCheck(fetch: Fetch, req: CheckRequest, mode: 'local' | 'hosted' = 'local', origin = globalThis.location?.origin ?? ''): Promise<CheckOutcome> {
+/** Whether running the command yourself gets past this failure. */
+const helps = (status: number, mode: 'local' | 'hosted') => status >= 500 || (mode === 'hosted' && (status === 403 || status === 413));
+
+export async function runCheck(
+  fetch: Fetch,
+  req: CheckRequest,
+  mode: 'local' | 'hosted' = 'local',
+  origin = globalThis.location?.origin ?? '',
+  signal?: AbortSignal,
+): Promise<CheckOutcome> {
   let res: Response;
   try {
-    res = await fetch(`${origin}/api/check`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(req) });
+    res = await fetch(`${origin}/api/check`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(req), signal });
   } catch {
-    return { ok: false, message: `Couldn't reach the check endpoint. ${LOCAL_HINT}` };
+    if (signal?.aborted) return { ok: false, aborted: true, handoff: false, message: '' };
+    return { ok: false, message: `Couldn't reach the check endpoint. ${LOCAL_HINT}`, handoff: true };
   }
   let body: unknown;
   try {
     body = await res.json();
   } catch {
-    return { ok: false, message: `The check endpoint answered ${res.status} without a report.` };
+    return { ok: false, message: `The check endpoint answered ${res.status} without a report.`, handoff: true };
   }
-  if (!res.ok) return { ok: false, message: messageFor(res.status, String((body as { error?: unknown })?.error ?? ''), mode) };
+  if (!res.ok) return { ok: false, message: messageFor(res.status, String((body as { error?: unknown })?.error ?? ''), mode), handoff: helps(res.status, mode) };
   try {
     return { ok: true, report: parseReport(body) };
   } catch (e) {
-    return { ok: false, message: `The check endpoint sent something that is not a report. ${e instanceof Error ? e.message : ''}`.trim() };
+    return { ok: false, message: `The check endpoint sent something that is not a report. ${e instanceof Error ? e.message : ''}`.trim(), handoff: true };
   }
 }
 
