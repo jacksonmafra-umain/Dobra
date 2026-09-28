@@ -44,6 +44,7 @@ function summarise(report: Report, io: Io): void {
 export async function run(argv: string[], io: Io): Promise<number> {
   const opts = parseArgs(argv);
   if ('help' in opts) {
+    if (opts.error) io.err(opts.error);
     io.out(opts.help);
     return 2;
   }

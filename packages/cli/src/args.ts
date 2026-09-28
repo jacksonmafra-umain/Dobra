@@ -54,7 +54,13 @@ const packageNameFor = (out: string) => out.replace(/\.json$/i, '') + '.zip';
 
 const FAIL_ON: readonly FailOn[] = ['error', 'warn', 'never'];
 
-export function parseArgs(argv: string[]): CliOptions | { help: string } {
+/** Why an address can't be checked, with the form the command needs. */
+function badAddress(raw: string): { help: string; error: string } {
+  return { help: USAGE, error: `Not a web address: ${raw}. Use a full URL starting with https://, for example https://example.com/` };
+}
+
+/** `error`, when set, says what was wrong before the usage text is shown. */
+export function parseArgs(argv: string[]): CliOptions | { help: string; error?: string } {
   let parsed;
   try {
     parsed = parseNodeArgs({
@@ -92,9 +98,9 @@ export function parseArgs(argv: string[]): CliOptions | { help: string } {
   try {
     url = new URL(address);
   } catch {
-    return { help: USAGE };
+    return badAddress(p[2]);
   }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return { help: USAGE };
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return badAddress(p[2]);
 
   const wait = v.wait === undefined ? 500 : Number(v.wait);
   if (!Number.isInteger(wait) || wait < 0) return { help: USAGE };
