@@ -7,23 +7,39 @@ import { toMarkdown, type Report, type ReportFrame } from '@dobra/core/report';
 import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
 import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
-import { FindingRow } from './FindingRow';
-import { FrameOverlay } from './FrameOverlay';
+import { FindingsView } from './FindingsView';
+import { MarkdownView } from './MarkdownView';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
 import { ReportHeader } from './ReportHeader';
 import { ReportNotes } from './ReportNotes';
-import { PassChip } from './SeverityChip';
 import { UnloadedList } from './UnloadedList';
 import { tokenStore } from './tokenStore';
 import { SiteCheckForm } from './SiteCheckForm';
 import { probe, type Health } from './siteCheck';
-import { ZipDownload } from './ZipDownload';
 import { createReportSlot, openReportFile } from './zipView';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
+const deviceNames = new Map(catalog.devices.map((d) => [d.id, d.name]));
+const deviceName = (id: string) => deviceNames.get(id);
+function presetFor(frame: ReportFrame) {
+  const target = frame.targets.length ? parseTargetKey(frame.targets[0]) : null;
+  if (!target) return null;
+  try {
+    return presetSpec(config, target);
+  } catch {
+    return null;
+  }
+}
 const STATUS = { present: '✓', 'present-by-size': '~', missing: '✗' } as const;
+
+/** What an opened report package adds to its report: its own Markdown and the screenshots it links. */
+interface PackageExtras {
+  markdown: string | null;
+  images: Record<string, string>;
+}
+const NO_PACKAGE: PackageExtras = { markdown: null, images: {} };
 
 function sessionTokens() {
   try {
@@ -58,7 +74,7 @@ export function ReportApp() {
     try {
       const result = await loadFigmaReport(createFigmaClient(token), url.trim());
       slot.current.replace();
-      setMissing({});
+      setPkg(NO_PACKAGE);
       setReport(result.report);
       setThumbnails(result.thumbnails);
       setNotice(result.notice ?? null);
@@ -74,7 +90,7 @@ export function ReportApp() {
   // Releases the object URLs of the report on screen whenever any path shows another report.
   const slot = useRef(createReportSlot());
   useEffect(() => () => slot.current.release(), []);
-  const [missing, setMissing] = useState<Record<string, string>>({});
+  const [pkg, setPkg] = useState<PackageExtras>(NO_PACKAGE);
 
   async function openFile(file: File) {
     setError(null);
@@ -84,7 +100,7 @@ export function ReportApp() {
       slot.current.replace(opened.revoke);
       setReport(opened.report);
       setThumbnails(opened.thumbnails);
-      setMissing(opened.missing);
+      setPkg({ markdown: opened.markdown, images: opened.images });
       if (opened.notes.length) setNotice(opened.notes.join(' '));
     } catch (e) {
       setError(`That file is not a foldable check report. ${e instanceof Error ? e.message : String(e)}`);
@@ -112,7 +128,7 @@ export function ReportApp() {
               setError(null);
               setNotice(null);
               slot.current.replace();
-              setMissing({});
+              setPkg(NO_PACKAGE);
               setReport(r);
               setThumbnails({});
             }}
@@ -166,23 +182,21 @@ export function ReportApp() {
         </p>
       )}
       {notice && <p className="banner banner--notice">{notice}</p>}
-      {report && <ReportView report={report} thumbnails={thumbnails} packageMissing={missing} onMessage={setNotice} />}
+      {report && <ReportView report={report} thumbnails={thumbnails} pkg={pkg} />}
     </main>
   );
 }
 
-function ReportView({
-  report,
-  thumbnails,
-  packageMissing,
-  onMessage,
-}: {
-  report: Report;
-  thumbnails: Record<string, string | null>;
-  /** Why frames of an opened package have no screenshot. */
-  packageMissing: Record<string, string>;
-  onMessage(message: string): void;
-}) {
+type ReportTab = 'findings' | 'markdown' | 'json';
+const TABS: { id: ReportTab; label: string }[] = [
+  { id: 'findings', label: 'Findings' },
+  { id: 'markdown', label: 'Markdown' },
+  { id: 'json', label: 'JSON' },
+];
+
+function ReportView({ report, thumbnails, pkg }: { report: Report; thumbnails: Record<string, string | null>; pkg: PackageExtras }) {
+  const [tab, setTab] = useState<ReportTab>('findings');
+  const json = useMemo(() => JSON.stringify(report, null, 2), [report]);
   const missing = report.coverage.cells.filter((c) => c.requirement.level === 'required' && c.status === 'missing');
   const missingTargets = missing.map((c) => representativeTarget(catalog, c.requirement)).filter((t): t is Target => t !== null);
   const slug = report.source.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'report';
@@ -198,92 +212,81 @@ function ReportView({
       </p>
       <CoverageSummary report={report} />
       <div className="row">
-        <button onClick={() => download(`${slug}.foldable.json`, JSON.stringify(report, null, 2), 'application/json')}>Report JSON</button>
-        <button onClick={() => download(`${slug}.foldable.md`, toMarkdown(report), 'text/markdown')}>Markdown</button>
+        <button onClick={() => download(`${slug}.foldable.json`, JSON.stringify(report, null, 2), 'application/json')}>Download JSON</button>
+        <button onClick={() => download(`${slug}.foldable.md`, pkg.markdown ?? toMarkdown(report), 'text/markdown')}>Download Markdown</button>
         <button disabled={!missingTargets.length} onClick={() => download(`${slug}.presets.zip`, presetZip(config, missingTargets), 'application/zip')}>
           Presets ZIP ({missingTargets.length} missing)
         </button>
-        <ZipDownload report={report} thumbnails={thumbnails} missing={packageMissing} slug={slug} onMessage={onMessage} />
       </div>
 
-      <h2>Coverage</h2>
-      <p className="muted">✓ tagged · ~ matched by size only · ✗ missing</p>
-      <div className="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th>Posture</th>
-            <th>Orientation</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {report.coverage.cells.map((c, i) => (
-            <tr key={i} className={c.requirement.level === 'optional' ? 'muted' : undefined}>
-              <td>{c.requirement.category}</td>
-              <td>{c.requirement.kind}</td>
-              <td>{c.requirement.orientation}</td>
-              <td title={c.frames.join(', ')}>
-                <span className={`chip chip--${c.status}`}>{STATUS[c.status]}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      </div>
-      <p>
-        {Object.entries(report.coverage.byCategory).map(([category, v]) => (
-          <span key={category} className="badge">
-            {category} {v.present}/{v.required}
-          </span>
-        ))}
-      </p>
-
-      <h2>Frames</h2>
-      <div className="cards">
-        {report.frames.map((f) => (
-          <FrameCard key={f.ref} frame={f} thumbnail={thumbnails[f.ref] ?? null} />
+      <div className="input-switch report-tabs" role="group" aria-label="Show">
+        {TABS.map((t) => (
+          <button key={t.id} aria-pressed={tab === t.id} onClick={() => setTab(t.id)}>
+            {t.label}
+          </button>
         ))}
       </div>
 
-      <UnloadedList unloaded={report.unloaded} />
-      <ReportNotes notes={report.notes} />
-    </>
-  );
-}
-
-function FrameCard({ frame, thumbnail }: { frame: ReportFrame; thumbnail: string | null }) {
-  const target = frame.targets.length ? parseTargetKey(frame.targets[0]) : null;
-  const preset = useMemo(() => {
-    if (!target) return null;
-    try {
-      return presetSpec(config, target);
-    } catch {
-      return null;
-    }
-  }, [frame.targets[0]]);
-  return (
-    <article className="card">
-      <div className="thumb" style={{ aspectRatio: `${frame.width} / ${frame.height}` }}>
-        {thumbnail && <img src={thumbnail} alt={frame.name} loading="lazy" />}
-        {preset && <FrameOverlay preset={preset} width={frame.width} height={frame.height} />}
-      </div>
-      <div className="card__body">
-        <strong>{frame.name}</strong>
-        <div className="muted">
-          <span className="mono">{frame.width}×{frame.height}</span> ·{' '}
-          {frame.confidence === 'none' ? `unknown size${frame.nearest ? ` — nearest ${frame.nearest}` : ''}` : `${frame.confidence}: ${frame.targets.length} target${frame.targets.length === 1 ? '' : 's'}`}
+      {tab === 'markdown' && <MarkdownView markdown={pkg.markdown ?? toMarkdown(report)} images={pkg.images} />}
+      {tab === 'json' && (
+        <div className="report-json">
+          <button type="button" onClick={() => void navigator.clipboard?.writeText(json)}>
+            Copy JSON
+          </button>
+          <pre>
+            <code>{json}</code>
+          </pre>
         </div>
-        {frame.confidence !== 'none' && frame.findings.length === 0 && (
-          <p className="finding">
-            <PassChip /> <span className="muted">No problems found.</span>
-          </p>
-        )}
-        {frame.findings.map((x, i) => (
-          <FindingRow key={i} finding={x} />
-        ))}
-      </div>
-    </article>
+      )}
+      {tab === 'findings' && (
+        <FindingsView
+          report={report}
+          thumbnails={thumbnails}
+          deviceName={deviceName}
+          presetFor={presetFor}
+          coverage={
+            <>
+              <h2>Coverage</h2>
+              <p className="muted">✓ tagged · ~ matched by size only · ✗ missing</p>
+              <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Posture</th>
+                    <th>Orientation</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.coverage.cells.map((c, i) => (
+                    <tr key={i} className={c.requirement.level === 'optional' ? 'muted' : undefined}>
+                      <td>{c.requirement.category}</td>
+                      <td>{c.requirement.kind}</td>
+                      <td>{c.requirement.orientation}</td>
+                      <td title={c.frames.join(', ')}>
+                        <span className={`chip chip--${c.status}`}>{STATUS[c.status]}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              </div>
+              <p>
+                {Object.entries(report.coverage.byCategory).map(([category, v]) => (
+                  <span key={category} className="badge">
+                    {category} {v.present}/{v.required}
+                  </span>
+                ))}
+              </p>
+
+
+              <UnloadedList unloaded={report.unloaded} />
+              <ReportNotes notes={report.notes} />
+            </>
+          }
+        />
+      )}
+    </>
   );
 }

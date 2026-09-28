@@ -22,6 +22,24 @@ describe('report', () => {
     expect(r.coverage.byCategory['dual-screen'].present).toBe(1);
   });
 
+  it('lists every target of a frame that stands for several, and covers each', () => {
+    const keys = ['galaxy-z-fold-7/inner/tabletop/portrait', 'galaxy-z-fold-7/inner/tabletop/landscape'];
+    const tiny = { id: '3:1', name: 'Tiny', role: 'interactive' as const, rect: { x: 10, y: 10, width: 20, height: 20 } };
+    const one = { ref: 'w#1', name: keys[0], page: 'w', width: 832, height: 750, tag: keys[0], root: [tiny] };
+    const single = buildReport(catalog, { kind: 'web', ref: 'w', name: 'w' }, [one]);
+    const shared = buildReport(catalog, { kind: 'web', ref: 'w', name: 'w' }, [{ ...one, name: 'galaxy-z-fold-7/inner/tabletop (portrait, landscape)', tags: keys }]);
+    expect(shared.frames).toHaveLength(1);
+    expect(shared.frames[0]).toMatchObject({ confidence: 'tag', targets: keys });
+    const tabletop = (r: typeof single, orientation: string) =>
+      r.coverage.cells.find((c) => c.requirement.category === 'foldable-book' && c.requirement.kind === 'tabletop' && c.requirement.orientation === orientation)!;
+    expect(tabletop(shared, 'landscape').status).toBe('present');
+    // The same finding for each target of one window is listed once, under the first target.
+    const touch = (r: typeof single) => r.frames[0].findings.filter((f) => f.ruleId === 'touch-target');
+    expect(touch(single)).toHaveLength(1);
+    expect(touch(shared)).toHaveLength(1);
+    expect(touch(shared)[0].target).toEqual({ deviceId: 'galaxy-z-fold-7', displayId: 'inner', pose: 'tabletop', orientation: 'portrait' });
+  });
+
   it('lists frames it could not load instead of dropping them', () => {
     expect(r.unloaded).toEqual([{ ref: '1:9', name: 'Heavy', reason: 'Rate limited: retry in 30 s' }]);
     expect(r.frames.map((f) => f.ref)).not.toContain('1:9');

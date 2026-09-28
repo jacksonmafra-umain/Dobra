@@ -10,7 +10,7 @@ describe('parseArgs', () => {
       categories: [],
       out: 'foldable-report.json',
       md: null,
-      zip: null,
+      zip: 'foldable-report.zip',
       wait: 500,
       failOn: 'error',
       transitions: true,
@@ -59,8 +59,25 @@ describe('parseArgs', () => {
     expect(parseArgs(['report', '--port', '70000'])).toHaveProperty('help');
   });
 
-  it('reads --zip for a report package', () => {
-    expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'out.zip'])).toMatchObject({ zip: 'out.zip' });
-    expect(parseArgs(['check', 'site', 'https://example.com'])).toMatchObject({ zip: null });
+  it('writes a report package by default, named after the report JSON', () => {
+    expect(parseArgs(['check', 'site', 'https://example.com'])).toMatchObject({ zip: 'foldable-report.zip' });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--out', 'out/r.json'])).toMatchObject({ zip: 'out/r.zip' });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--out', 'report'])).toMatchObject({ zip: 'report.zip' });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'pkg.zip'])).toMatchObject({ zip: 'pkg.zip' });
+  });
+
+  it('skips the report package with --no-zip', () => {
+    expect(parseArgs(['check', 'site', 'https://example.com', '--no-zip'])).toMatchObject({ zip: null });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'pkg.zip', '--no-zip'])).toHaveProperty('help');
+  });
+
+  it('assumes https:// when the address has no scheme', () => {
+    expect(parseArgs(['check', 'site', 'www.umain.com'])).toMatchObject({ url: 'https://www.umain.com' });
+    expect(parseArgs(['check', 'site', 'http://localhost:3000'])).toMatchObject({ url: 'http://localhost:3000' });
+    expect(parseArgs(['check', 'site', 'ftp://example.com'])).toHaveProperty('help');
+  });
+  it('says why an address was rejected, not only the usage', () => {
+    expect(parseArgs(['check', 'site', 'not an address'])).toMatchObject({ error: expect.stringMatching(/https:\/\//) });
+    expect(parseArgs(['check', 'site', 'ftp://x'])).toMatchObject({ error: expect.stringContaining('ftp://x') });
   });
 });

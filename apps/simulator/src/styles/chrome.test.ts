@@ -108,3 +108,10 @@ describe('Figma screens dialog contents', () => {
     expect(read('./app.css')).toContain(`${sel}`);
   });
 });
+
+describe('monospace ligatures', () => {
+  // JetBrains Mono would draw "://" and "--" as single glyphs, so a typed URL reads as "http: /".
+  it('turns contextual ligatures off on every element', () => {
+    expect(read('./app.css')).toMatch(/\*, ::before, ::after \{ font-variant-ligatures: no-contextual !important; \}/);
+  });
+});

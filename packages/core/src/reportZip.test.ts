@@ -1,8 +1,8 @@
 import { strFromU8, unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { loadCatalog } from './catalog/load';
-import { buildReport } from './report';
-import { reportZip, screenFile } from './reportZip';
+import { buildReport, toMarkdown } from './report';
+import { reportZip, ROOT, screenFile } from './reportZip';
 
 const catalog = loadCatalog();
 const button = { id: '2:2', name: 'Buy', role: 'interactive' as const, rect: { x: 530, y: 300, width: 80, height: 48 } };
@@ -112,6 +112,18 @@ describe('readReportZip', () => {
     expect(r.images.get(report.frames[0].ref)).toEqual(png(1100, 756));
     expect(r.missing).toEqual({ '1:3': 'The page did not load.' });
     expect(r.notes).toEqual([]);
+  });
+
+  it('returns the package Markdown and where each shown screenshot sits, so the Markdown can link to them', () => {
+    const r = readReportZip(good);
+    expect(r.markdown).toBe(toMarkdown(report, { images: { [report.frames[0].ref]: screenFile(0, report.frames[0]) } }));
+    expect(r.paths).toEqual({ [report.frames[0].ref]: screenFile(0, report.frames[0]) });
+  });
+
+  it('gives no Markdown when the package has none', () => {
+    const files = base();
+    delete files[`${ROOT}report.md`];
+    expect(readReportZip(zipSync(files)).markdown).toBeNull();
   });
 
   const zipOf = (files: Record<string, Uint8Array>) => zipSync(files);

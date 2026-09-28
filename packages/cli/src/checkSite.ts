@@ -1,5 +1,6 @@
-// dobra check site: one Chromium context per target, the same rules as the plugin and the web
-// report, and an unfold pass that resizes from the cover display without reloading.
+// dobra check site: one Chromium context per window, the same rules as the plugin and the web
+// report, and an unfold pass that resizes from the cover display without reloading. Targets that
+// share a window are checked once, as one frame that lists them all.
 import { chromium, type Browser, type Page } from 'playwright';
 import { loadCatalog } from '@dobra/core/catalog/load';
 import type { Finding } from '@dobra/core/engine/checks';
@@ -8,6 +9,7 @@ import { envConfigOf, isKnownTarget, targetKey, type Target } from '@dobra/core/
 import { resizeVsReload } from '@dobra/core/transition';
 import { collectLayout } from './collect';
 import { deviceProfile, openTarget } from './emulate';
+import { groupByWindow, windowName } from './targets';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
@@ -93,15 +95,18 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
   const capped = (ms: number) => Math.max(1, Math.min(ms, left()));
   const fold = (f: Parameters<Awaited<ReturnType<typeof openTarget>>['applyFold']>[0]) => (opts.foldEmulation === false ? null : f);
   try {
-    for (const t of targets) {
-      const key = targetKey(t);
+    for (const group of groupByWindow(config, targets)) {
+      // The first target stands for the window: its key makes the frame's ref and tag.
+      const t = group[0];
+      const name = windowName(group);
       if (pastDeadline()) {
-        skipped.push(key);
+        skipped.push(name);
         continue;
       }
-      opts.onProgress?.(`Checking ${key}`);
+      opts.onProgress?.(`Checking ${name}`);
       const profile = deviceProfile(config, t);
-      const base = { ref: `${url}#${key}`, name: key, page: url, width: profile.width, height: profile.height, tag: key };
+      const tags = group.length > 1 ? { tags: group.map(targetKey) } : {};
+      const base = { ref: `${url}#${targetKey(t)}`, name, page: url, width: profile.width, height: profile.height, tag: targetKey(t), ...tags };
       // A browser that died mid-run (out of memory on a huge page) fails every later target the same way.
       if (!browser.isConnected()) {
         inputs.push({ ...base, root: null, reason: 'The browser closed unexpectedly.' });
@@ -117,9 +122,9 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       const { context, page, applyFold } = opened;
       try {
         await applyFold(fold(profile.fold));
-        if (profile.fold && opts.foldEmulation === false) notes.push(`${key}: fold not emulated here, size only`);
+        if (profile.fold && opts.foldEmulation === false) notes.push(`${name}: fold not emulated here, size only`);
         const note = await load(page, url, opts.wait, capped(loadTimeout));
-        if (note) notes.push(`${key}: ${note}`);
+        if (note) notes.push(`${name}: ${note}`);
         const { root, truncated, scale } = await within(collectLayout(page, CAP), capped(collectTimeout), NO_ANSWER(collectTimeout));
         inputs.push({ ...base, root });
         if (opts.capture) {
@@ -128,12 +133,12 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
             opts.capture.images.set(base.ref, await page.screenshot({ type: 'png', timeout: capped(10_000) }));
           } catch (e) {
             opts.capture.missing[base.ref] = `The screenshot failed: ${firstLine(e)}`;
-            notes.push(`${key}: the screenshot failed (${firstLine(e)})`);
+            notes.push(`${name}: the screenshot failed (${firstLine(e)})`);
           }
         }
-        if (truncated) notes.push(`${key}: page truncated at ${CAP} elements`);
+        if (truncated) notes.push(`${name}: page truncated at ${CAP} elements`);
         if (scale < 0.99)
-          notes.push(`${key}: the page is zoomed out to ${Math.round(scale * 100)}% to fit content wider than the window, so hinge positions are approximate`);
+          notes.push(`${name}: the page is zoomed out to ${Math.round(scale * 100)}% to fit content wider than the window, so hinge positions are approximate`);
       } catch (e) {
         inputs.push({ ...base, root: null, reason: firstLine(e) });
         await close(context);
@@ -143,13 +148,13 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
 
       const cover = opts.transitions && !pastDeadline() ? coverOf(t) : null;
       if (!cover) continue;
-      opts.onProgress?.(`Unfolding ${targetKey(cover)} to ${key}`);
+      opts.onProgress?.(`Unfolding ${targetKey(cover)} to ${name}`);
       const from = deviceProfile(config, cover);
       let unfold;
       try {
         unfold = await openTarget(browser, from, opts.allowRequest);
       } catch (e) {
-        notes.push(`${key}: the unfold pass failed (${firstLine(e)})`);
+        notes.push(`${name}: the unfold pass failed (${firstLine(e)})`);
         continue;
       }
       try {
@@ -162,7 +167,7 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
         const reloaded = inputs[inputs.length - 1].root!;
         extra.set(base.ref, resizeVsReload(resized.root, reloaded, t));
       } catch (e) {
-        notes.push(`${key}: the unfold pass failed (${firstLine(e)})`);
+        notes.push(`${name}: the unfold pass failed (${firstLine(e)})`);
       } finally {
         await close(unfold.context);
       }

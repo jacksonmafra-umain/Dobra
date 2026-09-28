@@ -12,6 +12,18 @@ describe('matchFrame', () => {
     expect(m.targets.map(targetKey)).toEqual(['galaxy-z-fold-7/inner/book/portrait']);
   });
 
+  it('takes several tags for a frame that stands for more than one target', () => {
+    const keys = ['galaxy-z-fold-7/inner/book/portrait', 'galaxy-z-fold-7/inner/book/landscape'];
+    const m = matchFrame({ tag: keys[0], tags: keys, name: 'Anything', width: 1, height: 1 }, config);
+    expect(m.by).toBe('tag');
+    expect(m.targets.map(targetKey)).toEqual(keys);
+  });
+
+  it('falls back to the single tag when one of several is not a target', () => {
+    const m = matchFrame({ tag: 'pixel-9/main/-/portrait', tags: ['pixel-9/main/-/portrait', 'gone-device/main/-/portrait'], name: 'x', width: 1, height: 1 }, config);
+    expect(m.targets.map(targetKey)).toEqual(['pixel-9/main/-/portrait']);
+  });
+
   it('ignores a tag for a device the catalog no longer has', () => {
     const m = matchFrame({ tag: 'gone-device/main/-/portrait', name: 'Frame 1', width: 3, height: 3 }, config);
     expect(m.by).toBe('none');

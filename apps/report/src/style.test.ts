@@ -81,3 +81,10 @@ describe('report packages', () => {
     expect(css).toMatch(/\.report-zip__note(?![\w-])[^{]*\{/);
   });
 });
+
+describe('monospace ligatures', () => {
+  // JetBrains Mono would draw "://" and "--" as single glyphs, so a typed URL reads as "http: /".
+  it('turns contextual ligatures off on every element', () => {
+    expect(css).toMatch(/\*, ::before, ::after \{ font-variant-ligatures: no-contextual !important; \}/);
+  });
+});
