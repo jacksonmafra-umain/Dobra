@@ -22,6 +22,12 @@ describe.skipIf(!existsSync(dist('code.js')))('bundle', () => {
     expect(code).not.toMatch(/<!--|-->/);
   });
 
+  it('carries the brand fonts inside ui.html and fetches nothing', () => {
+    const ui = readFileSync(dist('ui.html'), 'utf8');
+    expect(ui.match(/font\/woff2/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    expect(ui).not.toMatch(/fonts\.googleapis|https?:\/\/[^"')\s]+\.(woff2?|css)/);
+  });
+
   it('builds one self-contained UI file', () => {
     expect(readFileSync(dist('ui.html'), 'utf8')).not.toMatch(/<script[^>]+src=/);
   });
