@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>Dobra</title>
+    <!-- Sets the theme before the first paint; src/ui/theme.ts keeps it in sync afterwards. -->
+    <script>
+      document.documentElement.dataset.theme = document.documentElement.classList.contains('figma-dark') ? 'dark' : 'light';
+    </script>
   </head>
   <body>
     <div id="root"></div>
