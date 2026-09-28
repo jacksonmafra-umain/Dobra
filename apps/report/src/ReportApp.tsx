@@ -5,15 +5,20 @@ import { presetSpec } from '@dobra/core/presets';
 import { presetZip } from '@dobra/core/presetZip';
 import { parseReport, toMarkdown, type Report, type ReportFrame } from '@dobra/core/report';
 import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
+import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
+import { FindingRow } from './FindingRow';
+import { FrameOverlay } from './FrameOverlay';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
+import { ReportHeader } from './ReportHeader';
 import { ReportNotes } from './ReportNotes';
+import { PassChip } from './SeverityChip';
+import { UnloadedList } from './UnloadedList';
 import { tokenStore } from './tokenStore';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
-const ICON = { error: '⛔', warn: '⚠️', info: 'ℹ️' } as const;
 const STATUS = { present: '✓', 'present-by-size': '~', missing: '✗' } as const;
 
 function sessionTokens() {
@@ -66,8 +71,7 @@ export function ReportApp() {
 
   return (
     <main>
-      <h1>Foldable Check</h1>
-      <p className="muted">Coverage and foldable rule findings for a Figma file, or for a report made by the command-line checker.</p>
+      <ReportHeader catalogVersion={catalog.version} />
 
       <section className="panel inputs">
         <label>
@@ -95,28 +99,25 @@ export function ReportApp() {
             {busy ? 'Checking…' : 'Check file'}
           </button>
         </div>
-        <div className="drop">
-          Or open a report JSON: <input type="file" accept="application/json,.json" aria-label="Report JSON" onChange={(e) => e.target.files?.[0] && openFile(e.target.files[0])} />
-        </div>
+        <label className="drop">
+          <span>Or open a report JSON</span>
+          <span className="muted">made by the command-line checker or the simulator</span>
+          <input type="file" accept="application/json,.json" aria-label="Report JSON" onChange={(e) => e.target.files?.[0] && openFile(e.target.files[0])} />
+        </label>
       </section>
 
       {error && (
-        <p className="banner" role="alert">
+        <p className="banner banner--error" role="alert">
           {error}
         </p>
       )}
-      {notice && <p className="banner">{notice}</p>}
+      {notice && <p className="banner banner--notice">{notice}</p>}
       {report && <ReportView report={report} thumbnails={thumbnails} />}
     </main>
   );
 }
 
 function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record<string, string | null> }) {
-  const counts = useMemo(() => {
-    const c = { error: 0, warn: 0, info: 0 };
-    for (const f of report.frames) for (const x of f.findings) c[x.severity]++;
-    return c;
-  }, [report]);
   const missing = report.coverage.cells.filter((c) => c.requirement.level === 'required' && c.status === 'missing');
   const missingTargets = missing.map((c) => representativeTarget(catalog, c.requirement)).filter((t): t is Target => t !== null);
   const slug = report.source.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'report';
@@ -128,8 +129,9 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
       </h2>
       <p className="muted">
         Generated {new Date(report.generatedAt).toLocaleString()} · catalog {report.catalogVersion}
-        {report.source.fileVersion ? ` · file version ${report.source.fileVersion}` : ''} · {ICON.error} {counts.error} · {ICON.warn} {counts.warn} · {ICON.info} {counts.info}
+        {report.source.fileVersion ? ` · file version ${report.source.fileVersion}` : ''}
       </p>
+      <CoverageSummary report={report} />
       <div className="row">
         <button onClick={() => download(`${slug}.foldable.json`, JSON.stringify(report, null, 2), 'application/json')}>Report JSON</button>
         <button onClick={() => download(`${slug}.foldable.md`, toMarkdown(report), 'text/markdown')}>Markdown</button>
@@ -140,6 +142,7 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
 
       <h2>Coverage</h2>
       <p className="muted">✓ tagged · ~ matched by size only · ✗ missing</p>
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -155,11 +158,14 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
               <td>{c.requirement.category}</td>
               <td>{c.requirement.kind}</td>
               <td>{c.requirement.orientation}</td>
-              <td title={c.frames.join(', ')}>{STATUS[c.status]}</td>
+              <td title={c.frames.join(', ')}>
+                <span className={`chip chip--${c.status}`}>{STATUS[c.status]}</span>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
       <p>
         {Object.entries(report.coverage.byCategory).map(([category, v]) => (
           <span key={category} className="badge">
@@ -175,18 +181,7 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
         ))}
       </div>
 
-      {report.unloaded.length > 0 && (
-        <>
-          <h2>Could not load</h2>
-          <ul>
-            {report.unloaded.map((u) => (
-              <li key={u.ref}>
-                {u.name}: <span className="muted">{u.reason}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <UnloadedList unloaded={report.unloaded} />
       <ReportNotes notes={report.notes} />
     </>
   );
@@ -206,29 +201,21 @@ function FrameCard({ frame, thumbnail }: { frame: ReportFrame; thumbnail: string
     <article className="card">
       <div className="thumb" style={{ aspectRatio: `${frame.width} / ${frame.height}` }}>
         {thumbnail && <img src={thumbnail} alt={frame.name} loading="lazy" />}
-        {preset && (
-          <svg viewBox={`0 0 ${frame.width} ${frame.height}`} preserveAspectRatio="none" aria-hidden>
-            {preset.safeZones.map((z, i) => (
-              <rect key={`z${i}`} x={z.x} y={z.y} width={z.width} height={z.height} fill="#ef4444" fillOpacity={0.1} />
-            ))}
-            {preset.hinges.map((h, i) => (
-              <rect key={`h${i}`} x={h.rect.x} y={h.rect.y} width={Math.max(h.rect.width, 2)} height={Math.max(h.rect.height, 2)} fill="#ef4444" fillOpacity={0.35} />
-            ))}
-          </svg>
-        )}
+        {preset && <FrameOverlay preset={preset} width={frame.width} height={frame.height} />}
       </div>
       <div className="card__body">
         <strong>{frame.name}</strong>
         <div className="muted">
-          {frame.width}×{frame.height} ·{' '}
+          <span className="mono">{frame.width}×{frame.height}</span> ·{' '}
           {frame.confidence === 'none' ? `unknown size${frame.nearest ? ` — nearest ${frame.nearest}` : ''}` : `${frame.confidence}: ${frame.targets.length} target${frame.targets.length === 1 ? '' : 's'}`}
         </div>
-        {frame.confidence !== 'none' && frame.findings.length === 0 && <p className="muted">No problems found.</p>}
+        {frame.confidence !== 'none' && frame.findings.length === 0 && (
+          <p className="finding">
+            <PassChip /> <span className="muted">No problems found.</span>
+          </p>
+        )}
         {frame.findings.map((x, i) => (
-          <div key={i} className="finding">
-            {ICON[x.severity]} <strong>{x.ruleId}</strong>
-            {x.estimated && <span className="badge">estimated</span>} {x.message}
-          </div>
+          <FindingRow key={i} finding={x} />
         ))}
       </div>
     </article>
