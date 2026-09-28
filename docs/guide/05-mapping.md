@@ -23,7 +23,7 @@ parts have the detail.
 | Supporting pane | `SupportingPaneScaffold` ([Android](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-a-supporting-pane-layout)) | `inspector` ([Apple](https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:))) | An `aside` column |
 | Navigation that changes shape | `NavigationSuiteScaffold`: bar or rail ([Android](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-adaptive-navigation)) | `TabView` with `.sidebarAdaptable`: sidebar or tab bar ([Apple](https://developer.apple.com/documentation/swiftui/tabview)) | Media query on the layout |
 | Start and end of a line | Start/end | Leading/trailing | Logical properties ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values)) |
-| Minimum touch target | 48 × 48 dp ([Android](https://developer.android.com/guide/topics/ui/accessibility/apps)) | 44 × 44 pt default, 28 × 28 pt minimum ([HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)) | No browser minimum; WCAG target-size criteria [unverified — confirm before use] |
+| Minimum touch target | 48 × 48 dp ([Android](https://developer.android.com/guide/topics/ui/accessibility/apps)) | 44 × 44 pt default, 28 × 28 pt minimum ([HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)) | 24 × 24 CSS px at WCAG 2.2 AA, 44 × 44 at AAA ([WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)) |
 
 `dp`, `pt` and CSS `px` all describe roughly the same physical size, but they are three separate
 definitions, and a design value doesn't carry over exactly between them.
@@ -61,7 +61,7 @@ platforms, not a web convention.
 ## Glossary entries
 
 breakpoint | A width or height where a layout changes structure; on the web, choose it from the content, not from device classes | Android, Web | Android: window size class bounds (600, 840, 1200, 1600 dp wide; 480, 900 dp tall); iOS: none (size classes are assigned); Web: a media or container query condition | https://web.dev/articles/responsive-web-design-basics
-touch target | The area of a control that accepts a tap | Android, iOS, Web | Android: at least 48 × 48 dp; iOS: 44 × 44 pt default, 28 × 28 pt minimum; Web: WCAG target size [unverified — confirm before use] | https://developer.android.com/guide/topics/ui/accessibility/apps
+touch target | The area of a control that accepts a tap | Android, iOS, Web | Android: at least 48 × 48 dp; iOS: 44 × 44 pt default, 28 × 28 pt minimum; Web: WCAG 2.2 target size, 24 × 24 CSS px at AA and 44 × 44 at AAA | https://developer.android.com/guide/topics/ui/accessibility/apps
 
 ## Sources
 
@@ -92,3 +92,4 @@ touch target | The area of a control that accepts a tap | Android, iOS, Web | An
 - https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API
 - https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values
 - https://web.dev/articles/responsive-web-design-basics
+- https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html
