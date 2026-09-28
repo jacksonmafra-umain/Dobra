@@ -38,13 +38,21 @@ function countsOf(findings: readonly Finding[]): Counts {
 /** Worst first: more errors, then more warnings. */
 const worse = (a: Counts, b: Counts) => b.error - a.error || b.warn - a.warn || b.info - a.info;
 
-/** "inner · book · portrait, landscape": the display, posture and every orientation a frame stands for. */
+const distinct = (xs: (string | undefined)[]) => [...new Set(xs.filter((x): x is string => Boolean(x)))];
+
+/**
+ * The displays, postures and orientations a frame stands for: "inner · book · portrait, landscape",
+ * or "inner · flat portrait, stand landscape" when both posture and orientation vary.
+ */
 export function frameLabel(frame: ReportFrame): string {
   const targets = frame.targets.map(parseTargetKey).filter((t) => t !== null);
   if (!targets.length) return frame.name;
-  const [first] = targets;
-  const orientations = [...new Set(targets.map((t) => t.orientation))];
-  return [first.displayId, first.pose, orientations.join(', ')].filter(Boolean).join(' · ');
+  const displays = distinct(targets.map((t) => t.displayId)).join(', ');
+  const poses = distinct(targets.map((t) => t.pose));
+  const orientations = distinct(targets.map((t) => t.orientation));
+  if (poses.length > 1 && orientations.length > 1)
+    return `${displays} · ${distinct(targets.map((t) => [t.pose, t.orientation].filter(Boolean).join(' '))).join(', ')}`;
+  return [displays, poses.join(', '), orientations.join(', ')].filter(Boolean).join(' · ');
 }
 
 export function deviceGroups(report: Pick<Report, 'frames'>, deviceName: (id: string) => string | undefined): DeviceGroup[] {

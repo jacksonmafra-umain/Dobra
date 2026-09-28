@@ -42,6 +42,10 @@ describe('frameLabel', () => {
     expect(frameLabel(report.frames[2])).toBe('inner · book · portrait, landscape');
     expect(frameLabel(report.frames[0])).toBe('outer · closed · portrait');
     expect(frameLabel(report.frames[3])).toBe('Loose frame');
+    const shared = frame(['galaxy-z-fold-7/inner/open/portrait', 'galaxy-z-fold-7/inner/dual-screen/portrait'], []);
+    expect(frameLabel(shared)).toBe('inner · open, dual-screen · portrait');
+    const mixed = frame(['iphone-duo/inner/flat/portrait', 'iphone-duo/inner/stand/landscape'], []);
+    expect(frameLabel(mixed)).toBe('inner · flat portrait, stand landscape');
   });
 });
 
