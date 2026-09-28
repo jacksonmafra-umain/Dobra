@@ -7,14 +7,12 @@ import { toMarkdown, type Report, type ReportFrame } from '@dobra/core/report';
 import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
 import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
-import { FindingRow } from './FindingRow';
-import { FrameOverlay } from './FrameOverlay';
+import { FindingsView } from './FindingsView';
 import { MarkdownView } from './MarkdownView';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
 import { ReportHeader } from './ReportHeader';
 import { ReportNotes } from './ReportNotes';
-import { PassChip } from './SeverityChip';
 import { UnloadedList } from './UnloadedList';
 import { tokenStore } from './tokenStore';
 import { SiteCheckForm } from './SiteCheckForm';
@@ -23,6 +21,17 @@ import { createReportSlot, openReportFile } from './zipView';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
+const deviceNames = new Map(catalog.devices.map((d) => [d.id, d.name]));
+const deviceName = (id: string) => deviceNames.get(id);
+function presetFor(frame: ReportFrame) {
+  const target = frame.targets.length ? parseTargetKey(frame.targets[0]) : null;
+  if (!target) return null;
+  try {
+    return presetSpec(config, target);
+  } catch {
+    return null;
+  }
+}
 const STATUS = { present: '✓', 'present-by-size': '~', missing: '✗' } as const;
 
 /** What an opened report package adds to its report: its own Markdown and the screenshots it links. */
@@ -230,87 +239,54 @@ function ReportView({ report, thumbnails, pkg }: { report: Report; thumbnails: R
         </div>
       )}
       {tab === 'findings' && (
-        <>
-          <h2>Coverage</h2>
-          <p className="muted">✓ tagged · ~ matched by size only · ✗ missing</p>
-          <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Posture</th>
-                <th>Orientation</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.coverage.cells.map((c, i) => (
-                <tr key={i} className={c.requirement.level === 'optional' ? 'muted' : undefined}>
-                  <td>{c.requirement.category}</td>
-                  <td>{c.requirement.kind}</td>
-                  <td>{c.requirement.orientation}</td>
-                  <td title={c.frames.join(', ')}>
-                    <span className={`chip chip--${c.status}`}>{STATUS[c.status]}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-          <p>
-            {Object.entries(report.coverage.byCategory).map(([category, v]) => (
-              <span key={category} className="badge">
-                {category} {v.present}/{v.required}
-              </span>
-            ))}
-          </p>
+        <FindingsView
+          report={report}
+          thumbnails={thumbnails}
+          deviceName={deviceName}
+          presetFor={presetFor}
+          coverage={
+            <>
+              <h2>Coverage</h2>
+              <p className="muted">✓ tagged · ~ matched by size only · ✗ missing</p>
+              <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Posture</th>
+                    <th>Orientation</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.coverage.cells.map((c, i) => (
+                    <tr key={i} className={c.requirement.level === 'optional' ? 'muted' : undefined}>
+                      <td>{c.requirement.category}</td>
+                      <td>{c.requirement.kind}</td>
+                      <td>{c.requirement.orientation}</td>
+                      <td title={c.frames.join(', ')}>
+                        <span className={`chip chip--${c.status}`}>{STATUS[c.status]}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              </div>
+              <p>
+                {Object.entries(report.coverage.byCategory).map(([category, v]) => (
+                  <span key={category} className="badge">
+                    {category} {v.present}/{v.required}
+                  </span>
+                ))}
+              </p>
 
-          <h2>Frames</h2>
-          <div className="cards">
-            {report.frames.map((f) => (
-              <FrameCard key={f.ref} frame={f} thumbnail={thumbnails[f.ref] ?? null} />
-            ))}
-          </div>
 
-          <UnloadedList unloaded={report.unloaded} />
-          <ReportNotes notes={report.notes} />
-        </>
+              <UnloadedList unloaded={report.unloaded} />
+              <ReportNotes notes={report.notes} />
+            </>
+          }
+        />
       )}
     </>
-  );
-}
-
-function FrameCard({ frame, thumbnail }: { frame: ReportFrame; thumbnail: string | null }) {
-  const target = frame.targets.length ? parseTargetKey(frame.targets[0]) : null;
-  const preset = useMemo(() => {
-    if (!target) return null;
-    try {
-      return presetSpec(config, target);
-    } catch {
-      return null;
-    }
-  }, [frame.targets[0]]);
-  return (
-    <article className="card">
-      <div className="thumb" style={{ aspectRatio: `${frame.width} / ${frame.height}` }}>
-        {thumbnail && <img src={thumbnail} alt={frame.name} loading="lazy" />}
-        {preset && <FrameOverlay preset={preset} width={frame.width} height={frame.height} />}
-      </div>
-      <div className="card__body">
-        <strong>{frame.name}</strong>
-        <div className="muted">
-          <span className="mono">{frame.width}×{frame.height}</span> ·{' '}
-          {frame.confidence === 'none' ? `unknown size${frame.nearest ? ` — nearest ${frame.nearest}` : ''}` : `${frame.confidence}: ${frame.targets.length} target${frame.targets.length === 1 ? '' : 's'}`}
-        </div>
-        {frame.confidence !== 'none' && frame.findings.length === 0 && (
-          <p className="finding">
-            <PassChip /> <span className="muted">No problems found.</span>
-          </p>
-        )}
-        {frame.findings.map((x, i) => (
-          <FindingRow key={i} finding={x} />
-        ))}
-      </div>
-    </article>
   );
 }
