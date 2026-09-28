@@ -1,12 +1,13 @@
 // End-to-end acceptance: builds the real `dobra` binary and runs it the way CI does, against the
 // example sites, checking exit codes and the report files it writes.
 import { execFile, execFileSync, spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { parseReport } from '@dobra/core/report';
+import { readReportZip } from '@dobra/core/reportZip';
 import { startFixtureServer } from './test/server';
 
 const CLI_DIR = fileURLToPath(new URL('..', import.meta.url));
@@ -52,6 +53,15 @@ describe('dobra check site (built binary)', () => {
     const md = readFileSync(join(out, 'hinge.md'), 'utf8');
     expect(md).toMatch(/^# /);
     expect(md).toContain('hinge-content');
+    // The report package is written by default, next to the JSON.
+    expect(r.stdout).toContain(join(out, 'hinge.zip'));
+    expect(readReportZip(new Uint8Array(readFileSync(join(out, 'hinge.zip')))).report.frames.map((f) => f.targets[0])).toEqual([DUO]);
+  });
+
+  it('skips the report package with --no-zip', async () => {
+    const r = await dobra('check', 'site', site('good.html'), '--targets', DUO, '--out', join(out, 'nozip.json'), '--no-zip', '--no-transitions');
+    expect(r.code).toBe(0);
+    expect(existsSync(join(out, 'nozip.zip'))).toBe(false);
   });
 
   it('exits 0 on a page that handles the hinge', async () => {
@@ -89,7 +99,6 @@ describe('dobra check site (built binary)', () => {
 
 describe('dobra check site --zip (built binary)', () => {
   it('writes a package the report can open, with a screenshot or a reason for every frame', async () => {
-    const { readReportZip } = await import('@dobra/core/reportZip');
     const zipPath = join(out, 'package.zip');
     const r = await dobra('check', 'site', site('06-hinge-content.html'), '--targets', `${DUO},${FLIP_INNER}`, '--out', join(out, 'package.json'), '--zip', zipPath, '--no-transitions');
     expect(r.code).toBe(1);

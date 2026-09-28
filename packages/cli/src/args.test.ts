@@ -10,7 +10,7 @@ describe('parseArgs', () => {
       categories: [],
       out: 'foldable-report.json',
       md: null,
-      zip: null,
+      zip: 'foldable-report.zip',
       wait: 500,
       failOn: 'error',
       transitions: true,
@@ -59,8 +59,15 @@ describe('parseArgs', () => {
     expect(parseArgs(['report', '--port', '70000'])).toHaveProperty('help');
   });
 
-  it('reads --zip for a report package', () => {
-    expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'out.zip'])).toMatchObject({ zip: 'out.zip' });
-    expect(parseArgs(['check', 'site', 'https://example.com'])).toMatchObject({ zip: null });
+  it('writes a report package by default, named after the report JSON', () => {
+    expect(parseArgs(['check', 'site', 'https://example.com'])).toMatchObject({ zip: 'foldable-report.zip' });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--out', 'out/r.json'])).toMatchObject({ zip: 'out/r.zip' });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--out', 'report'])).toMatchObject({ zip: 'report.zip' });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'pkg.zip'])).toMatchObject({ zip: 'pkg.zip' });
+  });
+
+  it('skips the report package with --no-zip', () => {
+    expect(parseArgs(['check', 'site', 'https://example.com', '--no-zip'])).toMatchObject({ zip: null });
+    expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'pkg.zip', '--no-zip'])).toHaveProperty('help');
   });
 });
