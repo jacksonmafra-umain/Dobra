@@ -35,6 +35,16 @@ Figma desktop › Plugins › Development › Import plugin from manifest… ›
 - **Check** — checks the selected artboards (or the whole page, or every page) and lists the
   findings per frame. Click a finding to select and zoom to the layer. Presets get a Re-check
   button in the properties panel.
+  - **Mark as important** makes the selected layers count as content in the hinge check, whatever
+    their names: a chart, a price, a signature area.
+  - **Mark as not important** skips the selected layers, and everything inside them, in the hinge
+    and touch-target checks. Use it for decoration that sits on the fold on purpose.
+  - **Clear mark** returns them to automatic classification. Marks are stored on the layer, so
+    the web report respects them too.
+  - **Name words** lists the words that make a layer a control (button, cta, chip…) or chrome
+    (nav, tab bar, header…). They are matched as whole words in any case, so "tab bar" also
+    matches "Tabbar". The list is saved in the file for everyone, and the web report uses it.
+    **Reset to defaults** restores the built-in words.
 - **Adapt frame** — select one frame, pick targets, and optionally "Split into panes at the hinge".
   For each target the plugin copies the frame (the original stays as it is), resizes it, redraws
   the overlay and grids, tags it, swaps component variants named `Size` or `Posture` to the new
