@@ -105,11 +105,11 @@ export function ReportApp() {
       </section>
 
       {error && (
-        <p className="banner" role="alert">
+        <p className="banner banner--error" role="alert">
           {error}
         </p>
       )}
-      {notice && <p className="banner">{notice}</p>}
+      {notice && <p className="banner banner--notice">{notice}</p>}
       {report && <ReportView report={report} thumbnails={thumbnails} />}
     </main>
   );
