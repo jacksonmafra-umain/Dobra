@@ -4,7 +4,8 @@ import { parseConfig } from '@dobra/core/config/schema';
 import { targetOf } from '@dobra/core/engine/checks';
 import { resolveEnvironment, type Selection } from '@dobra/core/engine/environment';
 import type { GeoNode } from '@dobra/core/geo';
-import { figmaFindings, scaleGeo } from './checks';
+import type { Finding } from '@dobra/core/engine/checks';
+import { figmaFindings, scaleGeo, withCollisions } from './checks';
 
 const config = parseConfig(raw);
 const sel: Selection = { deviceId: 'surface-duo-2', displayId: 'spanned', pose: 'spanned', orientation: 'landscape', free: null };
@@ -37,5 +38,18 @@ describe('figmaFindings', () => {
     const r = figmaFindings(config, free, targetOf({ ...sel, free: { width: 700, height: 500 } }, free), { width: 700, height: 500, geo: [onHinge] });
     expect(r.findings).toEqual([]);
     expect(r.note).toMatch(/Free resize/);
+  });
+});
+
+describe('withCollisions', () => {
+  const collision = { id: 'hinge-collision', estimated: false } as unknown as Finding;
+  it('marks fold outlines estimated too when the frame is scaled', () => {
+    expect(withCollisions({ findings: [], scale: 0.5 }, [collision])[0].estimated).toBe(true);
+  });
+  it('keeps them as measured when the frame fits the window', () => {
+    expect(withCollisions({ findings: [], scale: 1 }, [collision])[0].estimated).toBe(false);
+  });
+  it('keeps the outlines while the frame is still loading', () => {
+    expect(withCollisions(null, [collision])).toEqual([collision]);
   });
 });

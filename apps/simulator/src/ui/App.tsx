@@ -17,7 +17,7 @@ import type { OverlayToggles } from './Overlays';
 import { counterpartOf, counterpartSelection, parityRows, validCounterpart } from './parity';
 import { ParityTable } from './ParityTable';
 import { Stage } from './Stage';
-import { figmaFindings } from '../figma/checks';
+import { figmaFindings, withCollisions } from '../figma/checks';
 import { FigmaScreensModal } from '../figma/FigmaScreensModal';
 import { FigmaStage } from '../figma/FigmaStage';
 import { useFigmaScreens } from '../figma/useFigmaScreens';
@@ -49,7 +49,8 @@ export function App({ config }: { config: SimulatorConfig }) {
   // A Figma frame is shown in place of the sample screen; the layout (grid, margins) stays the sample's.
   const figmaId = screenId.startsWith('figma:') ? screenId.slice('figma:'.length) : null;
   // Frames are fetched at twice their size so they stay sharp on high-density screens and zoom.
-  const figma = useFigmaScreens(figmaId, 2);
+  // Nothing loads while the modal is open, so a token being typed never reaches Figma half-done.
+  const figma = useFigmaScreens(figmaId, 2, figmaOpen);
   const figmaFrame = (figmaId && figma.stored?.frames.find((f) => f.id === figmaId)) || null;
   const device = findDevice(config, sel.deviceId);
   const displayIds = Object.keys(device.displays);
@@ -70,12 +71,13 @@ export function App({ config }: { config: SimulatorConfig }) {
   // Overrides live in the selection, so they reach core's rule matching and stay when the device
   // changes: a mouse on one tablet is a mouse on the next.
   const setMediaOverrides = (f: (o: MediaOverrides) => MediaOverrides | undefined) => setSel((s) => ({ ...s, media: f(s.media ?? {}) }));
-  const figmaCheck = figmaFrame && figma.loaded?.geo ? figmaFindings(config, env, target, { width: figmaFrame.width, height: figmaFrame.height, geo: figma.loaded.geo }) : null;
-  const findings = [
-    ...(figmaFrame ? (figmaCheck?.findings ?? []) : runLayoutChecks(config, env, layout, screen, target)),
-    ...collisionsToFindings(collisions, target, env),
-  ];
-  const figmaContent = (e: typeof env, onCollisions: (c: Collision[]) => void) =>
+  const figmaCheckOf = (e: typeof env, t: typeof target) =>
+    figmaFrame && figma.loaded?.geo ? figmaFindings(config, e, t, { width: figmaFrame.width, height: figmaFrame.height, geo: figma.loaded.geo }) : null;
+  const figmaCheck = figmaCheckOf(env, target);
+  const findings = figmaFrame
+    ? withCollisions(figmaCheck, collisionsToFindings(collisions, target, env))
+    : [...runLayoutChecks(config, env, layout, screen, target), ...collisionsToFindings(collisions, target, env)];
+  const figmaContent = (e: typeof env, onCollisions: (c: Collision[]) => void, note?: string) =>
     figmaFrame ? (
       <FigmaStage
         env={e}
@@ -88,6 +90,7 @@ export function App({ config }: { config: SimulatorConfig }) {
           setScreenId(screens[0].id);
         }}
         onRetry={figma.retry}
+        note={note}
         onCollisions={onCollisions}
       />
     ) : undefined;
@@ -98,9 +101,13 @@ export function App({ config }: { config: SimulatorConfig }) {
   const selB = vs ? counterpartSelection(config, sel, vs, env.orientation) : null;
   const envB = selB ? resolveEnvironment(config, selB) : null;
   const layoutB = envB ? resolveLayout(config, envB, screen) : null;
+  const targetB = selB && envB ? targetOf(selB, envB) : null;
+  const figmaCheckB = envB && targetB ? figmaCheckOf(envB, targetB) : null;
   const findingsB =
-    selB && envB && layoutB
-      ? [...runLayoutChecks(config, envB, layoutB, screen, targetOf(selB, envB)), ...collisionsToFindings(collisionsB, targetOf(selB, envB), envB)]
+    selB && envB && layoutB && targetB
+      ? figmaFrame
+        ? withCollisions(figmaCheckB, collisionsToFindings(collisionsB, targetB, envB))
+        : [...runLayoutChecks(config, envB, layoutB, screen, targetB), ...collisionsToFindings(collisionsB, targetB, envB)]
       : [];
 
   const previous = useRef<Snapshot | null>(null);
@@ -620,7 +627,7 @@ export function App({ config }: { config: SimulatorConfig }) {
                 onCloseModal={() => setModal(null)}
                 onCollisions={setCollisions}
                 hostRef={sampleHost}
-                content={figmaContent(env, setCollisions)}
+                content={figmaContent(env, setCollisions, figmaCheck?.note)}
                 onResize={sel.free ? resizeFree : undefined}
                 onResizeWindow={
                   env.window.mode === 'freeform'
@@ -646,7 +653,7 @@ export function App({ config }: { config: SimulatorConfig }) {
                   modal={modal}
                   onCloseModal={() => setModal(null)}
                   onCollisions={setCollisionsB}
-                  content={figmaContent(envB, setCollisionsB)}
+                  content={figmaContent(envB, setCollisionsB, figmaCheckB?.note)}
                 />
               </div>
             </section>
@@ -672,7 +679,7 @@ export function App({ config }: { config: SimulatorConfig }) {
             onCloseModal={() => setModal(null)}
             onCollisions={setCollisions}
             hostRef={sampleHost}
-            content={figmaContent(env, setCollisions)}
+            content={figmaContent(env, setCollisions, figmaCheck?.note)}
             onResize={sel.free ? resizeFree : undefined}
             onResizeWindow={
               env.window.mode === 'freeform'

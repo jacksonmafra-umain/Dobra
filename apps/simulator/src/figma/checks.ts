@@ -32,3 +32,9 @@ export function figmaFindings(config: SimulatorConfig, env: Environment, target:
   );
   return { findings: exact ? findings : findings.map((f) => ({ ...f, estimated: true })), scale: exact ? 1 : scale };
 }
+
+/** The rule findings plus the fold outlines; outlines on a scaled frame are as approximate as its layers. */
+export function withCollisions(check: FigmaCheck | null, collisions: Finding[]): Finding[] {
+  const scaled = !!check && check.scale !== 1;
+  return [...(check?.findings ?? []), ...(scaled ? collisions.map((f) => ({ ...f, estimated: true })) : collisions)];
+}
