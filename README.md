@@ -42,6 +42,7 @@ npm run preview      # serve the production build
 npm run dev:report   # web report dev server
 npm run build:report # web report as one self-contained HTML file
 npm run build:cli    # build the CLI; then: npm run dobra -- check site <url>
+npm run dobra -- report  # serve Foldable Check with a local site-check endpoint
 ```
 
 The CLI needs Playwright's Chromium once: `npx playwright install chromium`.
