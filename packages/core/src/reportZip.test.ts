@@ -74,15 +74,30 @@ function png(width: number, height: number): Uint8Array<ArrayBuffer> {
   return b;
 }
 
-/** Rewrites every stated uncompressed size in a ZIP, as a hostile file would. */
-function lieAboutSizes(zip: Uint8Array, size: number): Uint8Array {
+/** The central-directory header offsets of every entry named `name`. */
+function centralEntries(zip: Uint8Array, name: string): number[] {
+  const v = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+  const found: number[] = [];
+  for (let i = 0; i < zip.length - 46; i++) {
+    if (v.getUint32(i, true) !== 0x02014b50) continue;
+    const len = v.getUint16(i + 28, true);
+    if (new TextDecoder().decode(zip.subarray(i + 46, i + 46 + len)) === name) found.push(i);
+  }
+  return found;
+}
+
+/** States a smaller uncompressed size for one entry, as a hostile file would. */
+function lieAboutEntry(zip: Uint8Array, name: string, size: number): Uint8Array {
   const out = zip.slice();
   const v = new DataView(out.buffer);
-  for (let i = 0; i < out.length - 4; i++) {
-    const sig = v.getUint32(i, true);
-    if (sig === 0x04034b50) v.setUint32(i + 22, size, true); // local header
-    if (sig === 0x02014b50) v.setUint32(i + 24, size, true); // central directory
-  }
+  for (const at of centralEntries(out, name)) v.setUint32(at + 24, size, true);
+  return out;
+}
+
+/** Renames one entry in the central directory (same length only). */
+function renameEntry(zip: Uint8Array, from: string, to: string): Uint8Array {
+  const out = zip.slice();
+  for (const at of centralEntries(out, from)) out.set(new TextEncoder().encode(to), at + 46);
   return out;
 }
 
@@ -115,10 +130,20 @@ describe('readReportZip', () => {
     files['foldable-report/screenshots/999-big.png'] = new Uint8Array(60 * 1024 * 1024);
     expect(() => readReportZip(zipSync(files, { level: 9 }))).toThrow(/expand/i);
   });
-  it('refuses a ZIP that under-reports its sizes', () => {
+  it('stops inflating a screenshot that under-reports its size, and refuses the ZIP', () => {
     const files = base();
-    files['foldable-report/screenshots/999-big.png'] = new Uint8Array(4 * 1024 * 1024);
-    expect(() => readReportZip(lieAboutSizes(zipSync(files, { level: 9 }), 10))).toThrow(ReportZipError);
+    files['foldable-report/screenshots/001-surface-duo-2__spanned__spanned__landscape.png'] = new Uint8Array(40 * 1024 * 1024);
+    const zip = lieAboutEntry(zipSync(files, { level: 9 }), 'foldable-report/screenshots/001-surface-duo-2__spanned__spanned__landscape.png', 64);
+    const t0 = Date.now();
+    expect(() => readReportZip(zip)).toThrow(/misstates the size/);
+    expect(Date.now() - t0).toBeLessThan(500);
+  });
+  it('refuses two entries with the same name', () => {
+    const files = base();
+    files['foldable-report/screenshots/002-dupe.png'] = png(10, 10);
+    files['foldable-report/screenshots/003-dupe.png'] = png(10, 10);
+    const zip = renameEntry(zipSync(files), 'foldable-report/screenshots/003-dupe.png', 'foldable-report/screenshots/002-dupe.png');
+    expect(() => readReportZip(zip)).toThrow(/twice/);
   });
   it('refuses a path that climbs out of the folder', () => {
     const files = base();

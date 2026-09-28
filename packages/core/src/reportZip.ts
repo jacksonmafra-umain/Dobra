@@ -1,7 +1,7 @@
 // A report package: the report JSON, its Markdown and a screenshot per frame, in one ZIP that
 // Foldable Check opens in the browser. The Report format itself is unchanged; index.json maps each
 // frame to its screenshot, or to the reason it has none.
-import { strFromU8, strToU8, unzipSync, zipSync, type Zippable } from 'fflate';
+import { Inflate, strFromU8, strToU8, zipSync, type Zippable } from 'fflate';
 import { z } from 'zod';
 import { parseReport, toMarkdown, type Report, type ReportFrame } from './report';
 
@@ -35,7 +35,7 @@ export function screenFile(index: number, frame: Pick<ReportFrame, 'targets' | '
  * Packs the report. `images` maps a frame ref to PNG bytes; `missing` gives the reason a frame has
  * no screenshot, and a frame in neither is listed as having none.
  */
-export function reportZip(report: Report, images: Map<string, Uint8Array>, missing: Record<string, string> = {}): Uint8Array {
+export function reportZip(report: Report, images: Map<string, Uint8Array>, missing: Record<string, string> = {}): Uint8Array<ArrayBuffer> {
   const index: ReportIndex = { version: 1, screenshots: {}, missing: {} };
   const files: Zippable = {};
   report.frames.forEach((f, i) => {
@@ -86,40 +86,113 @@ function pngProblem(b: Uint8Array): string | null {
 export interface OpenedReportZip {
   report: Report;
   /** Frame ref to PNG bytes, for the frames whose screenshot passed the checks. */
-  images: Map<string, Uint8Array>;
+  images: Map<string, Uint8Array<ArrayBuffer>>;
   missing: Record<string, string>;
   notes: string[];
+}
+
+interface Entry {
+  name: string;
+  method: number;
+  compressed: number;
+  size: number;
+  local: number;
+}
+
+const short = (name: string) => (name.length > 80 ? `${name.slice(0, 80)}…` : name);
+
+/** The central directory's entries, read directly so every size and offset is ours to check. */
+function centralDirectory(bytes: Uint8Array): Entry[] {
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let end = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 22 - 0xffff); i--)
+    if (v.getUint32(i, true) === 0x06054b50) {
+      end = i;
+      break;
+    }
+  if (end < 0) throw new ReportZipError('This file is not a readable ZIP.');
+  const count = v.getUint16(end + 10, true);
+  let at = v.getUint32(end + 16, true);
+  if (count === 0xffff || at === 0xffffffff) throw new ReportZipError('ZIP64 packages are not supported.');
+  if (count > ZIP_LIMITS.entries) throw new ReportZipError(`This ZIP has too many files (over ${ZIP_LIMITS.entries}).`);
+  const out: Entry[] = [];
+  for (let n = 0; n < count; n++) {
+    if (at + 46 > bytes.length || v.getUint32(at, true) !== 0x02014b50) throw new ReportZipError('This ZIP has a damaged directory.');
+    const nameLength = v.getUint16(at + 28, true);
+    const skip = nameLength + v.getUint16(at + 30, true) + v.getUint16(at + 32, true);
+    out.push({
+      name: strFromU8(bytes.subarray(at + 46, at + 46 + nameLength)),
+      method: v.getUint16(at + 10, true),
+      compressed: v.getUint32(at + 20, true),
+      size: v.getUint32(at + 24, true),
+      local: v.getUint32(at + 42, true),
+    });
+    at += 46 + skip;
+  }
+  return out;
+}
+
+/** An entry's data, inflated in chunks and stopped as soon as it passes its stated size. */
+function inflateEntry(bytes: Uint8Array, e: Entry): Uint8Array<ArrayBuffer> {
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (e.local + 30 > bytes.length || v.getUint32(e.local, true) !== 0x04034b50) throw new ReportZipError(`This ZIP has a damaged entry: ${short(e.name)}`);
+  const start = e.local + 30 + v.getUint16(e.local + 26, true) + v.getUint16(e.local + 28, true);
+  const data = bytes.subarray(start, start + e.compressed);
+  if (data.length !== e.compressed) throw new ReportZipError(`This ZIP is cut short at ${short(e.name)}.`);
+  const out = new Uint8Array(e.size);
+  const misstated = () => new ReportZipError(`This ZIP misstates the size of ${short(e.name)}.`);
+  if (e.method === 0) {
+    if (data.length !== e.size) throw misstated();
+    out.set(data);
+    return out;
+  }
+  if (e.method !== 8) throw new ReportZipError(`This ZIP uses an unsupported compression for ${short(e.name)}.`);
+  let written = 0;
+  const inflate = new Inflate((chunk) => {
+    if (written + chunk.length > e.size) throw misstated();
+    out.set(chunk, written);
+    written += chunk.length;
+  });
+  const STEP = 64 * 1024;
+  try {
+    for (let i = 0; i < data.length; i += STEP) inflate.push(data.subarray(i, i + STEP), i + STEP >= data.length);
+    if (data.length === 0) inflate.push(data, true);
+  } catch (err) {
+    if (err instanceof ReportZipError) throw err;
+    throw new ReportZipError(`This ZIP has a damaged entry: ${short(e.name)}`);
+  }
+  if (written !== e.size) throw misstated();
+  return out;
+}
+
+/** The package's own files, after every limit is checked; anything outside the layout is skipped. */
+function readEntries(bytes: Uint8Array): Record<string, Uint8Array<ArrayBuffer>> {
+  const entries = centralDirectory(bytes);
+  let expanded = 0;
+  const wanted: Entry[] = [];
+  const seen = new Set<string>();
+  for (const e of entries) {
+    if (e.name.startsWith('/') || e.name.split('/').includes('..')) throw new ReportZipError(`This ZIP has an unsafe path: ${short(e.name)}`);
+    expanded += e.size;
+    if (expanded > ZIP_LIMITS.expanded || expanded > Math.max(bytes.length, 1024 * 1024) * ZIP_LIMITS.ratio)
+      throw new ReportZipError('This ZIP would expand to more than is safe to open here.');
+    if (!e.name.startsWith(ROOT)) continue;
+    const rel = e.name.slice(ROOT.length);
+    if (rel !== 'report.json' && rel !== 'index.json' && !SCREENSHOT.test(rel)) continue;
+    // Unzip tools disagree on which of two same-named entries wins, so neither is trusted.
+    if (seen.has(e.name)) throw new ReportZipError(`This ZIP has ${short(e.name)} twice.`);
+    seen.add(e.name);
+    wanted.push(e);
+  }
+  const files: Record<string, Uint8Array<ArrayBuffer>> = {};
+  for (const e of wanted) files[e.name] = inflateEntry(bytes, e);
+  return files;
 }
 
 /** Reads a package written by reportZip, refusing anything too large, malformed or unsafe. */
 export function readReportZip(bytes: Uint8Array): OpenedReportZip {
   if (bytes.length > ZIP_LIMITS.bytes) throw new ReportZipError(`This ZIP is over ${ZIP_LIMITS.bytes / 1024 / 1024} MB.`);
-  const stated = new Map<string, number>();
-  let entries = 0;
-  let expanded = 0;
-  let files;
-  try {
-    files = unzipSync(bytes, {
-      filter(f) {
-        if (++entries > ZIP_LIMITS.entries) throw new ReportZipError(`This ZIP has too many files (over ${ZIP_LIMITS.entries}).`);
-        if (f.name.startsWith('/') || f.name.split('/').includes('..')) throw new ReportZipError(`This ZIP has an unsafe path: ${f.name}`);
-        expanded += f.originalSize;
-        if (expanded > ZIP_LIMITS.expanded || expanded > Math.max(bytes.length, 1024 * 1024) * ZIP_LIMITS.ratio)
-          throw new ReportZipError('This ZIP would expand to more than is safe to open here.');
-        if (!f.name.startsWith(ROOT)) return false;
-        const rel = f.name.slice(ROOT.length);
-        const wanted = rel === 'report.json' || rel === 'index.json' || SCREENSHOT.test(rel);
-        if (wanted) stated.set(f.name, f.originalSize);
-        return wanted;
-      },
-    });
-  } catch (e) {
-    if (e instanceof ReportZipError) throw e;
-    throw new ReportZipError(`This file is not a readable ZIP (${e instanceof Error ? e.message : String(e)}).`);
-  }
-  // A ZIP that states small sizes but inflates larger is lying: refuse it rather than trust it.
-  for (const [name, data] of Object.entries(files))
-    if (data.length !== stated.get(name)) throw new ReportZipError(`This ZIP misstates the size of ${name}.`);
+  const files = readEntries(bytes);
 
   const json = files[`${ROOT}report.json`];
   if (!json) throw new ReportZipError('This ZIP has no foldable-report/report.json.');
@@ -131,7 +204,7 @@ export function readReportZip(bytes: Uint8Array): OpenedReportZip {
   }
 
   const notes: string[] = [];
-  const images = new Map<string, Uint8Array>();
+  const images = new Map<string, Uint8Array<ArrayBuffer>>();
   let missing: Record<string, string> = {};
   const rawIndex = files[`${ROOT}index.json`];
   if (rawIndex) {
