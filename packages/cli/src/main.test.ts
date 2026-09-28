@@ -112,3 +112,14 @@ describe('run', () => {
     expect(opened.images.size).toBe(1);
   });
 });
+
+describe('a rejected address', () => {
+  it('prints the reason before the usage and exits 2', async () => {
+    const out: string[] = [];
+    const err: string[] = [];
+    const code = await run(['check', 'site', 'not an address'], { out: (s: string) => out.push(s), err: (s: string) => err.push(s) } as never);
+    expect(code).toBe(2);
+    expect(err.join('\n')).toMatch(/Not a web address: not an address/);
+    expect(out.join('\n')).toMatch(/Usage: dobra check site/);
+  });
+});

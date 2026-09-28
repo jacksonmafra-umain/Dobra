@@ -93,3 +93,12 @@ describe('messageFor', () => {
     expect(messageFor(429, 'Too many', 'hosted')).toMatch(/minute/);
   });
 });
+
+describe('a pasted Markdown link in the Website field', () => {
+  // Reported: the field held "[www.umain.com](https://www.umain.com)" and the command passed it on.
+  it('builds the command with the address inside the link', () => {
+    expect(cliCommand({ url: '[www.umain.com](https://www.umain.com)', categories: ['foldable-book', 'foldable-flip', 'dual-screen'] })).toBe(
+      "npm run dobra -- check site 'https://www.umain.com' --category foldable-book --category foldable-flip --category dual-screen",
+    );
+  });
+});

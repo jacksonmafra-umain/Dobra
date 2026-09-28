@@ -17,4 +17,10 @@ describe('withScheme', () => {
   it('leaves an empty address empty', () => {
     expect(withScheme('   ')).toBe('');
   });
+  it('takes the address out of a pasted Markdown link or angle brackets', () => {
+    expect(withScheme('[www.umain.com](https://www.umain.com)')).toBe('https://www.umain.com');
+    expect(withScheme(' [Umain](https://www.umain.com/careers) ')).toBe('https://www.umain.com/careers');
+    expect(withScheme('<https://www.umain.com>')).toBe('https://www.umain.com');
+    expect(withScheme('<www.umain.com>')).toBe('https://www.umain.com');
+  });
 });
