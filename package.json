@@ -20,5 +20,9 @@
     "build:cli": "npm run build -w @dobra/cli",
     "dev:site": "npm run dev -w @dobra/site --",
     "build:site": "npm run build -w @dobra/simulator && npm run build -w @dobra/report && npm run build -w @dobra/site"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^153.0.0",
+    "playwright-core": "^1.63.0"
   }
 }

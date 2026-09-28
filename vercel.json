@@ -3,5 +3,11 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build:site",
   "outputDirectory": "apps/site/dist",
-  "trailingSlash": true
+  "trailingSlash": true,
+  "functions": {
+    "api/probe.mjs": {
+      "maxDuration": 60,
+      "memory": 1769
+    }
+  }
 }
