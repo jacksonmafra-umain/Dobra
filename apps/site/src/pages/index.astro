@@ -13,7 +13,7 @@ const tools = [
     <h1>Design for every fold.</h1>
     <p class="hero__lede">Dobra covers phones, book and flip foldables, dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.</p>
     <div class="hero__actions">
-      <a class="button button--primary" href="/simulator/">Open the simulator</a>
+      <a class="button button--primary" href="/simulator/" target="_blank" rel="noopener">Open the simulator</a>
       <a class="button" href="/guide/">Read the guide</a>
     </div>
     <video class="hero__video" controls muted playsinline preload="metadata" poster="/media/dobra-launch-poster.jpg">
@@ -26,7 +26,7 @@ const tools = [
     <div class="tools__grid">
       {
         tools.map((t) => (
-          <a class="tool" href={t.href}>
+          <a class="tool" href={t.href} target="_blank" rel="noopener">
             <h3>{t.name}</h3>
             <p>{t.text}</p>
           </a>
