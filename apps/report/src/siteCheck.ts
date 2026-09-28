@@ -1,6 +1,7 @@
 // Talks to a site-check endpoint: `dobra report` locally, or the hosted function next to the page.
 // When neither answers, the page falls back to the command the user can run themselves.
 import { parseReport, type Report } from '@dobra/core/report';
+import { withScheme } from '@dobra/core/siteAddress';
 
 export type Fetch = typeof fetch;
 
@@ -79,10 +80,9 @@ export async function runCheck(
 const quote = (s: string) => `'${s.replaceAll("'", "'\\''")}'`;
 
 export function cliCommand(req: CheckRequest): string {
-  const parts = ['npm run dobra -- check site', quote(req.url)];
+  const parts = ['npm run dobra -- check site', quote(withScheme(req.url))];
   if (req.targets?.length) parts.push('--targets', req.targets.join(','));
   for (const c of req.categories ?? []) parts.push('--category', c);
-  parts.push('--out foldable-report.json');
   return parts.join(' ');
 }
 

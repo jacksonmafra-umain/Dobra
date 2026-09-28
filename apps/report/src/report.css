@@ -129,3 +129,7 @@ h2 { overflow-wrap: anywhere; }
 .markdown__shot { display: block; max-width: min(100%, 480px); max-height: 420px; width: auto; height: auto; margin: 8px 0 12px; border: 1px solid var(--border); border-radius: var(--dobra-radius); }
 .report-json { display: grid; gap: 8px; justify-items: start; margin-top: 12px; }
 .report-json pre { margin: 0; width: 100%; box-sizing: border-box; max-height: 70vh; overflow: auto; padding: 12px 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--dobra-radius); font: 12px/1.6 var(--dobra-font-mono); }
+
+/* JetBrains Mono joins "://" and "--" into ligatures, which misreads URLs and flags. `font` shorthand resets
+   font-variant-ligatures on every element that sets it, so this has to win over those. */
+*, ::before, ::after { font-variant-ligatures: no-contextual !important; }
