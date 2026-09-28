@@ -68,7 +68,8 @@ export interface OpenTarget {
   applyFold(fold: Fold | null): Promise<void>;
 }
 
-export async function openTarget(browser: Browser, profile: DeviceProfile): Promise<OpenTarget> {
+/** `allowRequest`, when given, sees every request the page makes, redirects included, and blocks the refused ones. */
+export async function openTarget(browser: Browser, profile: DeviceProfile, allowRequest?: (url: string) => Promise<boolean>): Promise<OpenTarget> {
   const context = await browser.newContext({
     viewport: { width: profile.width, height: profile.height },
     deviceScaleFactor: profile.deviceScaleFactor,
@@ -76,6 +77,9 @@ export async function openTarget(browser: Browser, profile: DeviceProfile): Prom
     isMobile: profile.isMobile,
     hasTouch: profile.hasTouch,
   });
+  if (allowRequest) {
+    await context.route('**/*', async (route) => ((await allowRequest(route.request().url())) ? route.continue() : route.abort('blockedbyclient')));
+  }
   const page = await context.newPage();
   const cdp: CDPSession = await context.newCDPSession(page);
   return {

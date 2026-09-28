@@ -16,6 +16,12 @@ export async function startFixtureServer(dir: string = FIXTURES): Promise<{ url:
       req.on('close', () => clearTimeout(timer));
       return;
     }
+    if (path === '/redirect') {
+      // Sends the browser on to ?to=, so tests can check that redirects go through a request guard.
+      const to = new URL(req.url ?? '/', 'http://x').searchParams.get('to') ?? '/';
+      res.writeHead(302, { location: to }).end();
+      return;
+    }
     const name = path.slice(1);
     if (!/^[\w-]+\.html$/.test(name)) {
       res.writeHead(404).end('not found');
