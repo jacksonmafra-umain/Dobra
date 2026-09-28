@@ -12,6 +12,8 @@ import { deviceProfile, openTarget } from './emulate';
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
 const CAP = 4000;
+/** The least time a target needs to be worth starting under a deadline. */
+const MIN_TARGET_MS = 3_000;
 const NO_ANSWER = (ms: number) => `The page did not respond within ${ms / 1000} s (a script may be stuck).`;
 
 export interface CheckOptions {
@@ -83,7 +85,10 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
   const loadTimeout = opts.loadTimeout ?? 30_000;
   const collectTimeout = opts.collectTimeout ?? 30_000;
   const skipped: string[] = [];
-  const pastDeadline = () => opts.deadline !== undefined && Date.now() >= opts.deadline;
+  // With a deadline, every wait is capped by the time left, and a target isn't started without enough of it.
+  const left = () => (opts.deadline === undefined ? Infinity : opts.deadline - Date.now());
+  const pastDeadline = () => left() < MIN_TARGET_MS;
+  const capped = (ms: number) => Math.max(1, Math.min(ms, left()));
   const fold = (f: Parameters<Awaited<ReturnType<typeof openTarget>>['applyFold']>[0]) => (opts.foldEmulation === false ? null : f);
   try {
     for (const t of targets) {
@@ -111,9 +116,9 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       try {
         await applyFold(fold(profile.fold));
         if (profile.fold && opts.foldEmulation === false) notes.push(`${key}: fold not emulated here, size only`);
-        const note = await load(page, url, opts.wait, loadTimeout);
+        const note = await load(page, url, opts.wait, capped(loadTimeout));
         if (note) notes.push(`${key}: ${note}`);
-        const { root, truncated, scale } = await within(collectLayout(page, CAP), collectTimeout, NO_ANSWER(collectTimeout));
+        const { root, truncated, scale } = await within(collectLayout(page, CAP), capped(collectTimeout), NO_ANSWER(collectTimeout));
         inputs.push({ ...base, root });
         if (truncated) notes.push(`${key}: page truncated at ${CAP} elements`);
         if (scale < 0.99)
@@ -138,11 +143,11 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
       }
       try {
         await unfold.applyFold(fold(from.fold));
-        await load(unfold.page, url, opts.wait, loadTimeout);
+        await load(unfold.page, url, opts.wait, capped(loadTimeout));
         await unfold.page.setViewportSize({ width: profile.width, height: profile.height });
         await unfold.applyFold(fold(profile.fold));
         await unfold.page.waitForTimeout(opts.wait);
-        const resized = await within(collectLayout(unfold.page, CAP), collectTimeout, NO_ANSWER(collectTimeout));
+        const resized = await within(collectLayout(unfold.page, CAP), capped(collectTimeout), NO_ANSWER(collectTimeout));
         const reloaded = inputs[inputs.length - 1].root!;
         extra.set(base.ref, resizeVsReload(resized.root, reloaded, t));
       } catch (e) {

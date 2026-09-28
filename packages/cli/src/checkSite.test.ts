@@ -133,4 +133,13 @@ describe('checkSite', () => {
     const r = await checkSite(`${server.url}/segments.html`, [DUO], { ...opts, browser, foldEmulation: false });
     expect(r.notes?.join(' ')).toMatch(/size only/);
   });
+
+  it('cuts a slow target short at the deadline instead of running past it', async () => {
+    const t0 = Date.now();
+    const r = await checkSite(`${server.url}/slow`, [PIXEL, DUO], { ...opts, browser, deadline: t0 + 7_000 });
+    expect(Date.now() - t0).toBeLessThan(10_000);
+    expect(r.frames).toEqual([]);
+    expect(r.unloaded.map((u) => u.name)).toContain(targetKey(PIXEL));
+    expect(r.notes?.join(' ')).toContain(targetKey(DUO));
+  });
 });
