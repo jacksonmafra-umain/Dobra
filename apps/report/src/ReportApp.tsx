@@ -7,15 +7,16 @@ import { parseReport, toMarkdown, type Report, type ReportFrame } from '@dobra/c
 import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
 import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
+import { FrameOverlay } from './FrameOverlay';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
 import { ReportHeader } from './ReportHeader';
 import { ReportNotes } from './ReportNotes';
+import { PassChip, SeverityChip } from './SeverityChip';
 import { tokenStore } from './tokenStore';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
-const ICON = { error: '⛔', warn: '⚠️', info: 'ℹ️' } as const;
 const STATUS = { present: '✓', 'present-by-size': '~', missing: '✗' } as const;
 
 function sessionTokens() {
@@ -209,28 +210,27 @@ function FrameCard({ frame, thumbnail }: { frame: ReportFrame; thumbnail: string
     <article className="card">
       <div className="thumb" style={{ aspectRatio: `${frame.width} / ${frame.height}` }}>
         {thumbnail && <img src={thumbnail} alt={frame.name} loading="lazy" />}
-        {preset && (
-          <svg viewBox={`0 0 ${frame.width} ${frame.height}`} preserveAspectRatio="none" aria-hidden>
-            {preset.safeZones.map((z, i) => (
-              <rect key={`z${i}`} x={z.x} y={z.y} width={z.width} height={z.height} fill="#ef4444" fillOpacity={0.1} />
-            ))}
-            {preset.hinges.map((h, i) => (
-              <rect key={`h${i}`} x={h.rect.x} y={h.rect.y} width={Math.max(h.rect.width, 2)} height={Math.max(h.rect.height, 2)} fill="#ef4444" fillOpacity={0.35} />
-            ))}
-          </svg>
-        )}
+        {preset && <FrameOverlay preset={preset} width={frame.width} height={frame.height} />}
       </div>
       <div className="card__body">
         <strong>{frame.name}</strong>
         <div className="muted">
-          {frame.width}×{frame.height} ·{' '}
+          <span className="mono">{frame.width}×{frame.height}</span> ·{' '}
           {frame.confidence === 'none' ? `unknown size${frame.nearest ? ` — nearest ${frame.nearest}` : ''}` : `${frame.confidence}: ${frame.targets.length} target${frame.targets.length === 1 ? '' : 's'}`}
         </div>
-        {frame.confidence !== 'none' && frame.findings.length === 0 && <p className="muted">No problems found.</p>}
+        {frame.confidence !== 'none' && frame.findings.length === 0 && (
+          <p className="finding">
+            <PassChip /> <span className="muted">No problems found.</span>
+          </p>
+        )}
         {frame.findings.map((x, i) => (
           <div key={i} className="finding">
-            {ICON[x.severity]} <strong>{x.ruleId}</strong>
-            {x.estimated && <span className="badge">estimated</span>} {x.message}
+            <SeverityChip severity={x.severity} />
+            <div className="finding__body">
+              <strong className="mono">{x.ruleId}</strong>
+              {x.estimated && <span className="badge">estimated</span>}
+              <div>{x.message}</div>
+            </div>
           </div>
         ))}
       </div>

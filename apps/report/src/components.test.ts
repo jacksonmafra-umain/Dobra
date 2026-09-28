@@ -3,7 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { CoverageSummary, coveragePercent } from './CoverageSummary';
 import { sampleReport } from './fixtures/sampleReport';
+import { FrameOverlay, hingeKind } from './FrameOverlay';
 import { ReportHeader } from './ReportHeader';
+import { PassChip, SeverityChip, severityLabel } from './SeverityChip';
 
 const html = <P extends object>(el: (props: P) => unknown, props: P) => renderToStaticMarkup(createElement(el as never, props as never));
 
@@ -45,5 +47,35 @@ describe('CoverageSummary', () => {
     const out = html(CoverageSummary, { report: r });
     expect(out).toContain('—');
     expect(out).not.toContain('NaN');
+  });
+});
+
+describe('severity chips', () => {
+  it('labels each severity', () => {
+    expect(severityLabel('error')).toBe('ERROR');
+    expect(severityLabel('warn')).toBe('WARN');
+    expect(severityLabel('info')).toBe('INFO');
+  });
+  it('reads an unknown severity as INFO instead of crashing', () => {
+    expect(severityLabel('fatal')).toBe('INFO');
+    expect(html(SeverityChip, { severity: 'fatal' })).toBe('<span class="chip chip--info">INFO</span>');
+  });
+  it('renders the pass chip', () => {
+    expect(html(PassChip, {})).toBe('<span class="chip chip--pass">PASS</span>');
+  });
+});
+
+describe('frame overlay', () => {
+  it('draws each kind of hinge the way the simulator does', () => {
+    expect(hingeKind({ separating: true, occludes: true })).toBe('occludes');
+    expect(hingeKind({ separating: true, occludes: false })).toBe('line');
+    expect(hingeKind({ separating: false, occludes: false })).toBe('flat');
+  });
+  it('uses classes, not color attributes, so the theme applies', () => {
+    const preset = { safeZones: [{ x: 500, y: 0, width: 100, height: 756 }], hinges: [{ rect: { x: 537, y: 0, width: 26, height: 756 }, separating: true, occludes: true }] };
+    const out = html(FrameOverlay, { preset, width: 1100, height: 756 });
+    expect(out).toContain('class="overlay-safe"');
+    expect(out).toContain('class="overlay-hinge overlay-hinge--occludes"');
+    expect(out).not.toMatch(/fill="#/);
   });
 });
