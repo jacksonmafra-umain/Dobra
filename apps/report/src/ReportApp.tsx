@@ -8,6 +8,7 @@ import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
 import { download } from './download';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
+import { ReportHeader } from './ReportHeader';
 import { ReportNotes } from './ReportNotes';
 import { tokenStore } from './tokenStore';
 
@@ -66,8 +67,7 @@ export function ReportApp() {
 
   return (
     <main>
-      <h1>Foldable Check</h1>
-      <p className="muted">Coverage and foldable rule findings for a Figma file, or for a report made by the command-line checker.</p>
+      <ReportHeader catalogVersion={catalog.version} />
 
       <section className="panel inputs">
         <label>
@@ -95,9 +95,11 @@ export function ReportApp() {
             {busy ? 'Checking…' : 'Check file'}
           </button>
         </div>
-        <div className="drop">
-          Or open a report JSON: <input type="file" accept="application/json,.json" aria-label="Report JSON" onChange={(e) => e.target.files?.[0] && openFile(e.target.files[0])} />
-        </div>
+        <label className="drop">
+          <span>Or open a report JSON</span>
+          <span className="muted">made by the command-line checker or the simulator</span>
+          <input type="file" accept="application/json,.json" aria-label="Report JSON" onChange={(e) => e.target.files?.[0] && openFile(e.target.files[0])} />
+        </label>
       </section>
 
       {error && (

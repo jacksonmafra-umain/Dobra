@@ -23,16 +23,26 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: var(--dobra-type-body-lg); }
-main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; }
-h1 { font-size: 22px; margin: 0 0 4px; }
-h2 { font-size: 16px; margin: 32px 0 8px; }
+main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font: var(--dobra-type-headline-lg); letter-spacing: var(--dobra-tracking-headline-lg); margin: 8px 0 4px; }
+h2 { font: var(--dobra-type-headline-sm); letter-spacing: var(--dobra-tracking-headline-sm); margin: 32px 0 12px; }
+.page-header { margin-bottom: 24px; }
+.page-header__brand { display: flex; align-items: center; gap: 10px; }
+.page-header__logo { height: 24px; width: auto; display: block; }
+.panel { background: var(--panel); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--dobra-radius-lg); padding: 20px; }
+.inputs { display: grid; gap: 14px; }
+.inputs label { display: grid; gap: 6px; font: var(--dobra-type-body-md); color: var(--muted); }
+.inputs label.row { display: flex; align-items: center; gap: 8px; color: var(--text); }
+input[type='url'], input[type='password'] { font: var(--dobra-type-label-lg); padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--dobra-radius); background: var(--field); color: var(--text); width: 100%; min-width: 0; }
+input[type='url']:focus-visible, input[type='password']:focus-visible, button:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 3px var(--accent-soft); }
+input[type='checkbox'] { accent-color: var(--accent); width: 14px; height: 14px; }
+button { font: 500 13px/1 var(--dobra-font-body); padding: 10px 14px; border-radius: var(--dobra-radius); border: 1px solid var(--border); background: var(--field); color: var(--text); cursor: pointer; }
+button.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); font-weight: 600; padding: 12px 20px; }
+.drop { border: 1px dashed var(--border-strong); border-radius: var(--dobra-radius-lg); padding: 20px; display: grid; justify-items: center; gap: 6px; text-align: center; cursor: pointer; }
+.drop input { max-width: 100%; }
+.badge { font: var(--dobra-type-label-sm); letter-spacing: var(--dobra-tracking-label-sm); border: 1px solid var(--border); border-radius: var(--dobra-radius-sm); padding: 3px 6px; margin-left: 4px; color: var(--muted); }
+.badge--mono { text-transform: none; }
 .muted { color: var(--muted); }
-.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-.inputs { display: grid; gap: 10px; }
-.inputs label { display: grid; gap: 4px; }
-input[type='url'], input[type='password'] { font: inherit; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); width: 100%; }
-button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
-button.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); }
 button:disabled { opacity: 0.5; cursor: default; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .banner { border-left: 4px solid var(--bad); background: var(--panel); padding: 10px 12px; border-radius: 6px; margin: 12px 0; }
@@ -45,6 +55,4 @@ th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--bord
 .thumb img, .thumb svg { display: block; width: 100%; height: auto; }
 .thumb svg { position: absolute; inset: 0; height: 100%; }
 .finding { margin: 6px 0; }
-.badge { font-size: 11px; border: 1px solid var(--border); border-radius: 99px; padding: 0 6px; margin-left: 4px; color: var(--muted); }
-.drop { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; }
 @media (max-width: 600px) { main { padding: 16px; } }
