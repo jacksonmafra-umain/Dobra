@@ -5,6 +5,7 @@ import type { NamePatterns } from '@dobra/core/namePatterns';
 import type { VariablesSummary } from '../variableTypes';
 import { summaryLines } from './variablesSummary';
 import './app.css';
+import { SeverityChip } from './SeverityChip';
 
 type Tab = Command;
 type Target = { key: string; name: string; category: string };
@@ -266,7 +267,6 @@ function Coverage({ matrix }: { matrix: CoverageMatrix | null }) {
   );
 }
 
-const SEVERITY = { error: '⛔', warn: '⚠️', info: 'ℹ️' } as const;
 const SCOPES = [
   ['selection', 'Selection'],
   ['page', 'Page'],
@@ -339,7 +339,7 @@ function Check({ frames, visited, patterns }: { frames: FrameFindings[] | null; 
             {f.findings.length === 0 && <p className="muted">No problems found.</p>}
             {f.findings.map((x, i) => (
               <button key={i} className="finding" onClick={() => post({ type: 'select-node', nodeId: x.nodeId })}>
-                {SEVERITY[x.severity]} <strong>{x.ruleId}</strong> {x.estimated && <span className="muted">(estimated)</span>}
+                <SeverityChip severity={x.severity} /> <strong className="mono">{x.ruleId}</strong> {x.estimated && <span className="muted">(estimated)</span>}
                 <br />
                 {x.message}
               </button>

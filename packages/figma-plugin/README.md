@@ -17,6 +17,13 @@ that the bundle carries the device catalog and no app profile.
 Figma desktop › Plugins › Development › Import plugin from manifest… › choose
 `packages/figma-plugin/manifest.json`. Run it from Plugins › Development › Dobra.
 
+## Look
+
+The panel uses the Dobra design tokens and fonts from `@dobra/brand` and follows Figma's light or
+dark theme. Overlays on the canvas use the same palette: hinges and their safe zones in rose,
+flexible creases as a teal hairline, insets and safe areas in indigo, reserved regions in amber and
+the column grid in green. The icon for a Community listing is `packages/brand/png/icon-128.png`.
+
 ## Commands
 
 - **Artboards** — pick devices, displays, postures and orientations, then create one frame per

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadCatalog } from '@dobra/core/catalog/load';
 import { presetSpec } from '@dobra/core/presets';
 import { envConfigOf } from '@dobra/core/targets';
+import { CANVAS } from './colors';
 import { applyPreset, decorate, NAMESPACE, OVERLAY_NAME } from './presets';
 import { createFakeFigma } from './test/fakeFigma';
 
@@ -62,5 +63,36 @@ describe('applyPreset', () => {
     (frame as unknown as { layoutMode: string }).layoutMode = 'VERTICAL';
     decorate(api, frame, duo, catalog.version);
     expect((overlayOf(frame) as unknown as { layoutPositioning: string }).layoutPositioning).toBe('ABSOLUTE');
+  });
+});
+
+describe('overlay colors', () => {
+  const fill = (node: SceneNode) => ((node as RectangleNode).fills as SolidPaint[])[0];
+
+  it('draws the hinge and its safe zone in the brand hinge color', () => {
+    const overlay = overlayOf(applyPreset(createFakeFigma(), duo, catalog.version));
+    for (const name of ['Hinge', 'Hinge safe zone']) expect(fill(overlay.children.find((c) => c.name === name)!).color).toEqual(CANVAS.hinge);
+  });
+
+  it('draws a crease hairline in the fold color and insets in the secondary color', () => {
+    const open = presetSpec(config, { deviceId: 'pixel-9-pro-fold', displayId: 'inner', pose: 'open', orientation: 'portrait' });
+    const overlay = overlayOf(applyPreset(createFakeFigma(), open, catalog.version));
+    expect(fill(overlay.children.find((c) => c.name === 'Crease')!).color).toEqual(CANVAS.crease);
+    const inset = overlay.children.find((c) => c.name.startsWith('Inset'));
+    expect(inset).toBeDefined();
+    expect(fill(inset!).color).toEqual(CANVAS.inset);
+  });
+
+  it('colors the column grid with the pass color and the pane grid with the hinge color', () => {
+    const [columns, panes] = applyPreset(createFakeFigma(), duo, catalog.version).layoutGrids as (LayoutGrid & { color: RGBA })[];
+    expect(columns.color).toMatchObject({ r: CANVAS.grid.r, g: CANVAS.grid.g, b: CANVAS.grid.b });
+    expect(panes.color).toMatchObject({ r: CANVAS.hinge.r, g: CANVAS.hinge.g, b: CANVAS.hinge.b });
+  });
+
+  it('replaces the old overlay when a frame is decorated again', () => {
+    const api = createFakeFigma();
+    const frame = applyPreset(api, duo, catalog.version);
+    decorate(api, frame, duo, catalog.version);
+    expect(frame.children.filter((c) => c.name === OVERLAY_NAME)).toHaveLength(1);
   });
 });

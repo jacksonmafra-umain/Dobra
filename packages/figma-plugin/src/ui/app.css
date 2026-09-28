@@ -1,38 +1,41 @@
-/* Figma provides --figma-color-* when the plugin opens with themeColors: true. */
+/* The panel's palette, all from @dobra/brand. <html> carries data-theme from Figma's theme class
+   (src/ui/theme.ts), so these follow Figma's light and dark. */
+:root {
+  --bg: var(--dobra-bg);
+  --panel: var(--dobra-panel);
+  --field: var(--dobra-field);
+  --text: var(--dobra-text);
+  --muted: var(--dobra-muted);
+  --border: var(--dobra-border);
+  --border-strong: var(--dobra-border-strong);
+  --accent: var(--dobra-fold);
+  --on-accent: var(--dobra-on-fold);
+  --accent-soft: color-mix(in srgb, var(--dobra-fold) 14%, transparent);
+  --bad: var(--dobra-hinge);
+  --bad-soft: color-mix(in srgb, var(--dobra-hinge) 14%, transparent);
+  --warn: var(--dobra-warn);
+  --warn-soft: color-mix(in srgb, var(--dobra-warn) 14%, transparent);
+  --ok: var(--dobra-pass);
+  --ok-soft: color-mix(in srgb, var(--dobra-pass) 14%, transparent);
+  --info: var(--dobra-accent-2);
+  --info-soft: color-mix(in srgb, var(--dobra-accent-2) 14%, transparent);
+}
+/* On a light background a 14% tint is too dark behind small colored text; 6% keeps chips at 4.5:1. */
+:root[data-theme='light'] {
+  --accent-soft: color-mix(in srgb, var(--dobra-fold) 6%, transparent);
+  --bad-soft: color-mix(in srgb, var(--dobra-hinge) 6%, transparent);
+  --warn-soft: color-mix(in srgb, var(--dobra-warn) 6%, transparent);
+  --ok-soft: color-mix(in srgb, var(--dobra-pass) 6%, transparent);
+  --info-soft: color-mix(in srgb, var(--dobra-accent-2) 6%, transparent);
+}
 body {
   margin: 0;
-  font: 12px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color: var(--figma-color-text, #1e1e1e);
-  background: var(--figma-color-bg, #ffffff);
-}
-main {
-  padding: 8px 12px 16px;
-}
-button,
-select {
-  font: inherit;
-  color: inherit;
-  background: var(--figma-color-bg-secondary, #f5f5f5);
-  border: 1px solid var(--figma-color-border, #e6e6e6);
-  border-radius: 6px;
-  padding: 4px 8px;
-}
-button.primary {
-  background: var(--figma-color-bg-brand, #0d99ff);
-  color: var(--figma-color-text-onbrand, #ffffff);
-  border-color: transparent;
-  margin-bottom: 8px;
+  font: var(--dobra-type-body-md);
+  color: var(--text);
+  background: var(--bg);
 }
 button:disabled {
   opacity: 0.5;
-}
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-.tabs button[aria-pressed='true'] {
-  border-color: var(--figma-color-border-brand, #0d99ff);
 }
 .row {
   display: flex;
@@ -40,46 +43,49 @@ button:disabled {
   align-items: center;
   padding: 2px 0;
 }
-.card {
-  display: grid;
-  gap: 4px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--figma-color-border, #e6e6e6);
-}
 .muted {
-  color: var(--figma-color-text-secondary, #757575);
-}
-.notice {
-  padding: 6px 8px;
-  border-radius: 6px;
-}
-.notice--error {
-  background: var(--figma-color-bg-danger-tertiary, #ffe0e0);
-}
-.notice--info {
-  background: var(--figma-color-bg-secondary, #f5f5f5);
+  color: var(--muted);
 }
 table {
   width: 100%;
   border-collapse: collapse;
 }
-td,
-th {
-  text-align: left;
-  padding: 2px 4px;
-}
 .summary {
   padding-left: 16px;
 }
-.finding {
-  display: block;
-  width: 100%;
-  text-align: left;
-  margin: 4px 0;
+main { padding: 12px 12px 20px; }
+h1, h2, h3 { font: var(--dobra-type-headline-sm); margin: 12px 0 6px; }
+button, select, input:not([type]), input[type='text'], input[type='search'] {
+  font: 500 12px/1.2 var(--dobra-font-body);
+  color: var(--text);
+  background: var(--field);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--dobra-radius);
+  padding: 6px 10px;
 }
-
-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  font: 11px ui-monospace, monospace;
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; font-weight: 600; margin-bottom: 8px; }
+input[type='checkbox'] { accent-color: var(--accent); width: 14px; height: 14px; }
+/* Tabs: a compact segmented track with a raised active segment. */
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 2px; margin-bottom: 12px; background: var(--field); border: 1px solid var(--border); border-radius: var(--dobra-radius); }
+.tabs button { border: 0; background: transparent; color: var(--muted); padding: 5px 8px; font: var(--dobra-type-label-md); letter-spacing: var(--dobra-tracking-label-md); border-radius: var(--dobra-radius-sm); }
+.tabs button[aria-pressed='true'] { background: var(--bg); color: var(--text); box-shadow: inset 0 0 0 1px var(--border-strong); font-weight: 600; }
+.card { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.notice { padding: 8px 10px; border-radius: var(--dobra-radius); border: 1px solid var(--border); border-left: 3px solid var(--info); background: var(--field); }
+.notice--error { border-left-color: var(--bad); background: var(--bad-soft); }
+.notice--info { border-left-color: var(--info); }
+td, th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+th { font: var(--dobra-type-label-sm); letter-spacing: var(--dobra-tracking-label-sm); text-transform: uppercase; color: var(--muted); }
+.finding { display: block; width: 100%; text-align: left; margin: 6px 0; line-height: 1.5; }
+.finding:hover { border-color: var(--accent); }
+.chip { display: inline-block; font: 600 10px/1 var(--dobra-font-mono); letter-spacing: 0.04em; padding: 3px 5px; border-radius: var(--dobra-radius-sm); vertical-align: 1px; }
+.chip--error { color: var(--bad); background: var(--bad-soft); }
+.chip--warn { color: var(--warn); background: var(--warn-soft); }
+.chip--info { color: var(--info); background: var(--info-soft); }
+.mono { font-family: var(--dobra-font-mono); }
+details > summary { cursor: pointer; padding: 4px 0; }
+textarea { width: 100%; box-sizing: border-box; font: 11px/1.5 var(--dobra-font-mono); color: var(--text); background: var(--field); border: 1px solid var(--border-strong); border-radius: var(--dobra-radius); padding: 6px 8px; }
