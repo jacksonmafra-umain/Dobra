@@ -90,16 +90,19 @@ export function ReportApp() {
             Website
           </button>
         </div>
-        {input === 'website' ? (
+        {/* Kept mounted while hidden, so a running site check keeps its fields and state. */}
+        <div hidden={input !== 'website'}>
           <SiteCheckForm
             health={health}
             onReport={(r) => {
               setError(null);
+              setNotice(null);
               setReport(r);
               setThumbnails({});
             }}
           />
-        ) : (
+        </div>
+        {input === 'figma' && (
           <>
             <label>
               Figma file link

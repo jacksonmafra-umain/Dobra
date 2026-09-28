@@ -1,6 +1,6 @@
 // The "Website" input of Foldable Check: a URL and devices, checked by `dobra report` or the hosted
 // function when one answers, else the command to run. Unstyled: plain class names for the report's CSS.
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DEVICE_CATEGORIES } from '@dobra/core/config/schema';
 import type { Report } from '@dobra/core/report';
 import { actionsStep, cliCommand, runCheck, type CheckRequest, type Fetch, type Health } from './siteCheck';
@@ -17,12 +17,18 @@ function Handoff({ req, reason }: { req: CheckRequest; reason?: string }) {
     <div className="site-check__handoff">
       {reason && <p className="site-check__error" role="alert">{reason}</p>}
       <p>
-        Run the check on your machine, then open the report JSON below. Or start{' '}
-        <code>npm run dobra -- report</code> and check from this page.
+        Run the check on your machine, then open the report JSON below. Or run <code>npm run dobra -- report</code> and open
+        the address it prints, to check from there.
+      </p>
+      <p className="muted">
+        From the Dobra repo, once: <code>npm run build:cli &amp;&amp; npx playwright install chromium</code>
       </p>
       <pre>
         <code>{cliCommand(req)}</code>
       </pre>
+      <button className="site-check__copy" type="button" onClick={() => void navigator.clipboard?.writeText(cliCommand(req))}>
+        Copy command
+      </button>
       <p className="muted">In GitHub Actions:</p>
       <pre>
         <code>{actionsStep(req)}</code>
@@ -35,7 +41,11 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
   const [url, setUrl] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; handoff: boolean } | null>(null);
+  // Only the latest check may show its result; an older one is cancelled when a new one starts or
+  // when the form goes away.
+  const pending = useRef<AbortController | null>(null);
+  useEffect(() => () => pending.current?.abort(), []);
   const req: CheckRequest = { url: url.trim() || 'https://example.com/', ...(categories.length ? { categories } : {}) };
 
   if (health === undefined) return <p className="site-check site-check__probing muted">Looking for a check endpoint…</p>;
@@ -71,12 +81,17 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
     );
 
   async function submit() {
+    pending.current?.abort();
+    const ctrl = new AbortController();
+    pending.current = ctrl;
     setBusy(true);
     setError(null);
-    const outcome = await runCheck(f, { url: url.trim(), ...(categories.length ? { categories } : {}) }, health!.mode);
+    const outcome = await runCheck(f, { url: url.trim(), ...(categories.length ? { categories } : {}) }, health!.mode, undefined, ctrl.signal);
+    if (pending.current !== ctrl) return;
+    pending.current = null;
     setBusy(false);
     if (outcome.ok) onReport(outcome.report);
-    else setError(outcome.message);
+    else if (!outcome.aborted) setError({ message: outcome.message, handoff: outcome.handoff });
   }
 
   return (
@@ -90,7 +105,14 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
       <button className="site-check__submit primary" disabled={busy || !url.trim()} onClick={submit}>
         {busy ? 'Checking…' : 'Check site'}
       </button>
-      {error && <Handoff req={req} reason={error} />}
+      {error &&
+        (error.handoff ? (
+          <Handoff req={req} reason={error.message} />
+        ) : (
+          <p className="site-check__error" role="alert">
+            {error.message}
+          </p>
+        ))}
     </div>
   );
 }

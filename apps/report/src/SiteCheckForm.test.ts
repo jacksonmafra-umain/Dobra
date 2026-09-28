@@ -17,6 +17,14 @@ describe('SiteCheckForm', () => {
     expect(out).toContain('npx playwright install --with-deps chromium');
     expect(out).toContain('npm run dobra -- report');
   });
+  it('gives the hand-off a copy button, the setup it needs, and the right way back to this page', () => {
+    const out = html(null);
+    expect(out).toContain('site-check__copy');
+    expect(out).toContain('npm run build:cli');
+    expect(out).toContain('npx playwright install chromium');
+    expect(out).not.toContain('check from this page');
+    expect(out).toMatch(/open the address it prints/);
+  });
   it('keeps the address and device fields in the hand-off, so the command is for the right site', () => {
     const out = html(null);
     expect(out).toContain('site-check__url');
