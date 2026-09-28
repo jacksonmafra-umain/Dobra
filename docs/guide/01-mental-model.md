@@ -184,8 +184,7 @@ Breakpoints exist to serve content. Measure what the content needs, at the user'
   (HIG: Layout).
 
 Larger text uses up space the same way a narrower window does, so a layout that flows and branches
-on available space handles both. The [Accessibility](07-accessibility.md) part covers the 200%
-test.
+on available space handles both. The Accessibility part covers the 200% test.
 
 ## Glossary entries
 
