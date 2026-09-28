@@ -17,6 +17,12 @@ describe('SiteCheckForm', () => {
     expect(out).toContain('npx playwright install --with-deps chromium');
     expect(out).toContain('npm run dobra -- report');
   });
+  it('keeps the address and device fields in the hand-off, so the command is for the right site', () => {
+    const out = html(null);
+    expect(out).toContain('site-check__url');
+    expect(out).toContain('site-check__targets');
+    expect(out).not.toContain('site-check__submit');
+  });
   it('shows the form when a local endpoint answers', () => {
     const out = html({ ok: true, mode: 'local', maxTargets: null, maxSeconds: null });
     for (const c of ['site-check', 'site-check__url', 'site-check__targets', 'site-check__submit']) expect(out).toContain(c);

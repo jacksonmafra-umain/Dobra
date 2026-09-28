@@ -39,21 +39,10 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
   const req: CheckRequest = { url: url.trim() || 'https://example.com/', ...(categories.length ? { categories } : {}) };
 
   if (health === undefined) return <p className="site-check site-check__probing muted">Looking for a check endpoint…</p>;
-  if (health === null) return <div className="site-check"><Handoff req={req} /></div>;
 
   const toggle = (c: string) => setCategories((cs) => (cs.includes(c) ? cs.filter((x) => x !== c) : [...cs, c]));
-
-  async function submit() {
-    setBusy(true);
-    setError(null);
-    const outcome = await runCheck(f, { url: url.trim(), ...(categories.length ? { categories } : {}) }, health!.mode);
-    setBusy(false);
-    if (outcome.ok) onReport(outcome.report);
-    else setError(outcome.message);
-  }
-
-  return (
-    <div className="site-check">
+  const fields = (
+    <>
       <label>
         Website address
         <input className="site-check__url" type="url" placeholder="https://…" value={url} onChange={(e) => setUrl(e.target.value)} />
@@ -69,6 +58,30 @@ export function SiteCheckForm({ health, fetch: f = globalThis.fetch?.bind(global
           </label>
         ))}
       </fieldset>
+    </>
+  );
+
+  // No endpoint on this host: the same fields fill in the command to run instead.
+  if (health === null)
+    return (
+      <div className="site-check">
+        {fields}
+        <Handoff req={req} />
+      </div>
+    );
+
+  async function submit() {
+    setBusy(true);
+    setError(null);
+    const outcome = await runCheck(f, { url: url.trim(), ...(categories.length ? { categories } : {}) }, health!.mode);
+    setBusy(false);
+    if (outcome.ok) onReport(outcome.report);
+    else setError(outcome.message);
+  }
+
+  return (
+    <div className="site-check">
+      {fields}
       <p className="muted">
         {health.mode === 'local'
           ? 'Checked on this machine, so local and staging addresses work.'
