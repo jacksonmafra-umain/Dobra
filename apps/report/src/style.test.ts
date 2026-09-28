@@ -63,3 +63,13 @@ describe('narrow screens', () => {
     expect(h2Rules).toContainEqual(['overflow-wrap', 'anywhere']);
   });
 });
+
+describe('website input', () => {
+  // SiteCheckForm and the Figma/Website switch ship unstyled class names; each needs a rule here.
+  it.each(['input-switch', 'site-check', 'site-check__url', 'site-check__targets', 'site-check__submit', 'site-check__handoff', 'site-check__copy', 'site-check__error', 'site-check__probing'])(
+    '.%s has a rule',
+    (cls) => {
+      expect(css).toMatch(new RegExp(`\\.${cls}(?![\\w-])[^{]*\\{`));
+    },
+  );
+});
