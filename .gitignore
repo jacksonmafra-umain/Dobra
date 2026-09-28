@@ -8,3 +8,6 @@ matrix-out/
 /dobra-simulator-v*.html
 apps/site/.astro/
 apps/site/.vercel/
+# Vercel CLI link and pulled environment files.
+.vercel/
+.env*.local
