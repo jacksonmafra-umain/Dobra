@@ -56,4 +56,23 @@ describe('Figma client', () => {
     await expect(client.me()).rejects.not.toThrow(TOKEN);
     expect(redact(`x ${TOKEN} y`, TOKEN)).toBe('x ••• y');
   });
+
+  it('asks for images at the given scale, 1 by default', async () => {
+    const asked: string[] = [];
+    const fetchImpl = (async (u: string) => (asked.push(u), new Response(JSON.stringify({ images: { '1:1': 'https://img' } }), { status: 200 }))) as unknown as typeof fetch;
+    const client = createFigmaClient(TOKEN, fetchImpl);
+    await client.images('KEY', ['1:1']);
+    await client.images('KEY', ['1:1'], 2.5);
+    expect(asked[0]).toContain('&scale=1');
+    expect(asked[1]).toContain('&scale=2.5');
+  });
+  it('keeps the scale within what Figma accepts', async () => {
+    const asked: string[] = [];
+    const fetchImpl = (async (u: string) => (asked.push(u), new Response(JSON.stringify({ images: {} }), { status: 200 }))) as unknown as typeof fetch;
+    const client = createFigmaClient(TOKEN, fetchImpl);
+    await client.images('KEY', ['1:1'], 9);
+    await client.images('KEY', ['1:1'], 0);
+    expect(asked[0]).toContain('&scale=4');
+    expect(asked[1]).toContain('&scale=0.1');
+  });
 });

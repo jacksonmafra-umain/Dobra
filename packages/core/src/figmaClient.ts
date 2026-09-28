@@ -21,7 +21,8 @@ export interface FigmaClient {
   me(): Promise<{ handle: string }>;
   file(key: string): Promise<{ name: string; version: string; document: RestNode }>;
   nodes(key: string, ids: string[]): Promise<{ loaded: Record<string, RestNode>; failed: { id: string; reason: string }[] }>;
-  images(key: string, ids: string[]): Promise<Record<string, string | null>>;
+  /** PNG render URLs at `scale` (Figma accepts 0.01–4; clamped to 0.1–4). */
+  images(key: string, ids: string[], scale?: number): Promise<Record<string, string | null>>;
 }
 
 export function redact(text: string, token: string): string {
@@ -79,10 +80,11 @@ export function createFigmaClient(rawToken: string, fetchImpl: typeof fetch = fe
       }
       return { loaded, failed };
     },
-    async images(key, ids) {
+    async images(key, ids, scale = 1) {
+      const s = Math.min(4, Math.max(0.1, scale));
       const out: Record<string, string | null> = {};
       for (const batch of chunks(ids, BATCH)) {
-        const r = await request<{ images: Record<string, string | null> }>(`/images/${key}?ids=${batch.join(',')}&format=png&scale=1`);
+        const r = await request<{ images: Record<string, string | null> }>(`/images/${key}?ids=${batch.join(',')}&format=png&scale=${s}`);
         Object.assign(out, r.images);
       }
       return out;
