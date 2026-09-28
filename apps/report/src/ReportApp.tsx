@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadCatalog } from '@dobra/core/catalog/load';
 import { representativeTarget } from '@dobra/core/coverage';
 import { presetSpec } from '@dobra/core/presets';
 import { presetZip } from '@dobra/core/presetZip';
-import { parseReport, toMarkdown, type Report, type ReportFrame } from '@dobra/core/report';
+import { toMarkdown, type Report, type ReportFrame } from '@dobra/core/report';
 import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
 import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
@@ -18,6 +18,8 @@ import { UnloadedList } from './UnloadedList';
 import { tokenStore } from './tokenStore';
 import { SiteCheckForm } from './SiteCheckForm';
 import { probe, type Health } from './siteCheck';
+import { ZipDownload } from './ZipDownload';
+import { openReportFile } from './zipView';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
@@ -67,11 +69,20 @@ export function ReportApp() {
     }
   }
 
+  // Object URLs of the screenshots of the report on screen, released when another one opens.
+  const revokeOpened = useRef<() => void>(() => {});
+  useEffect(() => () => revokeOpened.current(), []);
+
   async function openFile(file: File) {
     setError(null);
+    setNotice(null);
     try {
-      setReport(parseReport(JSON.parse(await file.text())));
-      setThumbnails({});
+      const opened = await openReportFile(file);
+      revokeOpened.current();
+      revokeOpened.current = opened.revoke;
+      setReport(opened.report);
+      setThumbnails(opened.thumbnails);
+      if (opened.notes.length) setNotice(opened.notes.join(' '));
     } catch (e) {
       setError(`That file is not a foldable check report. ${e instanceof Error ? e.message : String(e)}`);
     }
@@ -132,9 +143,15 @@ export function ReportApp() {
           </>
         )}
         <label className="drop">
-          <span>Or open a report JSON</span>
+          <span>Or open a report (JSON or ZIP)</span>
           <span className="muted">made by the command-line checker or the simulator</span>
-          <input type="file" accept="application/json,.json" aria-label="Report JSON" onChange={(e) => e.target.files?.[0] && openFile(e.target.files[0])} />
+          <span className="report-zip__note muted">Read in this browser only, nothing is uploaded or kept.</span>
+          <input
+            type="file"
+            accept="application/json,.json,application/zip,.zip"
+            aria-label="Report JSON or ZIP"
+            onChange={(e) => e.target.files?.[0] && openFile(e.target.files[0])}
+          />
         </label>
       </section>
 
@@ -170,6 +187,7 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
         <button disabled={!missingTargets.length} onClick={() => download(`${slug}.presets.zip`, presetZip(config, missingTargets), 'application/zip')}>
           Presets ZIP ({missingTargets.length} missing)
         </button>
+        <ZipDownload report={report} thumbnails={thumbnails} slug={slug} />
       </div>
 
       <h2>Coverage</h2>
