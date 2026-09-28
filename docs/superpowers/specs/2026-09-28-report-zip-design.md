@@ -85,13 +85,15 @@ Markdown file is only written, never rendered by the viewer.
 
 - **Open:** "Open a report JSON" becomes "Open a report (JSON or ZIP)". Picking a ZIP shows "Read
   in this browser only, nothing is uploaded or kept".
-- **Frame cards:** the screenshot replaces the grey placeholder. The existing `FrameOverlay` draws
-  the hinge and safe zone over it, as it does on Figma thumbnails today.
-- **Downloads:** next to **Report JSON** and **Markdown**, a **Download ZIP** button:
+- **Frame cards:** the screenshot goes into the card's existing `.thumb` `<img>`, in place of the
+  grey placeholder, so `FrameOverlay` and the aspect ratio keep working: the hinge and safe zone are
+  drawn over it, as on Figma thumbnails today.
+- **Downloads:** **Download ZIP** is a plain `<button>` in the existing `.row` of download buttons,
+  next to **Report JSON** and **Markdown**, so it picks up the report's button style:
   - disabled with "No screenshots to include" when there are none;
   - labelled "Download ZIP (N screenshots)" otherwise.
-- **Styling:** agent/03 styles the new controls. The components ship with plain class names:
-  `report-zip`, `report-zip__note`, `report-zip__download`.
+- **Styling:** the new elements carry the classes `report-zip`, `report-zip__note` and
+  `report-zip__download`. agent/03 adds their rules to the report's style test in a follow-up.
 
 ## 6. CLI
 
