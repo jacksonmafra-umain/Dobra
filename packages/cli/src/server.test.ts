@@ -63,7 +63,7 @@ describe('createCheckHandler', () => {
     const { d, close } = deps({ policy: HOSTED, now: () => 1_000 });
     const r = await createCheckHandler(d).check({ url: 'https://example.com/', targets: [PIXEL] }, 'ip');
     expect(r.ok).toBe(true);
-    const opts = d.check.mock.calls[0][2];
+    const opts = vi.mocked(d.check!).mock.calls[0][2];
     expect(opts.deadline).toBe(1_000 + 50_000);
     expect(opts.allowRequest).toBeTypeOf('function');
     expect(await opts.allowRequest!('http://127.0.0.1/')).toBe(false);
@@ -74,7 +74,7 @@ describe('createCheckHandler', () => {
   it('runs the local check without a guard or a deadline', async () => {
     const { d } = deps();
     await createCheckHandler(d).check({ url: 'http://localhost:3000/', targets: [PIXEL] }, 'ip');
-    const opts = d.check.mock.calls[0][2];
+    const opts = vi.mocked(d.check!).mock.calls[0][2];
     expect(opts.deadline).toBeUndefined();
     expect(opts.allowRequest).toBeUndefined();
   });
@@ -82,7 +82,7 @@ describe('createCheckHandler', () => {
   it('uses the representative set when no targets or categories are given', async () => {
     const { d } = deps();
     await createCheckHandler(d).check({ url: 'http://localhost:3000/' }, 'ip');
-    expect(d.check.mock.calls[0][1].length).toBeGreaterThan(0);
+    expect(vi.mocked(d.check!).mock.calls[0][1].length).toBeGreaterThan(0);
   });
 
   it('returns the partial report a timed-out check produced', async () => {
