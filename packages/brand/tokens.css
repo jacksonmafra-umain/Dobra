@@ -41,6 +41,31 @@
   --dobra-shadow-2: 0 8px 24px -8px rgb(15 19 28 / 0.18);
 }
 
+/* Until a surface sets data-theme (from JavaScript, after the first paint), follow the system, so
+   light-theme users never see a dark first frame. Same values as the light block; a test keeps
+   them equal. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --dobra-bg: #F6F7FA;
+    --dobra-panel: rgb(255 255 255 / 0.85);
+    --dobra-flyout: rgb(255 255 255 / 0.96);
+    --dobra-field: #FFFFFF;
+    --dobra-text: #0F131C;
+    --dobra-muted: #4B5565;
+    --dobra-border: rgb(15 19 28 / 0.12);
+    --dobra-border-strong: #CBD2DC;
+    --dobra-fold: #007C85;
+    --dobra-on-fold: #FFFFFF;
+    --dobra-accent-2: #4F46E5;
+    --dobra-pass: #047857;
+    --dobra-warn: #B45309;
+    --dobra-hinge: #BE185D;
+    --dobra-glow: 0 0 0 1px rgb(0 124 133 / 0.35);
+    --dobra-shadow-2: 0 8px 24px -8px rgb(15 19 28 / 0.18);
+  }
+}
+
 :where(:root) {
   --dobra-radius-sm: 2px;
   --dobra-radius: 4px;

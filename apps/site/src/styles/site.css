@@ -39,8 +39,10 @@ img, video { max-width: 100%; }
 .prose code { font: 0.9em var(--dobra-font-mono); background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-sm); padding: 1px 4px; }
 .prose pre { background: var(--dobra-field) !important; border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 14px 16px; overflow-x: auto; font: 13px/1.6 var(--dobra-font-mono); }
 .prose pre code { background: none; border: 0; padding: 0; }
-.astro-code, .astro-code span { color: var(--shiki-light); }
-[data-theme='dark'] .astro-code, [data-theme='dark'] .astro-code span { color: var(--shiki-dark); }
+/* Dark first, like the tokens; light when the page is light or, before the theme script, the system is. */
+.astro-code, .astro-code span { color: var(--shiki-dark); }
+[data-theme='light'] .astro-code, [data-theme='light'] .astro-code span { color: var(--shiki-light); }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .astro-code, :root:not([data-theme]) .astro-code span { color: var(--shiki-light); } }
 .prose :not(pre) > code { overflow-wrap: anywhere; }
 .prose table { display: block; overflow-x: auto; max-width: 100%; border-collapse: collapse; font: var(--dobra-type-body-md); margin: 16px 0; }
 .prose th { text-align: left; font: var(--dobra-type-label-md); letter-spacing: var(--dobra-tracking-label-md); text-transform: uppercase; color: var(--dobra-muted); }
