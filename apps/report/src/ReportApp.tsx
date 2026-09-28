@@ -5,6 +5,7 @@ import { presetSpec } from '@dobra/core/presets';
 import { presetZip } from '@dobra/core/presetZip';
 import { parseReport, toMarkdown, type Report, type ReportFrame } from '@dobra/core/report';
 import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
+import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
@@ -114,11 +115,6 @@ export function ReportApp() {
 }
 
 function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record<string, string | null> }) {
-  const counts = useMemo(() => {
-    const c = { error: 0, warn: 0, info: 0 };
-    for (const f of report.frames) for (const x of f.findings) c[x.severity]++;
-    return c;
-  }, [report]);
   const missing = report.coverage.cells.filter((c) => c.requirement.level === 'required' && c.status === 'missing');
   const missingTargets = missing.map((c) => representativeTarget(catalog, c.requirement)).filter((t): t is Target => t !== null);
   const slug = report.source.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'report';
@@ -130,8 +126,9 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
       </h2>
       <p className="muted">
         Generated {new Date(report.generatedAt).toLocaleString()} · catalog {report.catalogVersion}
-        {report.source.fileVersion ? ` · file version ${report.source.fileVersion}` : ''} · {ICON.error} {counts.error} · {ICON.warn} {counts.warn} · {ICON.info} {counts.info}
+        {report.source.fileVersion ? ` · file version ${report.source.fileVersion}` : ''}
       </p>
+      <CoverageSummary report={report} />
       <div className="row">
         <button onClick={() => download(`${slug}.foldable.json`, JSON.stringify(report, null, 2), 'application/json')}>Report JSON</button>
         <button onClick={() => download(`${slug}.foldable.md`, toMarkdown(report), 'text/markdown')}>Markdown</button>
@@ -142,6 +139,7 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
 
       <h2>Coverage</h2>
       <p className="muted">✓ tagged · ~ matched by size only · ✗ missing</p>
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -157,11 +155,14 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
               <td>{c.requirement.category}</td>
               <td>{c.requirement.kind}</td>
               <td>{c.requirement.orientation}</td>
-              <td title={c.frames.join(', ')}>{STATUS[c.status]}</td>
+              <td title={c.frames.join(', ')}>
+                <span className={`chip chip--${c.status}`}>{STATUS[c.status]}</span>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
       <p>
         {Object.entries(report.coverage.byCategory).map(([category, v]) => (
           <span key={category} className="badge">

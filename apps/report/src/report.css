@@ -46,8 +46,6 @@ button.primary { background: var(--accent); border-color: transparent; color: va
 button:disabled { opacity: 0.5; cursor: default; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .banner { border-left: 4px solid var(--bad); background: var(--panel); padding: 10px 12px; border-radius: 6px; margin: 12px 0; }
-table { width: 100%; border-collapse: collapse; }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .card__body { padding: 12px; }
@@ -56,3 +54,21 @@ th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--bord
 .thumb svg { position: absolute; inset: 0; height: 100%; }
 .finding { margin: 6px 0; }
 @media (max-width: 600px) { main { padding: 16px; } }
+.summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 16px 0; }
+.summary__eyebrow { font: var(--dobra-type-label-md); letter-spacing: var(--dobra-tracking-label-md); text-transform: uppercase; color: var(--muted); }
+.summary__figure { font: 600 44px/1.1 var(--dobra-font-display); letter-spacing: -0.02em; margin: 4px 0 8px; }
+.summary__stats { display: flex; flex-wrap: wrap; gap: 6px 14px; font: var(--dobra-type-label-lg); color: var(--muted); }
+.summary__ring { flex: none; }
+.summary__track { fill: none; stroke: var(--border-strong); stroke-width: 8; }
+.summary__value { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; }
+.sev--error { color: var(--bad); }
+.sev--warn { color: var(--warn); }
+.sev--info { color: var(--info); }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font: var(--dobra-type-body-md); }
+th { font: var(--dobra-type-label-md); letter-spacing: var(--dobra-tracking-label-md); text-transform: uppercase; color: var(--muted); }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+.chip { display: inline-block; min-width: 22px; text-align: center; font: 600 11px/1 var(--dobra-font-mono); padding: 4px 6px; border-radius: var(--dobra-radius-sm); }
+.chip--present { color: var(--ok); background: var(--ok-soft); }
+.chip--present-by-size { color: var(--warn); background: var(--warn-soft); }
+.chip--missing { color: var(--bad); background: var(--bad-soft); }
