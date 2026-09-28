@@ -275,7 +275,7 @@ windows map onto these modes, is [unverified — confirm before use].
 
 | Method | What it shows | What it can't prove |
 |---|---|---|
-| Compose previews: `device = "spec:width=…,height=…,dpi=…"`, `Devices.FOLDABLE`, `Devices.TABLET`, `Devices.DESKTOP`, `@PreviewScreenSizes`, `@PreviewFontScales` ([Previews](https://developer.android.com/develop/ui/compose/tooling/previews)) | Layout at fixed sizes and font scales | Folding features, insets on a real device, window resizes, configuration changes |
+| Compose previews: `device = "spec:width=…,height=…,dpi=…"`, `Devices.FOLDABLE`, `Devices.TABLET`, `Devices.DESKTOP`, `@PreviewScreenSizes`, `@PreviewFontScale` ([Previews](https://developer.android.com/develop/ui/compose/tooling/previews)) | Layout at fixed sizes and font scales | Folding features, insets on a real device, window resizes, configuration changes |
 | Emulators: 7.6" fold-in foldable, Pixel C tablet, Surface Duo, and the resizable emulator ([adaptive app quality](https://developer.android.com/docs/quality-guidelines/large-screen-app-quality)) | Postures, resizes and multi-window on real system software | Exact hardware values: many are the emulator's, not the device's |
 | Test sizes from the quality guidelines: foldable 841×701 dp, 8" tablet 1024×640 dp, 10.5" tablet 1280×800 dp, 13" Chromebook 1600×900 dp (same page) | A minimum device matrix | Every window size in between: resize continuously too |
 | `adb shell cmd device_state …` to change the fold state | Switching postures from a script | [unverified — confirm before use]: no primary page found |

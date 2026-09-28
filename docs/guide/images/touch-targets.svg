@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230" role="img" aria-labelledby="t">
+  <title id="t">Minimum touch targets drawn to the same scale: Android 48 by 48 dp; iOS 44 by 44 pt by default and 28 by 28 pt at minimum; web WCAG 2.2 24 by 24 CSS pixels at level AA and 44 by 44 at level AAA. The units are separate definitions of roughly the same physical size</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}
+    .f{fill:#007C85;fill-opacity:.14;stroke:#007C85;stroke-width:1.5}.h{fill:#BE185D;fill-opacity:.14;stroke:#BE185D;stroke-width:1.5}
+    @media (prefers-color-scheme:dark){.t{fill:#DFE2EE}.s{fill:#9AA8B8}.b{stroke:#334155}.p{fill:#818CF8;stroke:#818CF8}.f{fill:#00F0FF;stroke:#00F0FF}.h{fill:#F062A8;stroke:#F062A8}}
+  </style>
+  <text class="t" x="20" y="28">Minimum touch targets, drawn at 2× to the same scale</text>
+  <line class="b" x1="20" y1="168" x2="740" y2="168"/>
+  <text class="t" x="20" y="60">Android</text>
+  <rect class="f" x="20" y="72" width="96" height="96"/>
+  <text class="s" x="20" y="190">48 × 48 dp</text>
+  <text class="t" x="200" y="60">iOS</text>
+  <rect class="p" x="200" y="80" width="88" height="88"/>
+  <rect class="p" x="300" y="112" width="56" height="56" stroke-dasharray="5 4"/>
+  <text class="s" x="200" y="190">44 × 44 pt default</text>
+  <text class="s" x="200" y="208">28 × 28 pt minimum (dashed)</text>
+  <text class="t" x="460" y="60">Web (WCAG 2.2)</text>
+  <rect class="h" x="460" y="120" width="48" height="48" stroke-dasharray="5 4"/>
+  <rect class="h" x="520" y="80" width="88" height="88"/>
+  <text class="s" x="460" y="190">24 × 24 CSS px, AA (dashed)</text>
+  <text class="s" x="460" y="208">44 × 44 CSS px, AAA</text>
+</svg>

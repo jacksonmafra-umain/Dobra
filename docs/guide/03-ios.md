@@ -145,8 +145,10 @@ var body: some View {
 @ScaledMetric(relativeTo: .body) private var iconSize: CGFloat = 24
 ```
 
-`relativeTo:` is [unverified — confirm before use] against your SDK. Layouts must survive the
-accessibility sizes without clipping. See the Accessibility part for the 200% test.
+`relativeTo:` scales the value relative to a text style
+([init(wrappedValue:relativeTo:)](https://developer.apple.com/documentation/swiftui/scaledmetric/init(wrappedvalue:relativeto:))).
+Layouts must survive the accessibility sizes without clipping. See the
+[Accessibility](07-accessibility.md#the-200-test) part for the 200% test.
 
 ## Human Interface Guidelines, as design guidance
 
@@ -204,5 +206,6 @@ inspector | A SwiftUI side panel that is a trailing column in regular width and 
 - https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)
 - https://developer.apple.com/documentation/swiftui/dynamictypesize
 - https://developer.apple.com/documentation/swiftui/scaledmetric
+- https://developer.apple.com/documentation/swiftui/scaledmetric/init(wrappedvalue:relativeto:)
 - https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:)
 - https://developer.apple.com/documentation/swiftui/previews-in-xcode

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" role="img" aria-labelledby="t">
+  <title id="t">The same window at 100 percent and 200 percent text: at 100 percent an icon, a label and a timestamp sit in one row; at 200 percent the row would clip, so the label wraps and the timestamp moves below it. The window size class is the same in both, because text size does not change it</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .big{font:500 26px Inter,system-ui,sans-serif;fill:#0F131C}.bs{font:400 22px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}
+    .f{fill:#007C85}
+    @media (prefers-color-scheme:dark){.t,.big{fill:#DFE2EE}.s,.bs{fill:#9AA8B8}.b{stroke:#334155}.p{fill:#818CF8;stroke:#818CF8}.f{fill:#00F0FF}}
+  </style>
+  <text class="t" x="20" y="28">100% text</text>
+  <rect class="b" x="20" y="40" width="330" height="200" rx="14"/>
+  <rect class="p" x="36" y="60" width="298" height="52" rx="6"/>
+  <circle class="f" cx="60" cy="86" r="12"/>
+  <text class="t" x="82" y="91">Boarding pass ready</text>
+  <text class="s" x="292" y="91" text-anchor="end">09:41</text>
+  <text class="s" x="36" y="140">One row fits: icon, label, time.</text>
+  <text class="t" x="410" y="28">200% text, same window, same size class</text>
+  <rect class="b" x="410" y="40" width="330" height="200" rx="14"/>
+  <rect class="p" x="426" y="60" width="298" height="108" rx="6"/>
+  <circle class="f" cx="454" cy="84" r="16"/>
+  <text class="big" x="482" y="94">Boarding pass</text>
+  <text class="big" x="482" y="126">ready</text>
+  <text class="bs" x="482" y="156">09:41</text>
+  <text class="s" x="426" y="196">The label wraps and the time stacks below it.</text>
+  <text class="s" x="426" y="216">Nothing is clipped or truncated.</text>
+</svg>

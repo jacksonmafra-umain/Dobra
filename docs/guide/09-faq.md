@@ -8,10 +8,14 @@ equivalent says so instead of borrowing one.
 
 | Term | Definition | Platforms | Equivalents on the other platforms | Source |
 |---|---|---|---|---|
+| **200% test** | Checking every screen with text at twice its default size for clipped, truncated or overlapping content | Android, iOS, Web | Android: 200% font size; iOS: the largest accessibility Dynamic Type size; Web: WCAG 1.4.4 Resize Text | [www.w3.org](https://www.w3.org/TR/WCAG22/#resize-text) |
 | **adaptive layout** | A layout that changes its structure (panes, navigation type) at defined breakpoints | Android, iOS, Web | iOS: size-class-driven layout; Web: media or container query breakpoints | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) |
 | **aspect ratio** | The width-to-height ratio of a box or a window | Android, iOS, Web | Android: `Modifier.aspectRatio` [unverified — confirm before use]; iOS: `aspectRatio(_:contentMode:)` [unverified — confirm before use]; Web: the `aspect-ratio` property and media feature | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/aspect-ratio) |
+| **auto-mirrored icon** | An icon that flips itself in a right-to-left layout | Android, iOS, Web | Android: `android:autoMirrored`, `Icons.AutoMirrored`; iOS: SF Symbols variants, `flipsForRightToLeftLayoutDirection(_:)`; Web: none built in, use `:dir(rtl)` with a transform | [developer.android.com](https://developer.android.com/reference/kotlin/androidx/compose/material/icons/Icons.AutoMirrored) |
 | **Baseline** | web.dev's label for features that work in all core browsers: Newly available once the last one ships, Widely available 30 months later | Web | none | [web.dev](https://web.dev/baseline) |
 | **book posture** | A half-opened foldable with a vertical fold, used like an open book | Android | iOS: none; Web: two viewport segments side by side | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/foldables/make-your-app-fold-aware) |
+| **BoxWithConstraints** | A Compose layout that exposes the incoming constraints so its content can change with them; it defers composition to the layout phase | Android | iOS: `ViewThatFits`; Web: a container query | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-different-display-sizes) |
+| **branch** | Changing a layout's structure (pane count, navigation type) when available space crosses a breakpoint | Android, iOS, Web | Android: a check on `WindowSizeClass`; iOS: a check on the size class; Web: a media or container query | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) |
 | **breakpoint** | A width or height where a layout changes structure; on the web, choose it from the content, not from device classes | Android, Web | Android: window size class bounds (600, 840, 1200, 1600 dp wide; 480, 900 dp tall); iOS: none (size classes are assigned); Web: a media or container query condition | [web.dev](https://web.dev/articles/responsive-web-design-basics) |
 | **caption bar** | The header bar the system draws on an app window in desktop windowing | Android | iOS: window title bar in Stage Manager [unverified — confirm before use]; Web: none | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-desktop-windowing) |
 | **compact** | The smallest size bucket: on Android a window under 600 dp wide or 480 dp tall (a threshold); on iOS the smaller of the two size classes the system assigns | Android, iOS | Android and iOS each define it, differently; Web: none standard | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes), [developer.apple.com](https://developer.apple.com/documentation/swiftui/userinterfacesizeclass) |
@@ -30,13 +34,17 @@ equivalent says so instead of borrowing one.
 | **env()** | A CSS function that reads values the browser provides, such as safe-area insets and viewport segments | Web | Android: `WindowInsets`; iOS: the safe area | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/env) |
 | **expanded** | The width class from 840 dp to below 1200 dp, or the height class from 900 dp | Android | iOS: none (closest: regular); Web: none standard | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) |
 | **extra-large** | The width class at 1600 dp and above | Android | iOS: none; Web: none standard | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) |
+| **flow** | Keeping one structure and letting it stretch, wrap or change column count as space changes, with no breakpoint | Android, iOS, Web | Android: `FlowRow`, `GridCells.Adaptive`; iOS: `GridItem.Size.adaptive`; Web: `flex-wrap`, `repeat(auto-fit, minmax(…))` | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/flow) |
+| **FlowRow** | A Compose row whose items move to the next line when the container runs out of space | Android | iOS: none built in; write one with the `Layout` protocol (iOS 16+); Web: `flex-wrap: wrap` | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/flow) |
 | **fluid type** | Font sizes that scale between a minimum and a maximum with `clamp()` | Web | Android: none (sp follows the user's font scale); iOS: none (Dynamic Type) | [web.dev](https://web.dev/articles/baseline-in-action-fluid-type) |
 | **fold** | A bend in a flexible display, described by a `FoldingFeature` | Android | iOS: none; Web: the boundary between viewport segments | [developer.android.com](https://developer.android.com/reference/androidx/window/layout/FoldingFeature) |
 | **folding feature bounds** | The rectangle, in window coordinates, that a folding feature occupies | Android | iOS: none; Web: the gap between `viewport-segment-*` rectangles | [developer.android.com](https://developer.android.com/reference/androidx/window/layout/FoldingFeature) |
 | **FoldingFeature** | The androidx.window type describing a fold or hinge: state, orientation, isSeparating, occlusionType and bounds | Android | iOS: none; Web: Viewport Segments | [developer.android.com](https://developer.android.com/reference/androidx/window/layout/FoldingFeature) |
+| **font scale** | The user's text size setting on Android, applied to `sp` units; up to 200% since Android 14, on a nonlinear curve so large text grows less than small text | Android | iOS: Dynamic Type size; Web: the browser's default font size, and zoom | [developer.android.com](https://developer.android.com/about/versions/14/features#non-linear-font-scaling) |
 | **forced colors** | A mode (such as Windows High Contrast) where the user's palette replaces the page's colours, detected with `forced-colors: active` | Web | Android: high-contrast text [unverified — confirm before use]; iOS: Increase Contrast [unverified — confirm before use] | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/forced-colors) |
 | **free-form window** | An app window the user can resize and move freely (desktop windowing) | Android | iOS: Stage Manager window; Web: browser window | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-multi-window-mode) |
 | **gesture navigation** | System navigation by swipes, with transparent bars under edge-to-edge | Android | iOS: the home indicator gesture; Web: none | [developer.android.com](https://developer.android.com/develop/ui/compose/system/setup-e2e) |
+| **global layout decision** | A screen choosing its structure (panes, navigation) from the window's size class | Android, iOS, Web | Android: window size class; iOS: size class; Web: a media query on the viewport | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) |
 | **grid gutter** | The space between grid columns | Android, iOS, Web | Android: `Arrangement.spacedBy`, the grid gutter in layout guidance; iOS: `spacing` in grids and stacks; Web: `gap` | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/minmax) |
 | **half-opened** | A `FoldingFeature.State` meaning the device is partly folded | Android | iOS: none; Web: none | [developer.android.com](https://developer.android.com/reference/androidx/window/layout/FoldingFeature) |
 | **hinge** | The joint between two physical display panels, also described by a `FoldingFeature`; it often hides content (`occlusionType` `FULL`) | Android | iOS: none; Web: the gap between viewport segments | [developer.android.com](https://developer.android.com/reference/androidx/window/layout/FoldingFeature) |
@@ -46,10 +54,13 @@ equivalent says so instead of borrowing one.
 | **intrinsic sizing** | Sizing from content and constraints (minimum, maximum, fit) rather than fixed breakpoints, so fewer breakpoints are needed | Android, iOS, Web | Android: `GridCells.Adaptive`, `widthIn`; iOS: `GridItem(.adaptive(minimum:))`, `ViewThatFits`; Web: `auto-fit`, `minmax()`, `clamp()` | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/minmax) |
 | **isSeparating** | Whether a folding feature splits the window into logically separate areas; the input that decides a split | Android | iOS: none; Web: more than one viewport segment | [developer.android.com](https://developer.android.com/reference/androidx/window/layout/FoldingFeature) |
 | **large** | The width class from 1200 dp to below 1600 dp | Android | iOS: none; Web: none standard | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) |
+| **layout direction** | Whether a layout runs left to right or right to left, set by the language | Android, iOS, Web | Android: `LayoutDirection`, `LocalLayoutDirection`; iOS: the `layoutDirection` environment value; Web: the `dir` attribute and `:dir()` | [developer.apple.com](https://developer.apple.com/documentation/swiftui/environmentvalues/layoutdirection) |
 | **list-detail** | A layout with a list and the selected item's detail, side by side or one at a time | Android, iOS, Web | iOS: `NavigationSplitView`; Web: a two-column grid | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/list-detail) |
+| **local layout decision** | A component choosing its layout from the space its parent gives it, not from the window | Android, iOS, Web | Android: `BoxWithConstraints`; iOS: `ViewThatFits`; Web: container queries | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-different-display-sizes) |
 | **logical properties** | CSS properties named by flow direction (inline/block, start/end) instead of physical sides | Web | Android: start/end layout directions; iOS: leading/trailing | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values) |
 | **media query** | A CSS condition on the viewport, device or user preferences, written `@media` | Web | Android: window size classes; iOS: size classes | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/@media) |
 | **medium** | The width class from 600 dp to below 840 dp, or the height class from 480 dp to below 900 dp | Android | iOS: none; Web: none standard | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes) |
+| **minimum interactive component size** | The 48 dp minimum that Compose Material components reserve for touch, set through `LocalMinimumInteractiveComponentSize` and applied to custom components with `Modifier.minimumInteractiveComponentSize()` | Android | iOS: a `frame(minWidth:minHeight:)` with `contentShape`; Web: `min-inline-size` and `min-block-size` | [developer.android.com](https://developer.android.com/guide/topics/ui/accessibility/apps) |
 | **multi-window** | Running more than one app on screen: split-screen, picture-in-picture or desktop windowing | Android | iOS: iPad multitasking; Web: none | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-multi-window-mode) |
 | **navigation rail** | A vertical navigation bar at the side of the window | Android | iOS: the sidebar of `TabView` with `.sidebarAdaptable`; Web: none standard | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-adaptive-navigation) |
 | **navigation suite** | `NavigationSuiteScaffold`, which picks a navigation bar or rail (or a drawer on request) from the window | Android | iOS: `TabView` with `.sidebarAdaptable`; Web: none | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-adaptive-navigation) |
@@ -58,6 +69,7 @@ equivalent says so instead of borrowing one.
 | **orientation** | Whether the window or viewport is taller than wide (portrait) or wider than tall (landscape); not the device's physical orientation | Android, iOS, Web | Android: `Configuration.orientation`; iOS: the device or interface orientation; Web: the `orientation` media feature | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/orientation) |
 | **pane** | One region of a multi-pane layout, such as list, detail, supporting or extra | Android, iOS, Web | iOS: a column of `NavigationSplitView`; Web: a grid area | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/list-detail) |
 | **picture-in-picture** | A small floating window that keeps video playing over other apps | Android, iOS | iOS: Picture in Picture; Web: Picture-in-Picture API | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-multi-window-mode) |
+| **pseudolocale** | A fake locale that tests text expansion (`en-XA`) or right-to-left layout (`ar-XB`) without translations | Android | iOS: none in this guide; Web: none | [developer.android.com](https://developer.android.com/guide/topics/resources/pseudolocales) |
 | **pt** | Point, the iOS layout unit, independent of the screen's pixel density | iOS | Android: `dp`; Web: CSS `px` | [developer.apple.com](https://developer.apple.com/design/human-interface-guidelines/layout) |
 | **px** | The CSS pixel: 1/96 in; on high-density screens one CSS pixel covers several device pixels | Web | Android: `px` means a physical pixel, so lay out in `dp`; iOS: `pt` | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length) |
 | **range syntax** | Media query comparisons written with `<`, `<=`, `>`, `>=` instead of `min-`/`max-` | Web | none | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Media_queries/Using) |
@@ -78,12 +90,15 @@ equivalent says so instead of borrowing one.
 | **Stage Manager** | An iPad window arrangement named in SwiftUI and older HIG text; the current HIG describes resizable windowed apps | iOS | Android: desktop windowing; Web: a resizable browser window | [developer.apple.com](https://developer.apple.com/design/human-interface-guidelines/multitasking) |
 | **supporting pane** | A pane beside the main content with related information or tools | Android, iOS, Web | iOS: `inspector`; Web: an aside column | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-a-supporting-pane-layout) |
 | **tabletop posture** | A half-opened foldable with a horizontal fold, standing on a surface | Android | iOS: none; Web: two viewport segments stacked vertically | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/foldables/make-your-app-fold-aware) |
+| **target size** | WCAG's name for the tappable area of a control: 24 × 24 CSS pixels at AA (2.5.8), 44 × 44 at AAA (2.5.5) | Web | Android: touch target, 48 × 48 dp; iOS: control size, 44 × 44 pt default | [www.w3.org](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) |
+| **text spacing** | WCAG 1.4.12: content must survive user overrides of line height (1.5×), paragraph spacing (2×), letter spacing (0.12×) and word spacing (0.16×) | Web | Android: none; iOS: none | [www.w3.org](https://www.w3.org/TR/WCAG22/#text-spacing) |
 | **three-button navigation** | System navigation with back, home and recents buttons; edge-to-edge adds a translucent scrim behind it | Android | iOS: none; Web: none | [developer.android.com](https://developer.android.com/develop/ui/compose/system/setup-e2e) |
-| **touch target** | The area of a control that accepts a tap | Android, iOS, Web | Android: at least 48 × 48 dp; iOS: 44 × 44 pt default, 28 × 28 pt minimum; Web: WCAG target size [unverified — confirm before use] | [developer.android.com](https://developer.android.com/guide/topics/ui/accessibility/apps) |
+| **touch target** | The area of a control that accepts a tap | Android, iOS, Web | Android: at least 48 × 48 dp; iOS: 44 × 44 pt default, 28 × 28 pt minimum; Web: WCAG 2.2 target size, 24 × 24 CSS px at AA and 44 × 44 at AAA | [developer.android.com](https://developer.android.com/guide/topics/ui/accessibility/apps) |
 | **tri-fold** | A device with two hinges and three panels; it doesn't support tabletop or `HALF_OPENED` | Android | iOS: none; Web: up to three viewport segments [unverified — confirm before use] | [developer.android.com](https://developer.android.com/develop/ui/compose/layouts/adaptive/foldables/trifolds-and-landscape-foldables) |
 | **viewport** | The part of the document visible in the browser window; the visual viewport can be smaller than the layout viewport when the user zooms | Web | Android: the app window; iOS: the app window | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Glossary/Viewport) |
 | **viewport segment** | One of the logical areas a fold or hinge splits the viewport into, exposed as media features, `env(viewport-segment-*)` and `window.viewport.segments` | Web | Android: the areas either side of a separating `FoldingFeature`; iOS: none | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API) |
 | **viewport-fit** | A viewport meta value; `cover` lays the page out to the display edges so the page pads with the safe-area insets itself | Web | Android: edge-to-edge; iOS: ignoring the safe area | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/viewport) |
+| **ViewThatFits** | A SwiftUI container that shows the first of its child views that fits the proposed size | iOS | Android: `BoxWithConstraints` with a size check; Web: a container query | [developer.apple.com](https://developer.apple.com/documentation/swiftui/viewthatfits) |
 | **waterfall display** | A display whose edges curve over the sides, reported as `WindowInsets.waterfall` | Android | iOS: none; Web: none | [developer.android.com](https://developer.android.com/develop/ui/compose/system/insets) |
 | **window insets** | The areas of the window that system UI or hardware covers, and how much to pad | Android | iOS: safe area; Web: `env(safe-area-inset-*)` | [developer.android.com](https://developer.android.com/develop/ui/compose/system/insets) |
 | **window metrics** | The size and position of the app's window (`WindowMetricsCalculator`) | Android | iOS: the window scene's bounds [unverified — confirm before use]; Web: the viewport size | [developer.android.com](https://developer.android.com/reference/androidx/window/layout/WindowMetricsCalculator) |
@@ -91,6 +106,7 @@ equivalent says so instead of borrowing one.
 
 ## Sources
 
+- https://developer.android.com/about/versions/14/features
 - https://developer.android.com/develop/ui/compose/components/bottom-sheets
 - https://developer.android.com/develop/ui/compose/layouts/adaptive
 - https://developer.android.com/develop/ui/compose/layouts/adaptive/build-a-supporting-pane-layout
@@ -102,22 +118,28 @@ equivalent says so instead of borrowing one.
 - https://developer.android.com/develop/ui/compose/layouts/adaptive/support-different-display-sizes
 - https://developer.android.com/develop/ui/compose/layouts/adaptive/support-multi-window-mode
 - https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes
+- https://developer.android.com/develop/ui/compose/layouts/flow
 - https://developer.android.com/develop/ui/compose/system/cutouts
 - https://developer.android.com/develop/ui/compose/system/insets
 - https://developer.android.com/develop/ui/compose/system/setup-e2e
 - https://developer.android.com/guide/topics/resources/more-resources
+- https://developer.android.com/guide/topics/resources/pseudolocales
 - https://developer.android.com/guide/topics/resources/runtime-changes
 - https://developer.android.com/guide/topics/ui/accessibility/apps
 - https://developer.android.com/reference/androidx/window/layout/FoldingFeature
 - https://developer.android.com/reference/androidx/window/layout/WindowMetricsCalculator
+- https://developer.android.com/reference/kotlin/androidx/compose/material/icons/Icons.AutoMirrored
 - https://developer.android.com/training/multiscreen/screendensities
 - https://developer.apple.com/design/human-interface-guidelines/layout
 - https://developer.apple.com/design/human-interface-guidelines/multitasking
 - https://developer.apple.com/documentation/swiftui/dynamictypesize
+- https://developer.apple.com/documentation/swiftui/environmentvalues/layoutdirection
+- https://developer.apple.com/documentation/swiftui/layout
 - https://developer.apple.com/documentation/swiftui/navigationsplitview
 - https://developer.apple.com/documentation/swiftui/scaledmetric
 - https://developer.apple.com/documentation/swiftui/userinterfacesizeclass
 - https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:)
+- https://developer.apple.com/documentation/swiftui/viewthatfits
 - https://developer.mozilla.org/en-US/docs/Glossary/Viewport
 - https://developer.mozilla.org/en-US/docs/Web/API/Device_Posture_API
 - https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API
@@ -138,4 +160,6 @@ equivalent says so instead of borrowing one.
 - https://web.dev/articles/responsive-web-design-basics
 - https://web.dev/baseline
 - https://web.dev/blog/viewport-units
+- https://www.w3.org/TR/WCAG22/
 - https://www.w3.org/WAI/WCAG22/Understanding/reflow.html
+- https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html
