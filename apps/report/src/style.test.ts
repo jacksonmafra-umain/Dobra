@@ -73,3 +73,11 @@ describe('website input', () => {
     },
   );
 });
+
+describe('report packages', () => {
+  // The ZIP download is a plain button in the downloads row and inherits the button style; the
+  // "read in this browser only" note under the drop zone needs its own caption style.
+  it('styles the ZIP note', () => {
+    expect(css).toMatch(/\.report-zip__note(?![\w-])[^{]*\{/);
+  });
+});
