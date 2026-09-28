@@ -116,3 +116,4 @@ h2 { overflow-wrap: anywhere; }
 .site-check__copy { justify-self: start; }
 .site-check__error { margin: 0; padding: 10px 12px; border: 1px solid var(--border); border-left: 3px solid var(--bad); background: var(--bad-soft); border-radius: var(--dobra-radius); overflow-wrap: anywhere; }
 .site-check__probing { margin: 0; font: var(--dobra-type-label-md); }
+.report-zip__note { font: var(--dobra-type-body-sm); }
