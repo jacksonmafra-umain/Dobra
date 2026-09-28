@@ -132,7 +132,7 @@ today. A hosted `/api/check` needs one of:
 | **A. Functions in the "dobra" project** | Switch the site's deploy from a prebuilt folder to a Vercel build (or `vercel build` locally, then `vercel deploy --prebuilt`) that includes `api/check` and `api/health` | Same origin: the report calls `/api/check` with no CORS; one project, one domain | Changes how agent/03 deploys the site; the Chromium function's size and cold start affect that project's builds |
 | **B. A separate function project** | A second Vercel project (for example `dobra-check`) with only the two functions; the report calls its URL | The static site's deploy stays as it is; the check can be scaled, limited or turned off on its own | Cross-origin: the function sends CORS headers for `dobra-five.vercel.app` only; the report needs the function's URL at build time; two projects to manage |
 
-Recommendation: **A**, because same-origin keeps the client and the security model simple. Choose
+**Chosen: A** (2026-09-28). Same origin keeps the client and the security model simple. Choose
 **B** if the site's deploy should stay a plain static upload. Either way, the local mode and the
 hand-off work without any deployment.
 
