@@ -25,6 +25,7 @@ npm run dobra -- check site https://example.com --md foldable-report.md
 | `--category <name>` | Every target of a device category (`phone`, `foldable-book`, `foldable-flip`, `dual-screen`, `multi-fold`, `tablet`, `desktop`); repeat for more |
 | `--out <file>` | Report JSON path, default `foldable-report.json` |
 | `--md <file>` | Also write a Markdown summary |
+| `--zip <file>` | Also write a report package: `foldable-report/report.json`, `report.md`, `index.json` and a PNG screenshot of each target's window. Foldable Check opens it (Open a report, JSON or ZIP) in the browser only. A screenshot that fails is listed as missing and never fails the run |
 | `--wait <ms>` | Settle time after the page's `load` event, default `500` |
 | `--fail-on <level>` | Exit 1 on findings of this level or worse: `error` (default), `warn` or `never`. A target that could not load always exits 1 |
 | `--no-transitions` | Skip the unfold pass |
