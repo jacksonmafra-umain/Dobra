@@ -5,6 +5,8 @@ import { enumerateTargets, parseTargetKey, resolveTarget, targetKey, type Target
 
 export interface FrameInput {
   tag?: string;
+  /** Every target the frame is known to stand for, such as one window several targets share. All must resolve. */
+  tags?: string[];
   name: string;
   width: number;
   height: number;
@@ -41,6 +43,8 @@ function sizedTargets(config: EnvConfig) {
 }
 
 export function matchFrame(input: FrameInput, config: EnvConfig): FrameMatch {
+  const many = (input.tags ?? []).map(parseTargetKey);
+  if (many.length && many.every((t) => resolvable(config, t))) return { targets: many as Target[], by: 'tag' };
   const tagged = input.tag ? parseTargetKey(input.tag) : null;
   if (resolvable(config, tagged)) return { targets: [tagged], by: 'tag' };
   const named = input.name.match(KEY_IN_NAME);
