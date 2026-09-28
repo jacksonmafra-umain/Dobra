@@ -766,13 +766,172 @@ body {
 }
 
 /* Figma screens: structure only; colours and spacing follow the simulator's tokens (agent/03). */
+/* Figma screens: the picker modal and a Figma frame drawn inside the device window. */
 .figma-screen__host { position: absolute; inset: 0; }
 .figma-screen__scroll { height: 100%; }
-.figma-screen__banner { position: sticky; bottom: 0; margin: 0; }
+.figma-screen { min-height: 100%; }
 .figma-screen__canvas { position: relative; }
 .figma-screen__image { display: block; width: 100%; height: auto; }
 .figma-screen__hit { position: absolute; pointer-events: none; }
-.figma-screens { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
-.figma-screens__step { width: min(720px, 94vw); max-height: 88vh; overflow: auto; }
-.figma-screens__frame { display: flex; align-items: center; gap: 12px; }
-.figma-screens__thumb { display: block; width: 56px; flex: none; }
+.figma-screen__banner {
+  position: sticky;
+  bottom: 0;
+  margin: 0;
+  padding: var(--dobra-space-xs) var(--dobra-space-sm);
+  background: var(--ui-flyout);
+  backdrop-filter: blur(24px);
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-muted);
+  font: var(--dobra-type-label-sm);
+  letter-spacing: var(--dobra-tracking-label-sm);
+}
+.figma-screen__state {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--dobra-space-sm);
+  min-height: 100%;
+  padding: var(--dobra-space-lg);
+  text-align: center;
+  color: var(--ui-muted);
+  background: var(--ui-bg);
+  font: var(--dobra-type-body-md);
+}
+.figma-screens {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--dobra-space-lg);
+  background: color-mix(in srgb, var(--dobra-bg) 55%, transparent);
+  backdrop-filter: blur(4px);
+}
+.figma-screens__step {
+  width: min(720px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  display: grid;
+  gap: var(--dobra-space-md);
+  padding: var(--dobra-space-lg);
+  background: var(--ui-flyout);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--dobra-radius-lg);
+  box-shadow: var(--dobra-shadow-2);
+}
+.figma-screens__search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--dobra-space-sm) var(--dobra-space-md);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--dobra-radius);
+  background: var(--ui-field);
+  color: var(--ui-text);
+  font: var(--dobra-type-label-lg);
+}
+.figma-screens__search:focus-visible {
+  outline: 1px solid var(--ui-accent);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--ui-accent-soft);
+}
+.figma-screens__page { display: grid; gap: var(--dobra-space-xs); }
+.figma-screens__page h3 {
+  margin: var(--dobra-space-sm) 0 0;
+  color: var(--ui-muted);
+  text-transform: uppercase;
+  font: var(--dobra-type-label-md);
+  letter-spacing: var(--dobra-tracking-label-md);
+}
+.figma-screens__frame {
+  display: flex;
+  align-items: center;
+  gap: var(--dobra-space-md);
+  padding: var(--dobra-space-sm);
+  border: 1px solid transparent;
+  border-radius: var(--dobra-radius);
+  cursor: pointer;
+}
+.figma-screens__frame:hover { background: var(--ui-field); border-color: var(--ui-border); }
+.figma-screens__frame:has(input:checked) { background: var(--ui-accent-soft); border-color: color-mix(in srgb, var(--dobra-fold) 40%, transparent); }
+.figma-screens__frame input { accent-color: var(--ui-accent); width: 14px; height: 14px; flex: none; }
+.figma-screens__thumb {
+  display: block;
+  width: 56px;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  flex: none;
+  background: var(--ui-field);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--dobra-radius-sm);
+}
+.figma-screens__meta { display: grid; gap: 2px; min-width: 0; color: var(--ui-text); font: var(--dobra-type-body-md); overflow-wrap: anywhere; }
+.figma-screens__meta .tag { justify-self: start; margin-left: 0; }
+.figma-screens__actions {
+  position: sticky;
+  bottom: calc(-1 * var(--dobra-space-lg));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--dobra-space-sm);
+  padding-top: var(--dobra-space-sm);
+  background: var(--ui-flyout);
+}
+.figma-screens__error {
+  margin: 0;
+  padding: var(--dobra-space-sm) var(--dobra-space-md);
+  border: 1px solid var(--ui-border);
+  border-left: 3px solid var(--ui-error);
+  border-radius: var(--dobra-radius);
+  background: var(--ui-error-soft);
+  color: var(--ui-text);
+  overflow-wrap: anywhere;
+}
+.figma-screens__step h2 {
+  margin: 0;
+  font: var(--dobra-type-headline-sm);
+  letter-spacing: var(--dobra-tracking-headline-sm);
+  overflow-wrap: anywhere;
+}
+.figma-screens__step label { display: grid; gap: var(--dobra-space-xs); color: var(--ui-muted); font: var(--dobra-type-body-md); }
+.figma-screens__step label:has(> input[type='checkbox']) { display: flex; align-items: center; gap: var(--dobra-space-sm); color: var(--ui-text); }
+.figma-screens__step label > input[type='checkbox'] { accent-color: var(--ui-accent); width: 14px; height: 14px; }
+.figma-screens__step input[type='url'],
+.figma-screens__step input[type='password'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--dobra-space-sm) var(--dobra-space-md);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--dobra-radius);
+  background: var(--ui-field);
+  color: var(--ui-text);
+  font: var(--dobra-type-label-lg);
+}
+.figma-screens__step input:focus-visible,
+.figma-screens__actions button:focus-visible {
+  outline: 1px solid var(--ui-accent);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--ui-accent-soft);
+}
+.figma-screens__actions button {
+  height: 30px;
+  padding: 0 var(--dobra-space-md);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--dobra-radius);
+  background: var(--ui-field);
+  color: var(--ui-text);
+  font: var(--dobra-type-label-lg);
+  cursor: pointer;
+}
+.figma-screens__actions button.seg-single--accent { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-on-accent); font-weight: 600; }
+.figma-screens__actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+.figma-screen__state button {
+  height: 30px;
+  padding: 0 var(--dobra-space-md);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--dobra-radius);
+  background: var(--ui-field);
+  color: var(--ui-text);
+  font: var(--dobra-type-label-lg);
+  cursor: pointer;
+}

@@ -90,3 +90,21 @@ describe('primary action', () => {
     expect(button).toContain('className="seg-single seg-single--accent"');
   });
 });
+
+describe('Figma screens', () => {
+  // The modal and the frame view ship plain class names; each needs a rule in app.css.
+  it.each([
+    'figma-screens', 'figma-screens__step', 'figma-screens__search', 'figma-screens__page', 'figma-screens__frame',
+    'figma-screens__thumb', 'figma-screens__meta', 'figma-screens__actions', 'figma-screens__error',
+    'figma-screen', 'figma-screen__canvas', 'figma-screen__image', 'figma-screen__banner', 'figma-screen__state',
+  ])('.%s has a rule', (cls) => {
+    expect(read('./app.css')).toMatch(new RegExp(`\\.${cls}(?![\\w-])[^{]*\\{`));
+  });
+});
+
+describe('Figma screens dialog contents', () => {
+  // The dialog's title, fields and buttons are plain elements; they are styled from inside the step.
+  it.each(['.figma-screens__step h2', '.figma-screens__step label', ".figma-screens__step input[type='url']", '.figma-screens__actions button'])('%s has a rule', (sel) => {
+    expect(read('./app.css')).toContain(`${sel}`);
+  });
+});
