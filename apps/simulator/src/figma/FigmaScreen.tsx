@@ -45,10 +45,12 @@ export function FigmaScreen({ frame, loaded, windowWidth, signedIn, onSignIn, on
     );
   }
   if (!loaded.geo) {
+    // Figma answers "no data" for a frame deleted since it was picked; anything else is a load error.
+    const gone = /no data/i.test(loaded.reason ?? '');
     return (
       <div className="figma-screen figma-screen__state">
-        <p>No longer in the file: {frame.name}. {loaded.reason}</p>
-        <button onClick={onRemove}>Remove</button>
+        {gone ? <p>No longer in the file: {frame.name}.</p> : <p>{frame.name} could not be loaded. {loaded.reason}</p>}
+        {gone ? <button onClick={onRemove}>Remove</button> : <button onClick={onRetry}>Retry</button>}
       </div>
     );
   }
@@ -62,6 +64,7 @@ export function FigmaScreen({ frame, loaded, windowWidth, signedIn, onSignIn, on
           plugin's Adapt to make a version for this device.
         </p>
       )}
+      <div className="figma-screen__canvas">
       {loaded.image ? (
         <img className="figma-screen__image" src={loaded.image} alt={frame.name} />
       ) : (
@@ -78,6 +81,7 @@ export function FigmaScreen({ frame, loaded, windowWidth, signedIn, onSignIn, on
           style={{ left: `${round(n.rect.x * factor)}px`, top: `${round(n.rect.y * factor)}px`, width: `${round(n.rect.width * factor)}px`, height: `${round(n.rect.height * factor)}px` }}
         />
       ))}
+      </div>
     </div>
   );
 }

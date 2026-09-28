@@ -37,4 +37,11 @@ describe('FigmaScreen', () => {
     expect(html({ loaded: { image: null, geo: null, reason: 'Figma returned no data for this frame.' } })).toMatch(/No longer in the file/);
     expect(html({ loaded: { image: null, geo: base.loaded!.geo, reason: 'Image unavailable: 500' } })).toMatch(/Image unavailable/);
   });
+
+  it('shows a load error with Retry rather than calling the frame gone', () => {
+    const out = html({ loaded: { image: null, geo: null, reason: 'Figma refused the token: check it is valid.' } });
+    expect(out).not.toMatch(/No longer in the file/);
+    expect(out).toMatch(/Figma refused the token/);
+    expect(out).toContain('Retry');
+  });
 });
