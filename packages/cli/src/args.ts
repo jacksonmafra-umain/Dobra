@@ -1,6 +1,7 @@
 // Command-line arguments: `dobra check site <url> [options]` and `dobra report [options]`. Anything
 // malformed returns the usage text.
 import { parseArgs as parseNodeArgs } from 'node:util';
+import { withScheme } from '@dobra/core/siteAddress';
 
 export type FailOn = 'error' | 'warn' | 'never';
 
@@ -86,9 +87,10 @@ export function parseArgs(argv: string[]): CliOptions | { help: string } {
   }
   if (v.help || p.length !== 3 || p[0] !== 'check' || p[1] !== 'site') return { help: USAGE };
 
+  const address = withScheme(p[2]);
   let url: URL;
   try {
-    url = new URL(p[2]);
+    url = new URL(address);
   } catch {
     return { help: USAGE };
   }
@@ -103,7 +105,7 @@ export function parseArgs(argv: string[]): CliOptions | { help: string } {
 
   return {
     command: 'site',
-    url: p[2],
+    url: address,
     targets: v.targets ? v.targets.split(',').map((s) => s.trim()).filter(Boolean) : null,
     categories: v.category ?? [],
     out,

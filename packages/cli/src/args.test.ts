@@ -70,4 +70,10 @@ describe('parseArgs', () => {
     expect(parseArgs(['check', 'site', 'https://example.com', '--no-zip'])).toMatchObject({ zip: null });
     expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'pkg.zip', '--no-zip'])).toHaveProperty('help');
   });
+
+  it('assumes https:// when the address has no scheme', () => {
+    expect(parseArgs(['check', 'site', 'www.umain.com'])).toMatchObject({ url: 'https://www.umain.com' });
+    expect(parseArgs(['check', 'site', 'http://localhost:3000'])).toMatchObject({ url: 'http://localhost:3000' });
+    expect(parseArgs(['check', 'site', 'ftp://example.com'])).toHaveProperty('help');
+  });
 });
