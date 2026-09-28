@@ -33,8 +33,11 @@ const IMPORTANT_SELECTOR = [
   '.figma-screen__hit',
 ].join(',');
 
-/** Containers whose content is chrome or scrolls sideways, so a collision there is expected. */
-const IGNORED_CONTAINERS = '.vertical-rail, .chrome-status, .carousel, .pills, .restaurant_card_small_carousel, .modal-scrim';
+/**
+ * Containers whose content is chrome or scrolls sideways, so a collision there is expected. A Figma
+ * screen's state message (Sign in to load, Retry…) is the simulator's own UI, not the app's.
+ */
+export const IGNORED_CONTAINERS = '.vertical-rail, .chrome-status, .carousel, .pills, .restaurant_card_small_carousel, .modal-scrim, .figma-screen__state';
 
 export function useCollisions(
   root: RefObject<HTMLElement | null>,
