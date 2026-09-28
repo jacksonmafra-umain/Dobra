@@ -90,3 +90,10 @@ describe('primary action', () => {
     expect(button).toContain('className="seg-single seg-single--accent"');
   });
 });
+
+describe('monospace ligatures', () => {
+  // JetBrains Mono would draw "://" and "--" as single glyphs, so a typed URL reads as "http: /".
+  it('turns contextual ligatures off on every element', () => {
+    expect(read('./app.css')).toMatch(/\*, ::before, ::after \{ font-variant-ligatures: no-contextual !important; \}/);
+  });
+});

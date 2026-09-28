@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { CoverageSummary, coveragePercent } from './CoverageSummary';
 import { sampleReport } from './fixtures/sampleReport';
-import { FindingRow } from './FindingRow';
+import { FindingsView, FrameDetail } from './FindingsView';
 import { FrameOverlay, hingeKind } from './FrameOverlay';
 import { ReportNotes } from './ReportNotes';
 import { UnloadedList } from './UnloadedList';
@@ -83,14 +83,47 @@ describe('frame overlay', () => {
   });
 });
 
-describe('FindingRow', () => {
-  it('shows the chip, the rule id, the message and the target key in mono', () => {
-    const f = sampleReport().frames.flatMap((x) => x.findings)[0];
-    const out = html(FindingRow, { finding: f });
-    expect(out).toContain('chip--error');
-    expect(out).toContain(f.ruleId);
-    expect(out).toContain(f.message);
-    expect(out).toContain('class="finding__target mono">surface-duo-2/spanned/spanned/landscape</');
+describe('FindingsView', () => {
+  const report = sampleReport();
+  const view = () =>
+    renderToStaticMarkup(
+      createElement(FindingsView, { report, thumbnails: {}, deviceName: (id: string) => `Device ${id}`, presetFor: () => null, coverage: createElement('p', null, 'COVERAGE') }),
+    );
+
+  it('opens on the overview, with the coverage and a rule × device table', () => {
+    const out = view();
+    expect(out).toContain('aria-current="page">Overview');
+    expect(out).toContain('COVERAGE');
+    expect(out).toContain('<table class="matrix">');
+    const rule = report.frames.flatMap((f) => f.findings)[0].ruleId;
+    expect(out).toContain(`<span class="mono">${rule}</span>`);
+  });
+
+  it('lists every device in the sidebar and in the narrow-screen picker', () => {
+    const out = view();
+    for (const f of report.frames.filter((x) => x.targets.length)) {
+      const id = f.targets[0].split('/')[0];
+      expect(out).toContain(`<span>Device ${id}</span>`);
+      expect(out).toContain(`<optgroup label="Device ${id}">`);
+    }
+    expect(out).toContain('Only with errors');
+  });
+
+  it('shows a frame with its findings grouped by rule', () => {
+    const frame = report.frames.find((f) => f.findings.length)!;
+    const out = renderToStaticMarkup(
+      createElement(FrameDetail, {
+        device: { id: 'd', name: 'Device d', counts: { error: 0, warn: 0, info: 0 }, frames: [] },
+        entry: { frame, label: 'inner · book · landscape', counts: { error: 0, warn: 0, info: 0 } },
+        thumbnail: 'blob:shot',
+        preset: null,
+      }),
+    );
+    expect(out).toContain('Device d <span class="muted">· inner · book · landscape</span>');
+    expect(out).toContain('src="blob:shot"');
+    expect(out).toContain(`<strong class="mono">${frame.findings[0].ruleId}</strong>`);
+    expect(out).toContain(`<li>${frame.findings[0].message}</li>`);
+    expect(out).toMatch(/<details class="rule" open="">/);
   });
 });
 

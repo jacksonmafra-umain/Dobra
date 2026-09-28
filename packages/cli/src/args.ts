@@ -1,6 +1,7 @@
 // Command-line arguments: `dobra check site <url> [options]` and `dobra report [options]`. Anything
 // malformed returns the usage text.
 import { parseArgs as parseNodeArgs } from 'node:util';
+import { withScheme } from '@dobra/core/siteAddress';
 
 export type FailOn = 'error' | 'warn' | 'never';
 
@@ -35,7 +36,9 @@ export const USAGE = `Usage: dobra check site <url> [options]
   --category <name>    Every target of a category; repeat for more
   --out <file>         Report JSON path (default foldable-report.json)
   --md <file>          Also write a Markdown summary
-  --zip <file>         Also write a report package: JSON, Markdown and a screenshot per target
+  --zip <file>         Report package path: JSON, Markdown and a screenshot per target
+                       (default: the --out name with .zip)
+  --no-zip             Skip the report package and its screenshots
   --wait <ms>          Settle time after load (default 500)
   --fail-on <level>    Exit 1 on findings of this level: error, warn or never (default error);
                        a target that could not load always exits 1
@@ -46,9 +49,18 @@ dobra report serves Foldable Check with a local site-check endpoint:
   --host <addr>        Address to listen on (default 127.0.0.1)
   --dir <folder>       The built report app to serve (default apps/report/dist)`;
 
+/** The package sits next to the report JSON: `out/r.json` becomes `out/r.zip`. */
+const packageNameFor = (out: string) => out.replace(/\.json$/i, '') + '.zip';
+
 const FAIL_ON: readonly FailOn[] = ['error', 'warn', 'never'];
 
-export function parseArgs(argv: string[]): CliOptions | { help: string } {
+/** Why an address can't be checked, with the form the command needs. */
+function badAddress(raw: string): { help: string; error: string } {
+  return { help: USAGE, error: `Not a web address: ${raw}. Use a full URL starting with https://, for example https://example.com/` };
+}
+
+/** `error`, when set, says what was wrong before the usage text is shown. */
+export function parseArgs(argv: string[]): CliOptions | { help: string; error?: string } {
   let parsed;
   try {
     parsed = parseNodeArgs({
@@ -60,6 +72,7 @@ export function parseArgs(argv: string[]): CliOptions | { help: string } {
         out: { type: 'string' },
         md: { type: 'string' },
         zip: { type: 'string' },
+        'no-zip': { type: 'boolean' },
         wait: { type: 'string' },
         'fail-on': { type: 'string' },
         'no-transitions': { type: 'boolean' },
@@ -80,27 +93,30 @@ export function parseArgs(argv: string[]): CliOptions | { help: string } {
   }
   if (v.help || p.length !== 3 || p[0] !== 'check' || p[1] !== 'site') return { help: USAGE };
 
+  const address = withScheme(p[2]);
   let url: URL;
   try {
-    url = new URL(p[2]);
+    url = new URL(address);
   } catch {
-    return { help: USAGE };
+    return badAddress(p[2]);
   }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return { help: USAGE };
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return badAddress(p[2]);
 
   const wait = v.wait === undefined ? 500 : Number(v.wait);
   if (!Number.isInteger(wait) || wait < 0) return { help: USAGE };
   const failOn = (v['fail-on'] ?? 'error') as FailOn;
   if (!FAIL_ON.includes(failOn)) return { help: USAGE };
+  if (v.zip !== undefined && v['no-zip']) return { help: USAGE };
+  const out = v.out ?? 'foldable-report.json';
 
   return {
     command: 'site',
-    url: p[2],
+    url: address,
     targets: v.targets ? v.targets.split(',').map((s) => s.trim()).filter(Boolean) : null,
     categories: v.category ?? [],
-    out: v.out ?? 'foldable-report.json',
+    out,
     md: v.md ?? null,
-    zip: v.zip ?? null,
+    zip: v['no-zip'] ? null : (v.zip ?? packageNameFor(out)),
     wait,
     failOn,
     transitions: !v['no-transitions'],

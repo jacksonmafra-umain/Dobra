@@ -16,8 +16,11 @@ npm run build:cli                 # writes packages/cli/dist/dobra.mjs
 ## Usage
 
 ```bash
-npm run dobra -- check site https://example.com --md foldable-report.md
+npm run dobra -- check site https://example.com
 ```
+
+This writes `foldable-report.json` and a report package, `foldable-report.zip`, with the JSON, the
+Markdown and a screenshot of each target. Drop the ZIP into Foldable Check to review it.
 
 | Option | Meaning |
 | --- | --- |
@@ -25,7 +28,8 @@ npm run dobra -- check site https://example.com --md foldable-report.md
 | `--category <name>` | Every target of a device category (`phone`, `foldable-book`, `foldable-flip`, `dual-screen`, `multi-fold`, `tablet`, `desktop`); repeat for more |
 | `--out <file>` | Report JSON path, default `foldable-report.json` |
 | `--md <file>` | Also write a Markdown summary |
-| `--zip <file>` | Also write a report package: `foldable-report/report.json`, `report.md`, `index.json` and a PNG screenshot of each target's window. Foldable Check opens it (Open a report, JSON or ZIP) in the browser only. A screenshot that fails is listed as missing and never fails the run |
+| `--zip <file>` | Report package path, default the `--out` name with `.zip` (`foldable-report.zip`). The package holds `foldable-report/report.json`, `report.md`, `index.json` and a PNG screenshot of each target's window. Drop it into Foldable Check to see the findings, the Markdown and the JSON; it's read in the browser only. A screenshot that fails is listed as missing and never fails the run |
+| `--no-zip` | Skip the report package and its screenshots, for example in CI |
 | `--wait <ms>` | Settle time after the page's `load` event, default `500` |
 | `--fail-on <level>` | Exit 1 on findings of this level or worse: `error` (default), `warn` or `never`. A target that could not load always exits 1 |
 | `--no-transitions` | Skip the unfold pass |

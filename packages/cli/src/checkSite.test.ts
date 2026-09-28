@@ -149,6 +149,27 @@ describe('checkSite', () => {
     expect(seen.some((u) => u.startsWith('ws://127.0.0.1:9/'))).toBe(true);
   });
 
+  it('checks a window several targets share once, as one frame naming them all', async () => {
+    const PORTRAIT = { deviceId: 'razr-ultra-2026', displayId: 'inner', pose: 'flex', orientation: 'portrait' } as const;
+    const LANDSCAPE = { ...PORTRAIT, orientation: 'landscape' } as const;
+    const progress: string[] = [];
+    const capture = { images: new Map<string, Uint8Array>(), missing: {} as Record<string, string> };
+    const r = await checkSite(`${server.url}/layout.html`, [PORTRAIT, PIXEL, LANDSCAPE], { ...opts, browser, capture, onProgress: (m) => progress.push(m) });
+    expect(progress.filter((m) => m.startsWith('Checking'))).toEqual(['Checking razr-ultra-2026/inner/flex (portrait, landscape)', `Checking ${targetKey(PIXEL)}`]);
+    expect(r.frames.map((f) => f.targets)).toEqual([[targetKey(PORTRAIT), targetKey(LANDSCAPE)], [targetKey(PIXEL)]]);
+    expect(r.frames[0]).toMatchObject({ name: 'razr-ultra-2026/inner/flex (portrait, landscape)', ref: `${server.url}/layout.html#${targetKey(PORTRAIT)}`, confidence: 'tag' });
+    expect([...capture.images.keys()]).toEqual(r.frames.map((f) => f.ref));
+  });
+
+  it('unfolds once into a shared window', async () => {
+    const BOOK = { deviceId: 'galaxy-z-fold-7', displayId: 'inner', pose: 'book', orientation: 'portrait' } as const;
+    const progress: string[] = [];
+    const r = await checkSite(`${server.url}/onload.html`, [BOOK, { ...BOOK, orientation: 'landscape' }], { ...opts, transitions: true, browser, onProgress: (m) => progress.push(m) });
+    expect(r.frames).toHaveLength(1);
+    expect(progress.filter((m) => m.startsWith('Unfolding'))).toHaveLength(1);
+    expect(r.frames[0].findings.filter((f) => f.ruleId === 'resize-vs-reload')).toHaveLength(1);
+  });
+
   it('captures a PNG of each loaded target, and says why an unloaded one has none', async () => {
     const capture = { images: new Map<string, Uint8Array>(), missing: {} as Record<string, string> };
     const r = await checkSite(`${server.url}/layout.html`, [PIXEL], { ...opts, browser, capture });

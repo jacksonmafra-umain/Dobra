@@ -89,3 +89,7 @@ th { font: var(--dobra-type-label-sm); letter-spacing: var(--dobra-tracking-labe
 .mono { font-family: var(--dobra-font-mono); }
 details > summary { cursor: pointer; padding: 4px 0; }
 textarea { width: 100%; box-sizing: border-box; font: 11px/1.5 var(--dobra-font-mono); color: var(--text); background: var(--field); border: 1px solid var(--border-strong); border-radius: var(--dobra-radius); padding: 6px 8px; }
+
+/* JetBrains Mono joins "://" and "--" into ligatures, which misreads URLs and flags. `font` shorthand resets
+   font-variant-ligatures on every element that sets it, so this has to win over those. */
+*, ::before, ::after { font-variant-ligatures: no-contextual !important; }

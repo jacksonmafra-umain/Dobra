@@ -40,4 +40,7 @@ describe('SiteCheckForm', () => {
   it('states the device limit of a hosted endpoint', () => {
     expect(html({ ok: true, mode: 'hosted', maxTargets: 6, maxSeconds: 50 })).toContain('up to 6 devices');
   });
+  it('tells people to drop the report package the command writes', () => {
+    expect(html(null)).toContain('foldable-report.zip');
+  });
 });
