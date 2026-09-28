@@ -12,3 +12,10 @@ describe('code block colors', () => {
     expect(css).toMatch(/@media \(prefers-color-scheme: light\) \{ :root:not\(\[data-theme\]\) \.astro-code, :root:not\(\[data-theme\]\) \.astro-code span \{ color: var\(--shiki-light\); \} \}/);
   });
 });
+
+describe('monospace ligatures', () => {
+  // JetBrains Mono would draw "://" and "--" as single glyphs, so a typed URL reads as "http: /".
+  it('turns contextual ligatures off on every element', () => {
+    expect(css).toMatch(/\*, ::before, ::after \{ font-variant-ligatures: no-contextual !important; \}/);
+  });
+});

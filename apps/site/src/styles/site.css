@@ -71,3 +71,7 @@ p.has-unverified { border-left: 2px solid var(--dobra-warn); padding-left: 12px;
 .tool p { margin: 0; color: var(--dobra-muted); font: var(--dobra-type-body-md); }
 .quickstart pre { background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 16px; overflow-x: auto; font: 13px/1.7 var(--dobra-font-mono); }
 @media (max-width: 600px) { .hero h1 { font-size: 34px; } }
+
+/* JetBrains Mono joins "://" and "--" into ligatures, which misreads URLs and flags. `font` shorthand resets
+   font-variant-ligatures on every element that sets it, so this has to win over those. */
+*, ::before, ::after { font-variant-ligatures: no-contextual !important; }
