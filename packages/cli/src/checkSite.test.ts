@@ -148,4 +148,15 @@ describe('checkSite', () => {
     await checkSite(`${server.url}/socket.html`, [PIXEL], { ...opts, browser, allowRequest: async (u) => (seen.push(u), !u.startsWith('ws')) });
     expect(seen.some((u) => u.startsWith('ws://127.0.0.1:9/'))).toBe(true);
   });
+
+  it('captures a PNG of each loaded target, and says why an unloaded one has none', async () => {
+    const capture = { images: new Map<string, Uint8Array>(), missing: {} as Record<string, string> };
+    const r = await checkSite(`${server.url}/layout.html`, [PIXEL], { ...opts, browser, capture });
+    const png = capture.images.get(r.frames[0].ref)!;
+    expect([...png.subarray(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    const down = { images: new Map<string, Uint8Array>(), missing: {} as Record<string, string> };
+    const d = await checkSite('http://127.0.0.1:1/', [PIXEL], { ...opts, browser, capture: down });
+    expect(down.images.size).toBe(0);
+    expect(Object.keys(down.missing)).toEqual([d.unloaded[0].ref]);
+  });
 });
