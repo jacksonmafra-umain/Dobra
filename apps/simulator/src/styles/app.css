@@ -768,3 +768,14 @@ body {
 /* JetBrains Mono joins "://" and "--" into ligatures, which misreads URLs and flags. `font` shorthand resets
    font-variant-ligatures on every element that sets it, so this has to win over those. */
 *, ::before, ::after { font-variant-ligatures: no-contextual !important; }
+/* Figma screens: structure only; colours and spacing follow the simulator's tokens (agent/03). */
+.figma-screen__host { position: absolute; inset: 0; }
+.figma-screen__scroll { height: 100%; }
+.figma-screen__banner { position: sticky; bottom: 0; margin: 0; }
+.figma-screen__canvas { position: relative; }
+.figma-screen__image { display: block; width: 100%; height: auto; }
+.figma-screen__hit { position: absolute; pointer-events: none; }
+.figma-screens { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
+.figma-screens__step { width: min(720px, 94vw); max-height: 88vh; overflow: auto; }
+.figma-screens__frame { display: flex; align-items: center; gap: 12px; }
+.figma-screens__thumb { display: block; width: 56px; flex: none; }

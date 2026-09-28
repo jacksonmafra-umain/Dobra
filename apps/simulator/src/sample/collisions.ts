@@ -29,6 +29,8 @@ const IMPORTANT_SELECTOR = [
   '[data-name="order_bottom_button_bar/Default"]',
   '.modal-alert',
   '.modal-sheet',
+  // Figma screens: an invisible box over each text or tappable layer of the frame.
+  '.figma-screen__hit',
 ].join(',');
 
 /** Containers whose content is chrome or scrolls sideways, so a collision there is expected. */
