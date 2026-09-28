@@ -764,3 +764,13 @@ body {
   border-radius: var(--dobra-radius-lg);
   box-shadow: var(--dobra-shadow-2);
 }
+
+/* Figma screens: structure only; colours and spacing follow the simulator's tokens (agent/03). */
+.figma-screen__host { position: absolute; inset: 0; overflow-y: auto; }
+.figma-screen__canvas { position: relative; }
+.figma-screen__image { display: block; width: 100%; height: auto; }
+.figma-screen__hit { position: absolute; pointer-events: none; }
+.figma-screens { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
+.figma-screens__step { width: min(720px, 94vw); max-height: 88vh; overflow: auto; }
+.figma-screens__frame { display: flex; align-items: center; gap: 12px; }
+.figma-screens__thumb { display: block; width: 56px; flex: none; }

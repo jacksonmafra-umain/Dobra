@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { ScreenSpec, SimulatorConfig } from '@dobra/core/config/types';
 import type { Environment } from '@dobra/core/engine/environment';
 import type { Layout } from '@dobra/core/engine/layout';
@@ -28,10 +28,12 @@ interface StageProps {
   onResizeWindow?: (width: number, height: number) => void;
   /** The element the sample screen renders into, for measuring what is on screen. */
   hostRef?: RefObject<HTMLDivElement | null>;
+  /** Shown in place of the sample screen, such as a frame from Figma. */
+  content?: ReactNode;
 }
 
 /** One device frame with the sample screen inside it. The canvas shows one, or two when comparing platforms. */
-export function Stage({ config, env, layout, screen, theme, zoom, rtl, overlays, text, modal, onCloseModal, onCollisions, onResize, onResizeWindow, hostRef }: StageProps) {
+export function Stage({ config, env, layout, screen, theme, zoom, rtl, overlays, text, modal, onCloseModal, onCollisions, onResize, onResizeWindow, hostRef, content }: StageProps) {
   return (
     <DeviceFrame
       env={env}
@@ -42,7 +44,7 @@ export function Stage({ config, env, layout, screen, theme, zoom, rtl, overlays,
       overlay={<Overlays env={env} layout={layout} show={overlays} />}
     >
       <div className="sample" ref={hostRef} data-theme={theme} style={{ position: 'absolute', inset: 0 }}>
-        <Screen config={config} env={env} layout={layout} screen={screen} rtl={rtl} modal={modal} onCloseModal={onCloseModal} onCollisions={onCollisions} text={text} />
+        {content ?? <Screen config={config} env={env} layout={layout} screen={screen} rtl={rtl} modal={modal} onCloseModal={onCloseModal} onCollisions={onCollisions} text={text} />}
       </div>
     </DeviceFrame>
   );

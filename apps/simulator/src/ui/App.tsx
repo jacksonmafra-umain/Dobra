@@ -17,6 +17,10 @@ import type { OverlayToggles } from './Overlays';
 import { counterpartOf, counterpartSelection, parityRows, validCounterpart } from './parity';
 import { ParityTable } from './ParityTable';
 import { Stage } from './Stage';
+import { figmaFindings } from '../figma/checks';
+import { FigmaScreensModal } from '../figma/FigmaScreensModal';
+import { FigmaStage } from '../figma/FigmaStage';
+import { useFigmaScreens } from '../figma/useFigmaScreens';
 import { clampFree, FREE_MAX, FREE_MIN, readUrlState, writeUrlState, type Theme } from './urlState';
 import { WhatChanged, type ChangeEntry } from './WhatChanged';
 
@@ -36,11 +40,17 @@ export function App({ config }: { config: SimulatorConfig }) {
   const [change, setChange] = useState<ChangeEntry | null>(null);
   const [vsId, setVsId] = useState(() => validCounterpart(config, initial.selection.deviceId, initial.vs));
   const [collisionsB, setCollisionsB] = useState<Collision[]>([]);
+  const [figmaOpen, setFigmaOpen] = useState(false);
   const sampleHost = useRef<HTMLDivElement>(null);
 
   const devices = config.devices.filter((d) => d.enabled);
   const screens = config.screens.filter((s) => s.enabled);
   const screen = screens.find((s) => s.id === screenId) ?? screens[0];
+  // A Figma frame is shown in place of the sample screen; the layout (grid, margins) stays the sample's.
+  const figmaId = screenId.startsWith('figma:') ? screenId.slice('figma:'.length) : null;
+  // Frames are fetched at twice their size so they stay sharp on high-density screens and zoom.
+  const figma = useFigmaScreens(figmaId, 2);
+  const figmaFrame = (figmaId && figma.stored?.frames.find((f) => f.id === figmaId)) || null;
   const device = findDevice(config, sel.deviceId);
   const displayIds = Object.keys(device.displays);
   const env = resolveEnvironment(config, sel);
@@ -60,7 +70,27 @@ export function App({ config }: { config: SimulatorConfig }) {
   // Overrides live in the selection, so they reach core's rule matching and stay when the device
   // changes: a mouse on one tablet is a mouse on the next.
   const setMediaOverrides = (f: (o: MediaOverrides) => MediaOverrides | undefined) => setSel((s) => ({ ...s, media: f(s.media ?? {}) }));
-  const findings = [...runLayoutChecks(config, env, layout, screen, target), ...collisionsToFindings(collisions, target, env)];
+  const figmaCheck = figmaFrame && figma.loaded?.geo ? figmaFindings(config, env, target, { width: figmaFrame.width, height: figmaFrame.height, geo: figma.loaded.geo }) : null;
+  const findings = [
+    ...(figmaFrame ? (figmaCheck?.findings ?? []) : runLayoutChecks(config, env, layout, screen, target)),
+    ...collisionsToFindings(collisions, target, env),
+  ];
+  const figmaContent = (e: typeof env, onCollisions: (c: Collision[]) => void) =>
+    figmaFrame ? (
+      <FigmaStage
+        env={e}
+        frame={figmaFrame}
+        loaded={figma.loaded}
+        signedIn={!!figma.token.trim()}
+        onSignIn={() => setFigmaOpen(true)}
+        onRemove={() => {
+          figma.remove(figmaFrame.id);
+          setScreenId(screens[0].id);
+        }}
+        onRetry={figma.retry}
+        onCollisions={onCollisions}
+      />
+    ) : undefined;
 
   // Comparing platforms: the counterpart follows side A's screen, state and orientation.
   // A counterpart left on the same platform after a device change is replaced by the nearest peer.
@@ -93,12 +123,12 @@ export function App({ config }: { config: SimulatorConfig }) {
 
   useEffect(() => {
     try {
-      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: screen.id, theme, zoom, rtl, overlays, text, vs }, env, device));
+      history.replaceState(null, '', writeUrlState({ selection: sel, screenId: figmaFrame ? `figma:${figmaFrame.id}` : screen.id, theme, zoom, rtl, overlays, text, vs }, env, device));
     } catch {
       // Sandboxed previews can refuse history access.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sel, env.orientation, screen.id, theme, zoom, rtl, overlays, text, vs]);
+  }, [sel, env.orientation, screen.id, figmaFrame, theme, zoom, rtl, overlays, text, vs]);
 
   useEffect(() => applyPageTheme(document.documentElement, theme), [theme]);
 
@@ -385,15 +415,30 @@ export function App({ config }: { config: SimulatorConfig }) {
           </div>
           <label className="control">
             <span>Screen</span>
-            <select value={screen.id} onChange={(e) => setScreenId(e.target.value)}>
+            <select value={figmaFrame ? `figma:${figmaFrame.id}` : screen.id} onChange={(e) => setScreenId(e.target.value)}>
               {screens.map((s) => (
                 <option value={s.id} key={s.id}>
                   {s.name}
-                  {s.figma ? '' : ' (not in Figma)'}
+                  {s.figma ? '' : ' (sample)'}
                 </option>
               ))}
+              {figma.stored && (
+                <optgroup label={`From Figma · ${figma.stored.fileName}`}>
+                  {figma.stored.frames.map((f) => (
+                    <option value={`figma:${f.id}`} key={f.id}>
+                      {f.name} · {Math.round(f.width)}×{Math.round(f.height)}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </label>
+          <div className="control">
+            <span>Figma</span>
+            <button className="seg-single" onClick={() => setFigmaOpen(true)}>
+              {figma.stored ? 'Figma screens…' : 'Add Figma screens'}
+            </button>
+          </div>
           <div className="control">
             <span>Overlays</span>
             <div className="seg seg--chips">
@@ -575,6 +620,7 @@ export function App({ config }: { config: SimulatorConfig }) {
                 onCloseModal={() => setModal(null)}
                 onCollisions={setCollisions}
                 hostRef={sampleHost}
+                content={figmaContent(env, setCollisions)}
                 onResize={sel.free ? resizeFree : undefined}
                 onResizeWindow={
                   env.window.mode === 'freeform'
@@ -600,6 +646,7 @@ export function App({ config }: { config: SimulatorConfig }) {
                   modal={modal}
                   onCloseModal={() => setModal(null)}
                   onCollisions={setCollisionsB}
+                  content={figmaContent(envB, setCollisionsB)}
                 />
               </div>
             </section>
@@ -625,6 +672,7 @@ export function App({ config }: { config: SimulatorConfig }) {
             onCloseModal={() => setModal(null)}
             onCollisions={setCollisions}
             hostRef={sampleHost}
+            content={figmaContent(env, setCollisions)}
             onResize={sel.free ? resizeFree : undefined}
             onResizeWindow={
               env.window.mode === 'freeform'
@@ -649,6 +697,22 @@ export function App({ config }: { config: SimulatorConfig }) {
           <WhatChanged entry={change} />
         </aside>
       </div>
+      {figmaOpen && (
+        <FigmaScreensModal
+          initialUrl={figma.stored ? `https://www.figma.com/design/${figma.stored.fileKey}` : ''}
+          token={figma.token}
+          remember={figma.remember}
+          onToken={figma.setToken}
+          picked={figma.stored?.frames.map((f) => f.id) ?? []}
+          onAdd={(listing, picked) => {
+            figma.add(listing, picked);
+            setFigmaOpen(false);
+            if (picked.length) setScreenId(`figma:${picked[0]}`);
+            else if (figmaFrame) setScreenId(screens[0].id);
+          }}
+          onClose={() => setFigmaOpen(false)}
+        />
+      )}
     </div>
   );
 }
