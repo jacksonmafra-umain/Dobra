@@ -142,4 +142,10 @@ describe('checkSite', () => {
     expect(r.unloaded.map((u) => u.name)).toContain(targetKey(PIXEL));
     expect(r.notes?.join(' ')).toContain(targetKey(DUO));
   });
+
+  it('puts WebSockets through the guard too', async () => {
+    const seen: string[] = [];
+    await checkSite(`${server.url}/socket.html`, [PIXEL], { ...opts, browser, allowRequest: async (u) => (seen.push(u), !u.startsWith('ws')) });
+    expect(seen.some((u) => u.startsWith('ws://127.0.0.1:9/'))).toBe(true);
+  });
 });

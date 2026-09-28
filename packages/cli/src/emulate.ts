@@ -76,9 +76,16 @@ export async function openTarget(browser: Browser, profile: DeviceProfile, allow
     userAgent: profile.userAgent,
     isMobile: profile.isMobile,
     hasTouch: profile.hasTouch,
+    // Guarded checks: service workers' requests would skip route(), and nothing is downloaded.
+    ...(allowRequest ? { serviceWorkers: 'block' as const, acceptDownloads: false } : {}),
   });
   if (allowRequest) {
     await context.route('**/*', async (route) => ((await allowRequest(route.request().url())) ? route.continue() : route.abort('blockedbyclient')));
+    // WebSockets don't pass through route(); guard them separately.
+    await context.routeWebSocket(/.*/, async (ws) => {
+      if (await allowRequest(ws.url())) ws.connectToServer();
+      else await ws.close();
+    });
   }
   const page = await context.newPage();
   const cdp: CDPSession = await context.newCDPSession(page);
