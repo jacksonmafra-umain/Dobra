@@ -35,6 +35,8 @@ On the web, `screen.width` is the screen's width, and "not all of the width give
 may be available to the window itself"
 ([MDN: Screen.width](https://developer.mozilla.org/en-US/docs/Web/API/Screen/width)).
 
+![The window is not the display: split-screen on a tablet, desktop windowing, and an unfolded foldable](images/window-vs-display.svg)
+
 **Instead.**
 
 | Platform | Use |
