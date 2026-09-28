@@ -1,6 +1,6 @@
 // "Add Figma screens": paste a file link and a token, then pick frames. Unstyled: plain classes on
 // the simulator's panel and buttons; colours come from the simulator's stylesheet.
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { createFigmaClient } from '@dobra/core/figmaClient';
 import { listFrames, thumbnails, type FileListing } from './loader';
 import { initialPicker, pickerReducer, visibleFrames } from './picker';
@@ -20,16 +20,23 @@ export function FigmaScreensModal({ initialUrl, token, remember, onToken, picked
   const [state, dispatch] = useReducer(pickerReducer, initialPicker);
   const [url, setUrl] = useState(initialUrl);
   const [thumbs, setThumbs] = useState<Record<string, string | null>>({});
+  // Each Load file counts up, so thumbnails still arriving for an earlier file are dropped.
+  const request = useRef(0);
 
   async function load() {
+    const id = ++request.current;
     dispatch({ type: 'load' });
+    setThumbs({});
     try {
       const client = createFigmaClient(token);
       const listing = await listFrames(client, url.trim());
+      if (id !== request.current) return;
       dispatch({ type: 'loaded', listing, picked });
-      setThumbs(await thumbnails(client, listing.fileKey, listing.pages.flatMap((p) => p.frames.map((f) => f.id))));
+      await thumbnails(client, listing.fileKey, listing.pages.flatMap((p) => p.frames.map((f) => f.id)), (part) => {
+        if (id === request.current) setThumbs((t) => ({ ...t, ...part }));
+      });
     } catch (e) {
-      dispatch({ type: 'failed', error: e instanceof Error ? e.message : String(e) });
+      if (id === request.current) dispatch({ type: 'failed', error: e instanceof Error ? e.message : String(e) });
     }
   }
 
@@ -71,6 +78,11 @@ export function FigmaScreensModal({ initialUrl, token, remember, onToken, picked
         ) : (
           <>
             <h2>{state.listing.fileName}</h2>
+            {state.listing.warnings.map((w) => (
+              <p className="figma-screens__error" role="alert" key={w}>
+                {w}
+              </p>
+            ))}
             <input className="figma-screens__search" type="search" placeholder="Search frames" value={state.search} onChange={(e) => dispatch({ type: 'search', text: e.target.value })} />
             {visibleFrames(state.listing, state.search).map((page) => (
               <section className="figma-screens__page" key={page.name}>

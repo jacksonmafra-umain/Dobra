@@ -3,7 +3,7 @@ import { initialPicker, pickerReducer, visibleFrames } from './picker';
 import type { FileListing } from './loader';
 
 const listing: FileListing = {
-  fileKey: 'KEY', fileName: 'App', patterns: { controls: [], chrome: [] },
+  fileKey: 'KEY', fileName: 'App', patterns: { controls: [], chrome: [] }, warnings: [],
   pages: [
     { name: 'Screens', frames: [{ id: '1:1', name: 'Home', page: 'Screens', width: 402, height: 874, match: 'iphone-17/main/-/portrait' }, { id: '1:2', name: 'Checkout', page: 'Screens', width: 851, height: 883 }] },
     { name: 'Cover', frames: [{ id: '2:1', name: 'Cover', page: 'Cover', width: 1600, height: 1200 }] },
