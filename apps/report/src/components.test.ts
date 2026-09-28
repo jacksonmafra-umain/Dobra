@@ -3,7 +3,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { CoverageSummary, coveragePercent } from './CoverageSummary';
 import { sampleReport } from './fixtures/sampleReport';
+import { FindingRow } from './FindingRow';
 import { FrameOverlay, hingeKind } from './FrameOverlay';
+import { ReportNotes } from './ReportNotes';
+import { UnloadedList } from './UnloadedList';
 import { ReportHeader } from './ReportHeader';
 import { PassChip, SeverityChip, severityLabel } from './SeverityChip';
 
@@ -77,5 +80,31 @@ describe('frame overlay', () => {
     expect(out).toContain('class="overlay-safe"');
     expect(out).toContain('class="overlay-hinge overlay-hinge--occludes"');
     expect(out).not.toMatch(/fill="#/);
+  });
+});
+
+describe('FindingRow', () => {
+  it('shows the chip, the rule id, the message and the target key in mono', () => {
+    const f = sampleReport().frames.flatMap((x) => x.findings)[0];
+    const out = html(FindingRow, { finding: f });
+    expect(out).toContain('chip--error');
+    expect(out).toContain(f.ruleId);
+    expect(out).toContain(f.message);
+    expect(out).toContain('class="finding__target mono">surface-duo-2/spanned/spanned/landscape</');
+  });
+});
+
+describe('hairline cards', () => {
+  it('lists frames that could not load in an error card', () => {
+    const out = html(UnloadedList, { unloaded: sampleReport().unloaded });
+    expect(out).toContain('<section class="note-card note-card--error"');
+    expect(out).toContain('<h2>Could not load</h2>');
+    expect(out).toContain('Rate limited by Figma');
+  });
+  it('renders nothing when every frame loaded', () => {
+    expect(html(UnloadedList, { unloaded: [] })).toBe('');
+  });
+  it('puts the notes in a card too', () => {
+    expect(html(ReportNotes, { notes: ['a note'] })).toContain('<section class="note-card"');
   });
 });

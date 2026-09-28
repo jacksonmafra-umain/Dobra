@@ -93,3 +93,8 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border);
 ul { padding-left: 20px; }
 li + li { margin-top: 4px; }
 @media (max-width: 600px) { main { padding: 20px 16px 48px; } .summary__figure { font-size: 36px; } }
+.finding__target { color: var(--muted); font-size: 11px; margin-top: 2px; }
+.note-card { margin-top: 32px; padding: 14px 18px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--dobra-radius-lg); }
+.note-card--error { border-left: 3px solid var(--bad); }
+.note-card h2 { margin-top: 0; }
+h2 { overflow-wrap: anywhere; }

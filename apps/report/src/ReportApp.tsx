@@ -7,12 +7,14 @@ import { parseReport, toMarkdown, type Report, type ReportFrame } from '@dobra/c
 import { envConfigOf, parseTargetKey, type Target } from '@dobra/core/targets';
 import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
+import { FindingRow } from './FindingRow';
 import { FrameOverlay } from './FrameOverlay';
 import { createFigmaClient, FigmaError } from './figmaClient';
 import { loadFigmaReport } from './loadReport';
 import { ReportHeader } from './ReportHeader';
 import { ReportNotes } from './ReportNotes';
-import { PassChip, SeverityChip } from './SeverityChip';
+import { PassChip } from './SeverityChip';
+import { UnloadedList } from './UnloadedList';
 import { tokenStore } from './tokenStore';
 
 const catalog = loadCatalog();
@@ -179,18 +181,7 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
         ))}
       </div>
 
-      {report.unloaded.length > 0 && (
-        <>
-          <h2>Could not load</h2>
-          <ul>
-            {report.unloaded.map((u) => (
-              <li key={u.ref}>
-                {u.name}: <span className="muted">{u.reason}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <UnloadedList unloaded={report.unloaded} />
       <ReportNotes notes={report.notes} />
     </>
   );
@@ -224,14 +215,7 @@ function FrameCard({ frame, thumbnail }: { frame: ReportFrame; thumbnail: string
           </p>
         )}
         {frame.findings.map((x, i) => (
-          <div key={i} className="finding">
-            <SeverityChip severity={x.severity} />
-            <div className="finding__body">
-              <strong className="mono">{x.ruleId}</strong>
-              {x.estimated && <span className="badge">estimated</span>}
-              <div>{x.message}</div>
-            </div>
-          </div>
+          <FindingRow key={i} finding={x} />
         ))}
       </div>
     </article>

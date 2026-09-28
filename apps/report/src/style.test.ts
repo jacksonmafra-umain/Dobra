@@ -55,3 +55,10 @@ describe.each([['dark', ':root'], ['light', ":root[data-theme='light']"]] as con
     expect(ratio(fg, mix(fg, panel, tint(block, name)))).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+describe('narrow screens', () => {
+  // A Figma file name is shown in an h2; one long word must wrap, not widen a 375 px page.
+  it('wraps long headings', () => {
+    expect(declarations(css.slice(css.lastIndexOf('\nh2 {')))).toContainEqual(['overflow-wrap', 'anywhere']);
+  });
+});
