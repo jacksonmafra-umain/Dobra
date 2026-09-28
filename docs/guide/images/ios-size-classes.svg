@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t">
+  <title id="t">iOS size classes: iPhone portrait is compact width and regular height; iPhone landscape is compact height; a full-screen iPad is regular in both; a narrow iPad window is compact width</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.f{fill:#007C85}.fs{stroke:#007C85}.h{fill:#BE185D}.hs{stroke:#BE185D}
+    .p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}.ok{fill:#047857}.warn{fill:#B45309}
+    @media (prefers-color-scheme:dark){.t{fill:#DFE2EE}.s{fill:#9AA8B8}.b{stroke:#334155}.f{fill:#00F0FF}.fs{stroke:#00F0FF}.h{fill:#F062A8}.hs{stroke:#F062A8}.p{fill:#818CF8;stroke:#818CF8}.ok{fill:#10B981}.warn{fill:#F59E0B}}
+  </style>
+  <!-- iPhone portrait -->
+  <rect class="b" x="30" y="40" width="90" height="180" rx="16"/>
+  <rect class="p" x="38" y="52" width="74" height="156" rx="8"/>
+  <text class="t" x="75" y="245" text-anchor="middle">iPhone portrait</text>
+  <text class="s" x="75" y="263" text-anchor="middle">W compact · H regular</text>
+  <!-- iPhone landscape -->
+  <rect class="b" x="160" y="85" width="180" height="90" rx="16"/>
+  <rect class="p" x="172" y="93" width="156" height="74" rx="8"/>
+  <text class="t" x="250" y="245" text-anchor="middle">iPhone landscape</text>
+  <text class="s" x="250" y="263" text-anchor="middle">W compact or regular · H compact</text>
+  <!-- iPad full screen -->
+  <rect class="b" x="380" y="40" width="160" height="180" rx="14"/>
+  <rect class="p" x="390" y="50" width="140" height="160" rx="6"/>
+  <text class="t" x="460" y="245" text-anchor="middle">iPad, full screen</text>
+  <text class="s" x="460" y="263" text-anchor="middle">W regular · H regular</text>
+  <!-- iPad narrow window -->
+  <rect class="b" x="580" y="40" width="160" height="180" rx="14"/>
+  <rect class="p" x="590" y="50" width="54" height="160" rx="6"/>
+  <rect class="b" x="650" y="50" width="80" height="160" rx="6" stroke-dasharray="4 4"/>
+  <text class="s" x="690" y="134" text-anchor="middle">other app</text>
+  <text class="t" x="660" y="245" text-anchor="middle">iPad, narrow window</text>
+  <text class="s" x="660" y="263" text-anchor="middle">W compact · H regular</text>
+  <text class="s" x="380" y="22" text-anchor="middle">Shaded: the app's window. The system assigns the size class; there is no point threshold.</text>
+</svg>

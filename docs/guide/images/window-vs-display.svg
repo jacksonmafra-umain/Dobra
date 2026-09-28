@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" role="img" aria-labelledby="t">
+  <title id="t">The window is not the display: a tablet in split-screen gives the app a narrow window; a desktop window can be any size; an unfolded foldable gives a wide window. Lay out from the window.</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.f{fill:#007C85}.fs{stroke:#007C85}.h{fill:#BE185D}.hs{stroke:#BE185D}
+    .p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}.ok{fill:#047857}.warn{fill:#B45309}
+    @media (prefers-color-scheme:dark){.t{fill:#DFE2EE}.s{fill:#9AA8B8}.b{stroke:#334155}.f{fill:#00F0FF}.fs{stroke:#00F0FF}.h{fill:#F062A8}.hs{stroke:#F062A8}.p{fill:#818CF8;stroke:#818CF8}.ok{fill:#10B981}.warn{fill:#F59E0B}}
+  </style>
+  <!-- tablet split -->
+  <rect class="b" x="30" y="40" width="220" height="150" rx="12"/>
+  <rect class="p" x="38" y="48" width="96" height="134" rx="4"/><text class="s" x="86" y="118" text-anchor="middle">your app</text>
+  <rect class="b" x="140" y="48" width="102" height="134" rx="4" stroke-dasharray="4 4"/><text class="s" x="191" y="118" text-anchor="middle">other app</text>
+  <text class="t" x="140" y="216" text-anchor="middle">Tablet, split-screen</text>
+  <text class="s" x="140" y="234" text-anchor="middle">wide display, compact window</text>
+  <!-- desktop -->
+  <rect class="b" x="280" y="40" width="220" height="150" rx="6"/>
+  <rect class="p" x="310" y="62" width="130" height="96" rx="4"/><text class="s" x="375" y="114" text-anchor="middle">your app</text>
+  <text class="t" x="390" y="216" text-anchor="middle">Desktop windowing</text>
+  <text class="s" x="390" y="234" text-anchor="middle">any size, resized at runtime</text>
+  <!-- foldable -->
+  <rect class="b" x="565" y="34" width="130" height="162" rx="12"/>
+  <rect class="p" x="573" y="42" width="114" height="146" rx="4"/><text class="s" x="601" y="118" text-anchor="middle">your</text><text class="s" x="660" y="118" text-anchor="middle">app</text>
+  <line class="fs" x1="630" y1="34" x2="630" y2="196" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <text class="t" x="630" y="216" text-anchor="middle">Unfolded foldable</text>
+  <text class="s" x="630" y="234" text-anchor="middle">portrait-shaped, wide enough for panes</text>
+  <text class="s" x="380" y="22" text-anchor="middle">Shaded: the space the app gets. Breakpoints describe this, not the device.</text>
+</svg>
