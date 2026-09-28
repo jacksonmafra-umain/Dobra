@@ -766,7 +766,9 @@ body {
 }
 
 /* Figma screens: structure only; colours and spacing follow the simulator's tokens (agent/03). */
-.figma-screen__host { position: absolute; inset: 0; overflow-y: auto; }
+.figma-screen__host { position: absolute; inset: 0; }
+.figma-screen__scroll { height: 100%; }
+.figma-screen__banner { position: sticky; bottom: 0; margin: 0; }
 .figma-screen__canvas { position: relative; }
 .figma-screen__image { display: block; width: 100%; height: auto; }
 .figma-screen__hit { position: absolute; pointer-events: none; }

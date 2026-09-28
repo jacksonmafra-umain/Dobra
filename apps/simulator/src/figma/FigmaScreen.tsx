@@ -13,13 +13,17 @@ export interface FigmaScreenProps {
   onSignIn(): void;
   onRemove(): void;
   onRetry(): void;
+  /** Shown with the frame, such as why there are no rule findings. */
+  note?: string;
 }
 
-const IMPORTANT = new Set<GeoNode['role']>(['text', 'interactive']);
+// The layers the foldable rules check (core rules.ts), so outlines and findings agree.
+const important = (n: GeoNode) => !n.ignore && (n.important || n.role === 'interactive' || n.role === 'text');
 
 function hits(nodes: GeoNode[], out: GeoNode[] = []): GeoNode[] {
   for (const n of nodes) {
-    if (IMPORTANT.has(n.role)) out.push(n);
+    if (n.ignore) continue;
+    if (important(n)) out.push(n);
     else if (n.children) hits(n.children, out);
   }
   return out;
@@ -27,7 +31,7 @@ function hits(nodes: GeoNode[], out: GeoNode[] = []): GeoNode[] {
 
 const round = (n: number) => Math.round(n * 100) / 100;
 
-export function FigmaScreen({ frame, loaded, windowWidth, signedIn, onSignIn, onRemove, onRetry }: FigmaScreenProps) {
+export function FigmaScreen({ frame, loaded, windowWidth, signedIn, onSignIn, onRemove, onRetry, note }: FigmaScreenProps) {
   if (!loaded) {
     return (
       <div className="figma-screen figma-screen__state">
@@ -58,12 +62,6 @@ export function FigmaScreen({ frame, loaded, windowWidth, signedIn, onSignIn, on
   const scaled = Math.abs(frame.width - windowWidth) > 1;
   return (
     <div className="figma-screen">
-      {scaled && (
-        <p className="figma-screen__banner">
-          This frame is {Math.round(frame.width)} wide; this window is {Math.round(windowWidth)}. The frame is scaled to fit, so positions are approximate. Use the
-          plugin's Adapt to make a version for this device.
-        </p>
-      )}
       <div className="figma-screen__canvas">
       {loaded.image ? (
         <img className="figma-screen__image" src={loaded.image} alt={frame.name} />
@@ -82,6 +80,15 @@ export function FigmaScreen({ frame, loaded, windowWidth, signedIn, onSignIn, on
         />
       ))}
       </div>
+      {/* After the frame, not above it: the layers must start at the window's top to sit where they are drawn. */}
+      {(scaled || note) && (
+        <p className="figma-screen__banner">
+          {note}
+          {note && scaled && ' '}
+          {scaled &&
+            `This frame is ${Math.round(frame.width)} wide; this window is ${Math.round(windowWidth)}. The frame is scaled to fit, so positions are approximate. Use the plugin's Adapt to make a version for this device.`}
+        </p>
+      )}
     </div>
   );
 }

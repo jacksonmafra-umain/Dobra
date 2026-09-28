@@ -9,7 +9,10 @@ export function FigmaStage({ env, onCollisions, ...screen }: Omit<FigmaScreenPro
   useCollisions(root, env, [env, screen.frame.id, screen.loaded], onCollisions);
   return (
     <div ref={root} className="figma-screen__host">
-      <FigmaScreen {...screen} windowWidth={env.width} />
+      {/* .screen__scroll tells the collision checker the frame scrolls under the fold, and re-measures on scroll. */}
+      <div className="screen__scroll figma-screen__scroll">
+        <FigmaScreen {...screen} windowWidth={env.width} />
+      </div>
     </div>
   );
 }
