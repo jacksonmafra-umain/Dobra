@@ -87,6 +87,21 @@ describe('dobra check site (built binary)', () => {
   });
 });
 
+describe('dobra check site --zip (built binary)', () => {
+  it('writes a package the report can open, with a screenshot or a reason for every frame', async () => {
+    const { readReportZip } = await import('@dobra/core/reportZip');
+    const zipPath = join(out, 'package.zip');
+    const r = await dobra('check', 'site', site('06-hinge-content.html'), '--targets', `${DUO},${FLIP_INNER}`, '--out', join(out, 'package.json'), '--zip', zipPath, '--no-transitions');
+    expect(r.code).toBe(1);
+    expect(r.stdout).toContain('package.zip');
+    const opened = readReportZip(new Uint8Array(readFileSync(zipPath)));
+    expect(parseReport(JSON.parse(JSON.stringify(opened.report)))).toEqual(opened.report);
+    const index = JSON.parse(new TextDecoder().decode((await import('fflate')).unzipSync(new Uint8Array(readFileSync(zipPath)))['foldable-report/index.json']));
+    for (const f of opened.report.frames) expect(f.ref in index.screenshots || f.ref in index.missing).toBe(true);
+    expect(opened.images.size).toBe(opened.report.frames.length);
+  });
+});
+
 describe('dobra report (built binary)', () => {
   it('starts, answers /api/health and checks a site through POST /api/check', async () => {
     const child = spawn(process.execPath, [BIN, 'report', '--port', '0'], { stdio: ['ignore', 'pipe', 'pipe'] });

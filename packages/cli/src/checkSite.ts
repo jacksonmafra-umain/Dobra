@@ -32,6 +32,8 @@ export interface CheckOptions {
   deadline?: number;
   /** False where the browser can't emulate a fold: folded targets are then checked for size only. Default true. */
   foldEmulation?: boolean;
+  /** When given, filled with a PNG of each loaded target's window, or the reason it has none, by frame ref. */
+  capture?: { images: Map<string, Uint8Array>; missing: Record<string, string> };
 }
 
 const firstLine = (e: unknown) => (e instanceof Error ? e.message : String(e)).split('\n')[0];
@@ -120,6 +122,15 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
         if (note) notes.push(`${key}: ${note}`);
         const { root, truncated, scale } = await within(collectLayout(page, CAP), capped(collectTimeout), NO_ANSWER(collectTimeout));
         inputs.push({ ...base, root });
+        if (opts.capture) {
+          // Within the budget like every other wait; a failed capture never fails the check.
+          try {
+            opts.capture.images.set(base.ref, await page.screenshot({ type: 'png', timeout: capped(10_000) }));
+          } catch (e) {
+            opts.capture.missing[base.ref] = `The screenshot failed: ${firstLine(e)}`;
+            notes.push(`${key}: the screenshot failed (${firstLine(e)})`);
+          }
+        }
         if (truncated) notes.push(`${key}: page truncated at ${CAP} elements`);
         if (scale < 0.99)
           notes.push(`${key}: the page is zoomed out to ${Math.round(scale * 100)}% to fit content wider than the window, so hinge positions are approximate`);
@@ -160,6 +171,7 @@ export async function checkSite(url: string, targets: Target[], opts: CheckOptio
     if (!opts.browser && browser.isConnected()) await browser.close();
   }
   if (skipped.length) notes.push(`time budget reached; not checked: ${skipped.join(', ')}`);
+  if (opts.capture) for (const i of inputs) if (!i.root) opts.capture.missing[i.ref] = i.reason ?? 'The page did not load.';
   const report = buildReport(catalog, { kind: 'web', ref: url, name: url }, inputs);
   for (const f of report.frames) f.findings.push(...(extra.get(f.ref) ?? []));
   return notes.length ? { ...report, notes } : report;

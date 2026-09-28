@@ -21,6 +21,8 @@ export interface SiteOptions {
   categories: string[];
   out: string;
   md: string | null;
+  /** A report package: JSON, Markdown and a screenshot per target. */
+  zip: string | null;
   wait: number;
   failOn: FailOn;
   transitions: boolean;
@@ -33,6 +35,7 @@ export const USAGE = `Usage: dobra check site <url> [options]
   --category <name>    Every target of a category; repeat for more
   --out <file>         Report JSON path (default foldable-report.json)
   --md <file>          Also write a Markdown summary
+  --zip <file>         Also write a report package: JSON, Markdown and a screenshot per target
   --wait <ms>          Settle time after load (default 500)
   --fail-on <level>    Exit 1 on findings of this level: error, warn or never (default error);
                        a target that could not load always exits 1
@@ -56,6 +59,7 @@ export function parseArgs(argv: string[]): CliOptions | { help: string } {
         category: { type: 'string', multiple: true },
         out: { type: 'string' },
         md: { type: 'string' },
+        zip: { type: 'string' },
         wait: { type: 'string' },
         'fail-on': { type: 'string' },
         'no-transitions': { type: 'boolean' },
@@ -96,6 +100,7 @@ export function parseArgs(argv: string[]): CliOptions | { help: string } {
     categories: v.category ?? [],
     out: v.out ?? 'foldable-report.json',
     md: v.md ?? null,
+    zip: v.zip ?? null,
     wait,
     failOn,
     transitions: !v['no-transitions'],

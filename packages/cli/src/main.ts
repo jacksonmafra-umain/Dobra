@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { loadCatalog } from '@dobra/core/catalog/load';
 import { toMarkdown, type Report } from '@dobra/core/report';
+import { reportZip } from '@dobra/core/reportZip';
 import { parseArgs } from './args';
 import { checkSite } from './checkSite';
 import { isLoopback, startLocalServer } from './localServer';
@@ -14,7 +15,7 @@ import { chooseTargets } from './targets';
 export interface Io {
   out(s: string): void;
   err(s: string): void;
-  writeFile(path: string, data: string): Promise<void>;
+  writeFile(path: string, data: string | Uint8Array): Promise<void>;
   check?: typeof checkSite;
   serve?: typeof startLocalServer;
 }
@@ -74,11 +75,18 @@ export async function run(argv: string[], io: Io): Promise<number> {
     return 2;
   }
   const check = io.check ?? checkSite;
-  const report = await check(opts.url, targets, { wait: opts.wait, transitions: opts.transitions, onProgress: (m) => io.err(m) });
+  const capture = opts.zip ? { images: new Map<string, Uint8Array>(), missing: {} as Record<string, string> } : undefined;
+  const report = await check(opts.url, targets, { wait: opts.wait, transitions: opts.transitions, onProgress: (m) => io.err(m), ...(capture ? { capture } : {}) });
   await io.writeFile(opts.out, `${JSON.stringify(report, null, 2)}\n`);
   if (opts.md) await io.writeFile(opts.md, toMarkdown(report));
+  let zipSize = 0;
+  if (opts.zip && capture) {
+    const zip = reportZip(report, capture.images, capture.missing);
+    zipSize = zip.length;
+    await io.writeFile(opts.zip, zip);
+  }
   summarise(report, io);
-  io.out(`Report: ${opts.out}${opts.md ? `, ${opts.md}` : ''}`);
+  io.out(`Report: ${opts.out}${opts.md ? `, ${opts.md}` : ''}${opts.zip ? `, ${opts.zip} (${(zipSize / 1024 / 1024).toFixed(1)} MB)` : ''}`);
 
   // A target that did not load always fails: CI must not read an outage as a clean run.
   if (report.unloaded.length) return 1;
@@ -99,7 +107,7 @@ if (isEntry) {
   const io: Io = {
     out: (s) => console.log(s),
     err: (s) => console.error(s),
-    writeFile: (p, d) => writeFile(p, d, 'utf8'),
+    writeFile: (p, d) => (typeof d === 'string' ? writeFile(p, d, 'utf8') : writeFile(p, d)),
   };
   run(process.argv.slice(2), io).then(
     (code) => process.exit(code),

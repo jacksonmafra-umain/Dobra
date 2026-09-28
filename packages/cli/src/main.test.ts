@@ -92,4 +92,23 @@ describe('run', () => {
     expect(await run(['report', '--host', '0.0.0.0'], { ...io, serve } as never)).toBe(0);
     expect(err.join('\n')).toMatch(/other machines on your network can/);
   });
+
+  it('writes a report package with --zip', async () => {
+    const { readReportZip } = await import('@dobra/core/reportZip');
+    const r = report();
+    const bytes: Record<string, string | Uint8Array> = {};
+    const io = {
+      out: () => {},
+      err: () => {},
+      writeFile: async (p: string, d: string | Uint8Array) => void (bytes[p] = d),
+      check: async (_u: string, _t: unknown, o: { capture?: { images: Map<string, Uint8Array> } }) => {
+        o.capture?.images.set(r.frames[0].ref, new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 1, 0, 0, 0, 1]));
+        return r;
+      },
+    };
+    expect(await run(['check', 'site', 'https://x.test', '--targets', DUO, '--zip', 'r.zip'], io as never)).toBe(0);
+    const opened = readReportZip(bytes['r.zip'] as Uint8Array);
+    expect(opened.report).toEqual(r);
+    expect(opened.images.size).toBe(1);
+  });
 });

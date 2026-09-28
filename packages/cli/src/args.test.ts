@@ -10,6 +10,7 @@ describe('parseArgs', () => {
       categories: [],
       out: 'foldable-report.json',
       md: null,
+      zip: null,
       wait: 500,
       failOn: 'error',
       transitions: true,
@@ -56,5 +57,10 @@ describe('parseArgs', () => {
   it('rejects a bad port', () => {
     expect(parseArgs(['report', '--port', 'x'])).toHaveProperty('help');
     expect(parseArgs(['report', '--port', '70000'])).toHaveProperty('help');
+  });
+
+  it('reads --zip for a report package', () => {
+    expect(parseArgs(['check', 'site', 'https://example.com', '--zip', 'out.zip'])).toMatchObject({ zip: 'out.zip' });
+    expect(parseArgs(['check', 'site', 'https://example.com'])).toMatchObject({ zip: null });
   });
 });
