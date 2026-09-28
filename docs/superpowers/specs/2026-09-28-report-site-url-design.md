@@ -155,6 +155,16 @@ Delivery slices, each its own issue and PR:
 
 ## 10. Risks
 
+**Spike result (2026-09-28, draft PR #130, not merged):** `@sparticuz/chromium` 153.0.0 with
+`playwright-core` 1.63.0 ran in a Vercel function in the "dobra" project (1769 MB, 60 s max). The
+CLI's fold override (Surface Duo 2 spanned: offset 537, mask 26) reached the page:
+`window.viewport.segments` was `[[0,537],[563,537]]`, `(horizontal-viewport-segments: 2)` matched,
+and the user agent was HeadlessChrome 153. A warm probe took 234 ms. Hosted checks can therefore
+emulate folds (`foldEmulation: true`).
+- **Preview access:** preview deployments are behind Vercel Authentication, so automated calls to
+  a preview need a protection bypass secret.
+- **Cold start:** not measured separately.
+
 - Serverless Chromium size and cold starts, and whether it honours the display-feature override.
   If it doesn't, hosted checks run size-only for folded targets and the report says so in a note.
 - Abuse of a public URL fetcher: mitigated by the policy in §4. The user owns the Vercel project
