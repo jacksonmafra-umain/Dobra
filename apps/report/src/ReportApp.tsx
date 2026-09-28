@@ -19,7 +19,7 @@ import { tokenStore } from './tokenStore';
 import { SiteCheckForm } from './SiteCheckForm';
 import { probe, type Health } from './siteCheck';
 import { ZipDownload } from './ZipDownload';
-import { openReportFile } from './zipView';
+import { createReportSlot, openReportFile } from './zipView';
 
 const catalog = loadCatalog();
 const config = envConfigOf(catalog);
@@ -57,6 +57,8 @@ export function ReportApp() {
     if (remember) tokens.remember(token);
     try {
       const result = await loadFigmaReport(createFigmaClient(token), url.trim());
+      slot.current.replace();
+      setMissing({});
       setReport(result.report);
       setThumbnails(result.thumbnails);
       setNotice(result.notice ?? null);
@@ -69,19 +71,20 @@ export function ReportApp() {
     }
   }
 
-  // Object URLs of the screenshots of the report on screen, released when another one opens.
-  const revokeOpened = useRef<() => void>(() => {});
-  useEffect(() => () => revokeOpened.current(), []);
+  // Releases the object URLs of the report on screen whenever any path shows another report.
+  const slot = useRef(createReportSlot());
+  useEffect(() => () => slot.current.release(), []);
+  const [missing, setMissing] = useState<Record<string, string>>({});
 
   async function openFile(file: File) {
     setError(null);
     setNotice(null);
     try {
       const opened = await openReportFile(file);
-      revokeOpened.current();
-      revokeOpened.current = opened.revoke;
+      slot.current.replace(opened.revoke);
       setReport(opened.report);
       setThumbnails(opened.thumbnails);
+      setMissing(opened.missing);
       if (opened.notes.length) setNotice(opened.notes.join(' '));
     } catch (e) {
       setError(`That file is not a foldable check report. ${e instanceof Error ? e.message : String(e)}`);
@@ -108,6 +111,8 @@ export function ReportApp() {
             onReport={(r) => {
               setError(null);
               setNotice(null);
+              slot.current.replace();
+              setMissing({});
               setReport(r);
               setThumbnails({});
             }}
@@ -161,12 +166,23 @@ export function ReportApp() {
         </p>
       )}
       {notice && <p className="banner banner--notice">{notice}</p>}
-      {report && <ReportView report={report} thumbnails={thumbnails} />}
+      {report && <ReportView report={report} thumbnails={thumbnails} packageMissing={missing} onMessage={setNotice} />}
     </main>
   );
 }
 
-function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record<string, string | null> }) {
+function ReportView({
+  report,
+  thumbnails,
+  packageMissing,
+  onMessage,
+}: {
+  report: Report;
+  thumbnails: Record<string, string | null>;
+  /** Why frames of an opened package have no screenshot. */
+  packageMissing: Record<string, string>;
+  onMessage(message: string): void;
+}) {
   const missing = report.coverage.cells.filter((c) => c.requirement.level === 'required' && c.status === 'missing');
   const missingTargets = missing.map((c) => representativeTarget(catalog, c.requirement)).filter((t): t is Target => t !== null);
   const slug = report.source.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'report';
@@ -187,7 +203,7 @@ function ReportView({ report, thumbnails }: { report: Report; thumbnails: Record
         <button disabled={!missingTargets.length} onClick={() => download(`${slug}.presets.zip`, presetZip(config, missingTargets), 'application/zip')}>
           Presets ZIP ({missingTargets.length} missing)
         </button>
-        <ZipDownload report={report} thumbnails={thumbnails} slug={slug} />
+        <ZipDownload report={report} thumbnails={thumbnails} missing={packageMissing} slug={slug} onMessage={onMessage} />
       </div>
 
       <h2>Coverage</h2>

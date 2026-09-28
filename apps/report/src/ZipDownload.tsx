@@ -4,7 +4,17 @@ import type { Report } from '@dobra/core/report';
 import { download } from './download';
 import { packageForDownload, screenshotCount } from './zipView';
 
-export function ZipDownload({ report, thumbnails, slug }: { report: Report; thumbnails: Record<string, string | null>; slug: string }) {
+export interface ZipDownloadProps {
+  report: Report;
+  thumbnails: Record<string, string | null>;
+  /** Reasons an opened package gave for frames without a screenshot. */
+  missing?: Record<string, string>;
+  slug: string;
+  /** Called with a sentence when some images couldn't be included, or the download failed. */
+  onMessage?(message: string): void;
+}
+
+export function ZipDownload({ report, thumbnails, missing = {}, slug, onMessage }: ZipDownloadProps) {
   const [busy, setBusy] = useState(false);
   const n = screenshotCount(report, thumbnails);
   return (
@@ -15,7 +25,11 @@ export function ZipDownload({ report, thumbnails, slug }: { report: Report; thum
       onClick={async () => {
         setBusy(true);
         try {
-          download(`${slug}.foldable.zip`, await packageForDownload(report, thumbnails), 'application/zip');
+          const { zip, failed } = await packageForDownload(report, thumbnails, undefined, missing);
+          download(`${slug}.foldable.zip`, zip, 'application/zip');
+          if (failed.length) onMessage?.(`The ZIP was saved without ${failed.length} screenshot${failed.length === 1 ? '' : 's'} that could not be fetched: ${failed.join(', ')}.`);
+        } catch (e) {
+          onMessage?.(`The ZIP could not be made: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
           setBusy(false);
         }

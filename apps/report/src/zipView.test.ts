@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readReportZip, reportZip } from '@dobra/core/reportZip';
 import { sampleReport } from './fixtures/sampleReport';
-import { openReportFile, packageForDownload, screenshotCount } from './zipView';
+import { createReportSlot, openReportFile, packageForDownload, screenshotCount } from './zipView';
 
 const report = sampleReport();
 const ref = report.frames[0].ref;
@@ -35,16 +35,37 @@ describe('openReportFile', () => {
   });
 });
 
+describe('createReportSlot', () => {
+  it('releases the previous report\'s images whenever another report takes its place', () => {
+    const released: string[] = [];
+    const slot = createReportSlot();
+    slot.replace(() => released.push('zip'));
+    slot.replace(); // a Figma or website check
+    expect(released).toEqual(['zip']);
+    slot.replace(() => released.push('second'));
+    slot.release();
+    expect(released).toEqual(['zip', 'second']);
+  });
+});
+
 describe('packageForDownload', () => {
+  it('keeps the reasons an opened package already gave, and reports what it could not fetch', async () => {
+    const fetch = (async () => new Response('gone', { status: 403 })) as unknown as typeof globalThis.fetch;
+    const { zip, failed } = await packageForDownload(report, { [ref]: 'blob:x' }, fetch, { [report.frames[1].ref]: 'The screenshot failed: timeout' });
+    const opened = readReportZip(zip);
+    expect(opened.missing[report.frames[1].ref]).toBe('The screenshot failed: timeout');
+    expect(failed).toEqual([report.frames[0].name]);
+  });
+
   it('fetches each thumbnail and packs the report with them', async () => {
     const fetch = (async () => new Response(png(), { headers: { 'content-type': 'image/png' } })) as unknown as typeof globalThis.fetch;
-    const zip = await packageForDownload(report, { [ref]: 'https://figma-alpha-api.s3/x.png' }, fetch);
+    const { zip } = await packageForDownload(report, { [ref]: 'https://figma-alpha-api.s3/x.png' }, fetch);
     const opened = readReportZip(zip);
     expect(opened.images.get(ref)).toEqual(png());
   });
   it('lists a thumbnail it could not fetch as missing, with the reason', async () => {
     const fetch = (async () => new Response('gone', { status: 403 })) as unknown as typeof globalThis.fetch;
-    const zip = await packageForDownload(report, { [ref]: 'https://expired' }, fetch);
+    const { zip } = await packageForDownload(report, { [ref]: 'https://expired' }, fetch);
     const opened = readReportZip(zip);
     expect(opened.images.size).toBe(0);
     expect(opened.missing[ref]).toMatch(/403/);

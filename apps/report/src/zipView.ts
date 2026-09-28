@@ -7,6 +7,8 @@ export interface OpenedReport {
   report: Report;
   /** Frame ref to an image URL; object URLs for a ZIP's screenshots. */
   thumbnails: Record<string, string>;
+  /** Why a frame has no screenshot, as the package said. */
+  missing: Record<string, string>;
   notes: string[];
   /** Releases the object URLs made for this report. */
   revoke(): void;
@@ -28,15 +30,34 @@ async function isZip(file: File): Promise<boolean> {
 }
 
 export async function openReportFile(file: File, urls: Urls = browserUrls): Promise<OpenedReport> {
-  if (!(await isZip(file))) return { report: parseReport(JSON.parse(await file.text())), thumbnails: {}, notes: [], revoke: () => {} };
+  if (!(await isZip(file))) return { report: parseReport(JSON.parse(await file.text())), thumbnails: {}, missing: {}, notes: [], revoke: () => {} };
   const opened = readReportZip(new Uint8Array(await file.arrayBuffer()));
   const thumbnails: Record<string, string> = {};
   for (const [ref, bytes] of opened.images) thumbnails[ref] = urls.create(new Blob([bytes], { type: 'image/png' }));
   return {
     report: opened.report,
     thumbnails,
+    missing: opened.missing,
     notes: opened.notes,
     revoke: () => Object.values(thumbnails).forEach((u) => urls.revoke(u)),
+  };
+}
+
+/**
+ * Holds the release function of the report on screen. Every path that shows a report (a file, a
+ * Figma check, a website check) replaces it, so the previous report's object URLs are always freed.
+ */
+export function createReportSlot() {
+  let release: () => void = () => {};
+  return {
+    replace(next: () => void = () => {}) {
+      release();
+      release = next;
+    },
+    release() {
+      release();
+      release = () => {};
+    },
   };
 }
 
@@ -49,9 +70,16 @@ export function screenshotCount(report: Report, thumbnails: Record<string, strin
  * The report as a package. Each thumbnail (a Figma image URL, or an opened ZIP's object URL) is
  * fetched when this runs, since Figma's URLs expire; one that fails is listed as missing.
  */
-export async function packageForDownload(report: Report, thumbnails: Record<string, string | null>, fetch: typeof globalThis.fetch = globalThis.fetch): Promise<Uint8Array<ArrayBuffer>> {
+export async function packageForDownload(
+  report: Report,
+  thumbnails: Record<string, string | null>,
+  fetch: typeof globalThis.fetch = globalThis.fetch,
+  /** Reasons an opened package already gave, kept in the new one. */
+  known: Record<string, string> = {},
+): Promise<{ zip: Uint8Array<ArrayBuffer>; failed: string[] }> {
   const images = new Map<string, Uint8Array>();
-  const missing: Record<string, string> = {};
+  const missing: Record<string, string> = { ...known };
+  const failed: string[] = [];
   await Promise.all(
     report.frames.map(async (f) => {
       const url = thumbnails[f.ref];
@@ -64,8 +92,9 @@ export async function packageForDownload(report: Report, thumbnails: Record<stri
         images.set(f.ref, bytes);
       } catch (e) {
         missing[f.ref] = `The image could not be fetched: ${e instanceof Error ? e.message : String(e)}`;
+        failed.push(f.name);
       }
     }),
   );
-  return reportZip(report, images, missing);
+  return { zip: reportZip(report, images, missing), failed };
 }
