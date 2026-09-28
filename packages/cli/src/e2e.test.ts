@@ -1,6 +1,6 @@
 // End-to-end acceptance: builds the real `dobra` binary and runs it the way CI does, against the
 // example sites, checking exit codes and the report files it writes.
-import { execFile, execFileSync } from 'node:child_process';
+import { execFile, execFileSync, spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -84,5 +84,34 @@ describe('dobra check site (built binary)', () => {
     expect(unknown.code).toBe(2);
     expect(unknown.stderr).toContain('nope/x/-/portrait');
     expect((await dobra('check', 'site', site('good.html'), '--fail-on', 'loud')).code).toBe(2);
+  });
+});
+
+describe('dobra report (built binary)', () => {
+  it('starts, answers /api/health and checks a site through POST /api/check', async () => {
+    const child = spawn(process.execPath, [BIN, 'report', '--port', '0'], { stdio: ['ignore', 'pipe', 'pipe'] });
+    try {
+      const url = await new Promise<string>((resolve, reject) => {
+        let buf = '';
+        const timer = setTimeout(() => reject(new Error(`no address printed: ${buf}`)), 20_000);
+        child.stdout.on('data', (c) => {
+          buf += c;
+          const m = buf.match(/Foldable Check: (http:\/\/\S+)/);
+          if (m) {
+            clearTimeout(timer);
+            resolve(m[1]);
+          }
+        });
+        child.on('exit', (code) => reject(new Error(`exited ${code}: ${buf}`)));
+      });
+      expect(await (await fetch(`${url}api/health`)).json()).toMatchObject({ ok: true, mode: 'local' });
+      const res = await fetch(`${url}api/check`, { method: 'POST', body: JSON.stringify({ url: site('06-hinge-content.html'), targets: [DUO] }) });
+      expect(res.status).toBe(200);
+      const report = parseReport(await res.json());
+      expect(report.source.kind).toBe('web');
+      expect(report.frames[0].findings.map((f) => f.ruleId)).toContain('hinge-content');
+    } finally {
+      child.kill('SIGINT');
+    }
   });
 });
