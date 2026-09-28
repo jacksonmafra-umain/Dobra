@@ -1,9 +1,9 @@
 // The Figma screens the simulator shows: the remembered file and frames, the tab's token, and the
 // images and layers loaded for the frame on screen, keyed by frame and scale.
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createFigmaClient } from '@dobra/core/figmaClient';
 import type { NamePatterns } from '@dobra/core/figmaRest';
-import { listFrames, loadFrames, type FileListing, type LoadedFrame } from './loader';
+import { filePatterns, loadFrames, type FileListing, type LoadedFrame } from './loader';
 import { clearFigmaScreens, readFigmaScreens, writeFigmaScreens, type StoredFigmaScreens } from './store';
 import { figmaTokenStore } from './token';
 
@@ -23,18 +23,32 @@ const session = (() => {
 })();
 const noStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 
-export function useFigmaScreens(selectedId: string | null, scale: number) {
+/**
+ * The cache key for the frame on screen, or null when nothing should load: no list, no token, a
+ * frame that isn't on the list (a link can name any id), or `paused` while the token is being typed.
+ * The token's generation is part of the key, so a refusal under an old token doesn't stick.
+ */
+export function frameLoadKey(o: { stored: StoredFigmaScreens | null; selectedId: string | null; token: string; generation: number; scale: number; paused: boolean }): string | null {
+  if (o.paused || !o.stored || !o.selectedId || !o.token.trim()) return null;
+  if (!o.stored.frames.some((f) => f.id === o.selectedId)) return null;
+  return `${o.selectedId}@${o.scale}#${o.generation}`;
+}
+
+export function useFigmaScreens(selectedId: string | null, scale: number, paused = false) {
   const tokens = useMemo(() => figmaTokenStore(session), []);
   const [stored, setStored] = useState<StoredFigmaScreens | null>(() => readFigmaScreens(local ?? noStorage));
   const [token, setTokenState] = useState(tokens.read);
   const [remember, setRemember] = useState(() => tokens.read() !== '');
-  const [patterns, setPatterns] = useState<NamePatterns | undefined>(undefined);
+  // The file's name words: from the picker, or read once per file (a failure falls back to defaults).
+  const patterns = useRef<{ fileKey: string; value: Promise<NamePatterns | undefined> } | null>(null);
   const [loaded, setLoaded] = useState<Record<string, LoadedFrame>>({});
   const [attempt, setAttempt] = useState(0);
+  const [generation, setGeneration] = useState(0);
 
   const setToken = useCallback(
     (t: string, keep: boolean) => {
       setTokenState(t);
+      setGeneration((g) => g + 1);
       setRemember(keep);
       if (keep) tokens.remember(t);
       else tokens.forget();
@@ -45,7 +59,7 @@ export function useFigmaScreens(selectedId: string | null, scale: number) {
   const add = useCallback((listing: FileListing, picked: string[]) => {
     const frames = listing.pages.flatMap((p) => p.frames).filter((f) => picked.includes(f.id)).map(({ id, name, page, width, height }) => ({ id, name, page, width, height }));
     const next: StoredFigmaScreens = { version: 1, fileKey: listing.fileKey, fileName: listing.fileName, frames };
-    setPatterns(listing.patterns);
+    patterns.current = { fileKey: listing.fileKey, value: Promise.resolve(listing.patterns) };
     setLoaded({});
     if (frames.length) writeFigmaScreens(local ?? noStorage, next);
     else clearFigmaScreens(local ?? noStorage);
@@ -64,15 +78,16 @@ export function useFigmaScreens(selectedId: string | null, scale: number) {
     [stored],
   );
 
-  const key = selectedId ? `${selectedId}@${scale}` : null;
+  const key = frameLoadKey({ stored, selectedId, token, generation, scale, paused });
   useEffect(() => {
-    if (!stored || !selectedId || !token.trim() || !key || loaded[key]) return;
+    if (!stored || !selectedId || !key || loaded[key]) return;
     let live = true;
     const client = createFigmaClient(token);
+    if (patterns.current?.fileKey !== stored.fileKey)
+      patterns.current = { fileKey: stored.fileKey, value: filePatterns(client, stored.fileKey).catch(() => undefined) };
+    const words = patterns.current.value;
     (async () => {
-      // The name words live on the document: read them once per file when the picker didn't.
-      const p = patterns ?? (await listFrames(client, `https://www.figma.com/design/${stored.fileKey}`).then((l) => l.patterns).catch(() => undefined));
-      if (p && !patterns) setPatterns(p);
+      const p = await words;
       const result = await loadFrames(client, stored.fileKey, [selectedId], scale, p).catch((e) => new Map([[selectedId, { image: null, geo: null, reason: e instanceof Error ? e.message : String(e) } as LoadedFrame]]));
       if (live) setLoaded((m) => ({ ...m, [key]: result.get(selectedId) ?? { image: null, geo: null, reason: 'Figma returned no data for this frame.' } }));
     })();
