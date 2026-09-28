@@ -1,53 +1,46 @@
 # Dobra
 
-Tools for designing foldable and dual-screen UIs. Dobra covers phones, book and flip foldables,
-dual-screen devices, multi-folds, tablets and desktop, on iOS and Android.
+Dobra helps designers and developers build interfaces that work on foldable, dual-screen and
+large-screen devices, on iOS, Android and the web. It knows each device's displays, postures, safe
+areas and hinges, and it checks designs and websites for the mistakes those devices expose, such as
+content under a hinge or a layout that breaks when the device unfolds.
 
-## What's here
+Try it at [dobra-five.vercel.app](https://dobra-five.vercel.app).
 
-| Part | What it does | State |
-| --- | --- | --- |
-| Simulator (`apps/simulator`) | Renders devices, postures and window states, plus scenes and Grid/FlexBox layouts. Runs collision and rule checks, shows and overrides media facts, compares iOS and Android side by side, and exports the current screen's findings as a report JSON for the web report | Merged |
-| Core (`packages/core`) | Holds the device catalog, targets, the layout engine, the geometry rules, frame matching, coverage, reports and resize transitions | Merged |
-| Brand (`packages/brand`) | Design tokens for dark and light, the bundled fonts, the logo and the icon | Merged |
-| Figma plugin (`packages/figma-plugin`) | Artboard presets with hinge overlays, Tag frames, coverage, a checker, and Adapt & flag | Merged |
-| Web report (`apps/report`) | Shows a Figma file's coverage and findings | Merged |
-| CLI (`packages/cli`) | Checks websites with fold emulation | Merged |
+## What you can do
 
-## Layout
+**In Figma** ([plugin](packages/figma-plugin/README.md))
 
-This is an npm workspaces monorepo:
+- Create artboards for real devices in every posture and orientation, with hinge and safe-area
+  overlays.
+- Add size classes and devices to the file as Figma variables.
+- Tag frames by device, check them for foldable problems, and see which devices and postures
+  your designs don't cover yet.
+- Adapt a frame to another device, with the problems it finds flagged in place.
 
-- `packages/core`: `@dobra/core`, in pure TypeScript with no DOM and no React. It holds the catalog
-  (`src/catalog/catalog.json`), the sample profile (`src/profiles/sample.profile.json`), the engine
-  and the checks.
-- `packages/brand`: `@dobra/brand`, the design tokens, fonts, logo and icon every surface imports. See its [README](packages/brand/README.md).
-- `packages/figma-plugin`: the Figma plugin. See its [README](packages/figma-plugin/README.md) for how to build and load it.
-- `packages/cli`: `@dobra/cli`, the `dobra check site` command (Playwright and Chromium). See its [README](packages/cli/README.md).
-- `apps/simulator`: `@dobra/simulator`, built with Vite, React and Tailwind.
-- `apps/report`: `@dobra/report`, the web report that opens report JSON. See its [README](apps/report/README.md).
-- `examples/sites`: static pages that reproduce foldable failures, used by the website checks.
-- `docs`: the Android brief, design specs and implementation plans.
+**In the browser**
 
-## Quick start
+- [Simulator](https://dobra-five.vercel.app/simulator/): preview a screen on any device, posture
+  or window size, show the hinge, safe areas and grid, and compare iOS and Android side by side.
+- [Report](https://dobra-five.vercel.app/report/): open the results of a Figma file or a website
+  check, finding by finding.
+- [Guide](https://dobra-five.vercel.app/guide/): a reference for responsive and adaptive layout on
+  Android, iOS and the web, with breakpoints, APIs, patterns and accessibility.
+
+**On the command line and in CI** ([CLI](packages/cli/README.md))
+
+- `dobra check site <url>` opens a website on each device, emulates the fold, and reports what
+  breaks, including pages that don't lay themselves out again after an unfold. It exits non-zero
+  on errors, so it can gate a pull request.
+
+## Run it locally
 
 ```sh
 npm install
-npm run dev          # simulator dev server
-npm test             # tests in every workspace
-npm run typecheck    # type-check every workspace
-npm run build        # production build of the simulator
-npm run build:single # the simulator as one self-contained HTML file
-npm run preview      # serve the production build
-npm run dev:report   # web report dev server
-npm run build:report # web report as one self-contained HTML file
-npm run build:cli    # build the CLI; then: npm run dobra -- check site <url>
-npm run dobra -- report  # serve Foldable Check with a local site-check endpoint
+npm run dev                            # the simulator
+npm test                               # every workspace's tests
+npm run build:cli && npm run dobra -- check site https://example.com
 ```
 
-The CLI needs Playwright's Chromium once: `npx playwright install chromium`.
-
-## Design docs
-
-Design specs are in [`docs/superpowers/specs`](docs/superpowers/specs), and implementation plans are in
-[`docs/superpowers/plans`](docs/superpowers/plans).
+The CLI needs Playwright's Chromium once: `npx playwright install chromium`. Each part's README
+covers its own build and options.
