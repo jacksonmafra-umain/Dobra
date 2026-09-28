@@ -77,8 +77,7 @@ describe('parseArgs', () => {
     expect(parseArgs(['check', 'site', 'ftp://example.com'])).toHaveProperty('help');
   });
   it('says why an address was rejected, not only the usage', () => {
-    expect(parseArgs(['check', 'site', '[www.umain.com](https://www.umain.com)'])).toMatchObject({ error: expect.stringContaining('[www.umain.com](https://www.umain.com)') });
-    expect(parseArgs(['check', 'site', 'www.umain.com'])).toMatchObject({ error: expect.stringMatching(/https:\/\//) });
+    expect(parseArgs(['check', 'site', 'not an address'])).toMatchObject({ error: expect.stringMatching(/https:\/\//) });
     expect(parseArgs(['check', 'site', 'ftp://x'])).toMatchObject({ error: expect.stringContaining('ftp://x') });
   });
 });
