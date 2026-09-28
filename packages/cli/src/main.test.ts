@@ -73,4 +73,16 @@ describe('run', () => {
     expect(await run(['check', 'site', 'https://x.test', '--targets', 'nope/x/-/portrait'], h.io)).toBe(2);
     expect(h.err.join('\n')).toContain('nope/x/-/portrait');
   });
+
+  it('serves dobra report until the server closes, printing its address', async () => {
+    const { io, out } = harness(report());
+    let started: { port: number; host: string } | undefined;
+    const serve = async (o: { port: number; host: string }) => {
+      started = o;
+      return { url: 'http://127.0.0.1:5301/', close: async () => {}, closed: Promise.resolve() };
+    };
+    expect(await run(['report', '--port', '5301'], { ...io, serve } as never)).toBe(0);
+    expect(started).toMatchObject({ port: 5301, host: '127.0.0.1' });
+    expect(out.join('\n')).toContain('Foldable Check: http://127.0.0.1:5301/');
+  });
 });
