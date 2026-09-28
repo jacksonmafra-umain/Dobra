@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 290" role="img" aria-labelledby="t">
+  <title id="t">Fold postures: flat on a seamless foldable is not separating, so one layout; book posture has a vertical half-opened fold that separates, so two panes left and right; tabletop has a horizontal half-opened fold, so content above and controls below; a dual-screen device is separating even when flat, with an occluding hinge</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.f{fill:#007C85}.fs{stroke:#007C85}.h{fill:#BE185D}.hs{stroke:#BE185D}
+    .p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}.ok{fill:#047857}.warn{fill:#B45309}
+    @media (prefers-color-scheme:dark){.t{fill:#DFE2EE}.s{fill:#9AA8B8}.b{stroke:#334155}.f{fill:#00F0FF}.fs{stroke:#00F0FF}.h{fill:#F062A8}.hs{stroke:#F062A8}.p{fill:#818CF8;stroke:#818CF8}.ok{fill:#10B981}.warn{fill:#F59E0B}}
+  </style>
+  <!-- Flat -->
+  <rect class="b" x="30" y="40" width="150" height="170" rx="10"/>
+  <line class="fs" x1="105" y1="40" x2="105" y2="210" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <text class="t" x="105" y="238" text-anchor="middle">Flat</text>
+  <text class="s" x="105" y="256" text-anchor="middle">not separating: one layout</text>
+  <!-- Book -->
+  <rect class="b" x="210" y="40" width="150" height="170" rx="10"/>
+  <rect class="p" x="218" y="48" width="62" height="154" rx="4"/><rect class="p" x="290" y="48" width="62" height="154" rx="4"/>
+  <line class="fs" x1="285" y1="40" x2="285" y2="210" stroke-width="3"/>
+  <text class="t" x="285" y="238" text-anchor="middle">Book</text>
+  <text class="s" x="285" y="256" text-anchor="middle">half open, vertical: panes</text>
+  <!-- Tabletop -->
+  <rect class="b" x="390" y="40" width="170" height="170" rx="10"/>
+  <rect class="p" x="398" y="48" width="154" height="70" rx="4"/><text class="s" x="475" y="88" text-anchor="middle">content</text>
+  <line class="fs" x1="390" y1="125" x2="560" y2="125" stroke-width="3"/>
+  <rect class="p" x="398" y="132" width="154" height="70" rx="4"/><text class="s" x="475" y="172" text-anchor="middle">controls</text>
+  <text class="t" x="475" y="238" text-anchor="middle">Tabletop</text>
+  <text class="s" x="475" y="256" text-anchor="middle">half open, horizontal</text>
+  <!-- Dual screen -->
+  <rect class="b" x="590" y="40" width="72" height="170" rx="8"/><rect class="b" x="670" y="40" width="72" height="170" rx="8"/>
+  <rect class="h" x="662" y="40" width="8" height="170" fill-opacity=".85"/>
+  <text class="t" x="666" y="238" text-anchor="middle">Dual screen</text>
+  <text class="s" x="666" y="256" text-anchor="middle">flat but separating</text>
+  <text class="s" x="380" y="22" text-anchor="middle">Split on isSeparating, not on the fold state. Keep content out of an occluding hinge.</text>
+</svg>

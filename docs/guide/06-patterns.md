@@ -15,6 +15,8 @@ results.
 | Compact width | One pane: the list, then the detail replaces it | Back returns from detail to list |
 | Medium and wider (and both panes ≥ 320 dp; see Anti-patterns) | List and detail side by side | Selecting another item doesn't add a back step |
 
+![List and detail: one pane in a compact window, side by side when both panes are at least 320 wide](images/list-detail.svg)
+
 On Android the default back behaviour, `PopUntilScaffoldValueChange`, matches the table
 ([list-detail](https://developer.android.com/develop/ui/compose/layouts/adaptive/list-detail)).
 
@@ -38,7 +40,26 @@ fun <T : Parcelable> ListDetail(
 
 ### SwiftUI
 
-Added with the iOS part.
+```swift
+struct ListDetail<Item: Identifiable, Row: View, Detail: View>: View {
+    let items: [Item]
+    @ViewBuilder let row: (Item) -> Row
+    @ViewBuilder let detail: (Item?) -> Detail
+    @State private var selection: Item.ID?
+
+    var body: some View {
+        NavigationSplitView {
+            List(items, selection: $selection) { row($0) }
+        } detail: {
+            detail(items.first { $0.id == selection })
+        }
+    }
+}
+```
+
+`NavigationSplitView` shows both columns when there is room and "collapses all of its columns into
+a stack" when narrow
+([NavigationSplitView](https://developer.apple.com/documentation/swiftui/navigationsplitview)).
 
 ### CSS/HTML
 
@@ -104,7 +125,22 @@ The scaffold shows both panes in large windows, and one at a time in small ones
 
 ### SwiftUI
 
-Added with the iOS part.
+```swift
+struct MainWithSupport<Main: View, Support: View>: View {
+    @ViewBuilder let main: () -> Main
+    @ViewBuilder let support: () -> Support
+    @State private var showSupport = true
+
+    var body: some View {
+        main().inspector(isPresented: $showSupport) { support() }
+    }
+}
+```
+
+An inspector "can present as a trailing column in a horizontally regular size class, but adapt to
+a sheet in a horizontally compact size class"
+([inspector](https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:)),
+iOS 17+).
 
 ### CSS/HTML
 
@@ -146,7 +182,24 @@ remaining width
 
 ### SwiftUI
 
-Added with the iOS part.
+```swift
+struct Feed<Item: Identifiable, Card: View>: View {
+    let items: [Item]
+    @ViewBuilder let card: (Item) -> Card
+
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 180))], spacing: 16) {
+                ForEach(items) { card($0) }
+            }
+            .padding()
+        }
+    }
+}
+```
+
+`.adaptive(minimum:)` puts "multiple items in the space of a single flexible item"
+([GridItem.Size](https://developer.apple.com/documentation/swiftui/griditem/size-swift.enum)).
 
 ### CSS/HTML
 
@@ -203,7 +256,23 @@ tabletop
 
 ### SwiftUI
 
-Added with the iOS part. iOS has no fold API, so the SwiftUI sketch covers compact and wide only.
+iOS has no fold API, so the SwiftUI sketch covers compact and wide only.
+
+```swift
+struct CanvasAndControls<Canvas: View, Controls: View>: View {
+    @Environment(\.horizontalSizeClass) private var width
+    @ViewBuilder let canvas: () -> Canvas
+    @ViewBuilder let controls: () -> Controls
+
+    var body: some View {
+        if width == .regular {
+            HStack(spacing: 0) { canvas(); controls().frame(width: 320) }
+        } else {
+            VStack(spacing: 0) { canvas(); controls() }
+        }
+    }
+}
+```
 
 ### CSS/HTML
 
@@ -270,7 +339,23 @@ scaffold and the `layoutType` override, not the item signature.
 
 ### SwiftUI
 
-Added with the iOS part.
+```swift
+struct AppNavigation: View {
+    var body: some View {
+        TabView {
+            Tab("Home", systemImage: "house") { HomeView() }
+            Tab("Search", systemImage: "magnifyingglass") { SearchView() }
+            Tab("Profile", systemImage: "person") { ProfileView() }
+        }
+        .tabViewStyle(.sidebarAdaptable)
+    }
+}
+```
+
+With `sidebarAdaptable`, tabs appear in a sidebar and a tab bar on iPadOS. On iOS and "the
+horizontally compact size class on iPadOS", they appear in the tab bar
+([TabView](https://developer.apple.com/documentation/swiftui/tabview)). The `Tab(_:systemImage:content:)`
+initializer is [unverified — confirm before use] against your SDK version.
 
 ### CSS/HTML
 
@@ -321,7 +406,25 @@ your Material 3 version. Pass `wide` from the window size class.
 
 ### SwiftUI
 
-Added with the iOS part.
+```swift
+struct FiltersButton<Filters: View>: View {
+    @ViewBuilder let filters: () -> Filters
+    @State private var showFilters = false
+
+    var body: some View {
+        Button("Filters") { showFilters = true }
+            .popover(isPresented: $showFilters) {
+                filters().presentationDetents([.medium, .large])
+            }
+    }
+}
+```
+
+"On iPhone, popovers adapt into sheets", and in vertically compact environments they appear "as a
+full-screen cover"
+([popover](https://developer.apple.com/documentation/swiftui/view/popover(ispresented:attachmentanchor:arrowedge:content:))).
+`presentationDetents` sets the sheet's heights; the default is `.large`
+([presentationDetents](https://developer.apple.com/documentation/swiftui/view/presentationdetents(_:))).
 
 ### CSS/HTML
 
@@ -386,7 +489,24 @@ line length depends on font and text size.
 
 ### SwiftUI
 
-Added with the iOS part.
+```swift
+struct ReadingColumn<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) { content() }
+                .frame(maxWidth: 640, alignment: .leading)
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity)
+        }
+    }
+}
+```
+
+The HIG's layout guides "restrict the width of text for optimal readability"
+([HIG: Layout](https://developer.apple.com/design/human-interface-guidelines/layout)). A 640 pt cap
+is a starting value; check it against the 80-character line limit.
 
 ### CSS/HTML
 
@@ -429,3 +549,10 @@ reachability | Keeping frequent controls where one thumb can reach them, which i
 - https://drafts.csswg.org/css-conditional-5/
 - https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries
 - https://html.spec.whatwg.org/multipage/rendering.html
+- https://developer.apple.com/documentation/swiftui/navigationsplitview
+- https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:)
+- https://developer.apple.com/documentation/swiftui/griditem/size-swift.enum
+- https://developer.apple.com/documentation/swiftui/tabview
+- https://developer.apple.com/documentation/swiftui/view/popover(ispresented:attachmentanchor:arrowedge:content:)
+- https://developer.apple.com/documentation/swiftui/view/presentationdetents(_:)
+- https://developer.apple.com/design/human-interface-guidelines/layout

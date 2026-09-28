@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210" role="img" aria-labelledby="t">
+  <title id="t">Android window size classes by width: compact below 600 dp, medium 600 to 840, expanded 840 to 1200, large 1200 to 1600, extra-large from 1600; and by height: compact below 480, medium 480 to 900, expanded from 900</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.f{fill:#007C85}.fs{stroke:#007C85}.h{fill:#BE185D}.hs{stroke:#BE185D}
+    .p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}.ok{fill:#047857}.warn{fill:#B45309}
+    @media (prefers-color-scheme:dark){.t{fill:#DFE2EE}.s{fill:#9AA8B8}.b{stroke:#334155}.f{fill:#00F0FF}.fs{stroke:#00F0FF}.h{fill:#F062A8}.hs{stroke:#F062A8}.p{fill:#818CF8;stroke:#818CF8}.ok{fill:#10B981}.warn{fill:#F59E0B}}
+  </style>
+  <text class="t" x="20" y="30">Width (dp)</text>
+  <g>
+    <rect class="p" x="20" y="44" width="228" height="40"/><text class="t" x="134" y="69" text-anchor="middle">Compact</text>
+    <rect class="p" x="250" y="44" width="92" height="40"/><text class="t" x="296" y="69" text-anchor="middle">Medium</text>
+    <rect class="p" x="344" y="44" width="136" height="40"/><text class="t" x="412" y="69" text-anchor="middle">Expanded</text>
+    <rect class="p" x="482" y="44" width="136" height="40"/><text class="t" x="550" y="69" text-anchor="middle">Large</text>
+    <rect class="p" x="620" y="44" width="120" height="40"/><text class="t" x="680" y="69" text-anchor="middle">Extra-large</text>
+    <text class="s" x="250" y="102" text-anchor="middle">600</text><text class="s" x="344" y="102" text-anchor="middle">840</text>
+    <text class="s" x="482" y="102" text-anchor="middle">1200</text><text class="s" x="620" y="102" text-anchor="middle">1600</text>
+  </g>
+  <text class="t" x="20" y="136">Height (dp)</text>
+  <g>
+    <rect class="p" x="20" y="150" width="182" height="34"/><text class="t" x="111" y="172" text-anchor="middle">Compact</text>
+    <rect class="p" x="204" y="150" width="160" height="34"/><text class="t" x="284" y="172" text-anchor="middle">Medium</text>
+    <rect class="p" x="366" y="150" width="374" height="34"/><text class="t" x="553" y="172" text-anchor="middle">Expanded</text>
+    <text class="s" x="204" y="202" text-anchor="middle">480</text><text class="s" x="366" y="202" text-anchor="middle">900</text>
+  </g>
+</svg>

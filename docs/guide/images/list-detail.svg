@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-labelledby="t">
+  <title id="t">List and detail: in a compact window the list is shown, then the detail replaces it and back returns to the list; in a medium or wider window, with both panes at least 320 wide, list and detail sit side by side</title>
+  <style>
+    .t{font:500 14px Inter,system-ui,sans-serif;fill:#0F131C}.s{font:400 12px Inter,system-ui,sans-serif;fill:#4B5565}
+    .b{fill:none;stroke:#CBD2DC;stroke-width:2}.f{fill:#007C85}.fs{stroke:#007C85}.h{fill:#BE185D}.hs{stroke:#BE185D}
+    .p{fill:#4F46E5;fill-opacity:.14;stroke:#4F46E5;stroke-width:1.5}.ok{fill:#047857}.warn{fill:#B45309}
+    @media (prefers-color-scheme:dark){.t{fill:#DFE2EE}.s{fill:#9AA8B8}.b{stroke:#334155}.f{fill:#00F0FF}.fs{stroke:#00F0FF}.h{fill:#F062A8}.hs{stroke:#F062A8}.p{fill:#818CF8;stroke:#818CF8}.ok{fill:#10B981}.warn{fill:#F59E0B}}
+  </style>
+  <rect class="b" x="30" y="40" width="110" height="170" rx="10"/>
+  <rect class="p" x="38" y="50" width="94" height="150" rx="4"/><text class="s" x="85" y="130" text-anchor="middle">list</text>
+  <text class="t" x="160" y="130" text-anchor="middle">→</text>
+  <rect class="b" x="180" y="40" width="110" height="170" rx="10"/>
+  <rect class="p" x="188" y="50" width="94" height="150" rx="4"/><text class="s" x="235" y="130" text-anchor="middle">detail</text>
+  <text class="t" x="160" y="232" text-anchor="middle">Compact: one pane, back returns to the list</text>
+  <rect class="b" x="360" y="40" width="370" height="170" rx="10"/>
+  <rect class="p" x="370" y="50" width="130" height="150" rx="4"/><text class="s" x="435" y="130" text-anchor="middle">list ≥ 320</text>
+  <rect class="p" x="508" y="50" width="212" height="150" rx="4"/><text class="s" x="614" y="130" text-anchor="middle">detail ≥ 320</text>
+  <text class="t" x="545" y="232" text-anchor="middle">Medium and wider: side by side</text>
+</svg>

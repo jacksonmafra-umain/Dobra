@@ -21,6 +21,8 @@ device screen. Window size classes are not intended for *isTablet*‑type logic"
 | Extra-large | ≥ 1600 dp | | |
 
 Source: [Use window size classes](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes).
+![Android width classes at 600, 840, 1200 and 1600 dp, and height classes at 480 and 900 dp](images/android-size-classes.svg)
+
 Large and Extra-large were added in `androidx.window` 1.5.0
 ([release notes](https://developer.android.com/jetpack/androidx/releases/window)).
 
@@ -96,6 +98,8 @@ not one feature
 | `isSeparating` | `true` / `false` | Whether the feature splits the window "into multiple physical areas that can be seen by users as logically separate" |
 | `occlusionType` | `NONE`, `FULL` | Whether the feature hides part of the window |
 | `bounds` | `Rect` (from `DisplayFeature`) | Where the feature is, in window coordinates |
+
+![Fold postures: flat, book, tabletop and a dual-screen device, and which of them separate the window](images/fold-postures.svg)
 
 Postures, from the fold-aware guide:
 
