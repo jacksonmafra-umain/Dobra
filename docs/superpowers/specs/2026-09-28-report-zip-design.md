@@ -37,7 +37,8 @@ or kept: the ZIP is read in the browser, and closing the tab discards it.
 foldable-report/
   report.json          the Report, unchanged (packages/core/src/report.ts)
   report.md            toMarkdown(report) plus an image under each frame heading
-  index.json           { "version": 1, "screenshots": { "<frame ref>": "screenshots/<file>.png" } }
+  index.json           { "version": 1, "screenshots": { "<frame ref>": "screenshots/<file>.png" },
+                         "missing": { "<frame ref>": "<why>" } }
   screenshots/
     001-galaxy-z-flip-7__cover__closed__landscape.png
     002-pixel-9-pro-fold__inner__book__portrait.png
@@ -49,8 +50,9 @@ foldable-report/
   Names are unique, and ASCII so every unzip tool handles them.
 - **Markdown:** `report.md` links images as `![<frame name>](screenshots/<file>.png)`, so it reads
   correctly after unzipping, in an editor or on GitHub.
-- **Missing images:** a frame without a screenshot (unloaded, or its image failed) simply has no
-  entry in `index.json`.
+- **Missing images:** a frame without a screenshot (unloaded, or its capture failed) is listed
+  under `missing` in `index.json` with the reason, so every frame in the report appears in exactly
+  one of the two maps.
 - **Images:** PNG, captured at the frame's size and scale. The CLI captures the viewport, not the
   full page, so the image matches the window the rules checked.
 
@@ -100,17 +102,25 @@ Markdown file is only written, never rendered by the viewer.
 - `dobra check site <url> --zip foldable-report.zip` writes the package. It combines with `--out`
   and `--md`, and prints the ZIP's path in the summary.
 - Each target is captured with `page.screenshot({ type: 'png' })` right after the layout is
-  collected, before the unfold pass. A capture that fails leaves that frame out of `index.json` and
-  adds a note; it never fails the run.
+  collected, before the unfold pass, and within the same `deadline`: the capture's timeout is
+  capped by the time left, so a slow page can't push a run past its budget.
+- A capture that fails is recorded under `missing` in `index.json` with its reason, and adds a note.
+  It never fails the run.
 - The exit codes are unchanged.
 
 ## 7. Testing
 
-- **Core:** a round trip through `reportZip` and `readReportZip`. The refusals: too big, too many
+- **Core:** `toMarkdown` without `{ images }` stays byte-identical to today's output, pinned by a
+  test. A round trip through `reportZip` and `readReportZip`. The refusals: too big, too many
   entries, a `..` path, a non-PNG image, a missing `report.json`, an invalid report. `toMarkdown`
   with images, plus a snapshot without them to show the output is unchanged.
-- **CLI:** unit tests of the `--zip` argument. An e2e case that checks a fixture page with `--zip`,
-  unzips the result and finds one PNG per loaded target.
+- **CLI:** unit tests of the `--zip` argument. An e2e case in `packages/cli/src/e2e.test.ts`
+  checks a fixture page with `--zip`, then:
+  - reads the ZIP back with `readReportZip`;
+  - checks that `index.json` maps every frame, to an image or to `missing`;
+  - checks that the report still passes `parseReport`.
+
+  Exit codes stay unchanged.
 - **Report app:** opening a ZIP with a fake `File` shows the images; a refused ZIP shows a message;
   Download ZIP builds a package that `readReportZip` reads back.
 - **Browser, by hand:**
