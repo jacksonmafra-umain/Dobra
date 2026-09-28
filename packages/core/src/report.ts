@@ -116,7 +116,11 @@ export function buildReport(catalog: Catalog, source: Report['source'], inputs: 
 
 const ICON = { error: '⛔', warn: '⚠️', info: 'ℹ️' } as const;
 
-export function toMarkdown(r: Report): string {
+/** Escapes the characters that would end an image link's alt text. */
+const altText = (s: string) => s.replace(/[\\[\]]/g, (c) => `\\${c}`);
+
+/** `images` maps a frame ref to a relative path; each such frame's heading is followed by its image. */
+export function toMarkdown(r: Report, opts: { images?: Record<string, string> } = {}): string {
   const lines = [
     `# Foldable check — ${r.source.name}`,
     '',
@@ -130,6 +134,8 @@ export function toMarkdown(r: Report): string {
   ];
   for (const f of r.frames) {
     lines.push('', `### ${f.name} (${f.confidence === 'none' ? `unknown size${f.nearest ? `, nearest ${f.nearest}` : ''}` : f.confidence})`);
+    const image = opts.images?.[f.ref];
+    if (image) lines.push('', `![${altText(f.name)}](${image})`);
     if (!f.findings.length) lines.push('', 'No problems found.');
     for (const x of f.findings) lines.push(`- ${ICON[x.severity]} **${x.ruleId}** ${x.message}${x.estimated ? ' _(estimated)_' : ''}`);
   }

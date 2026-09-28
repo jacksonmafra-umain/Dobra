@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`report > writes the same Markdown as before when no screenshots are given 1`] = `
+"# Foldable check — My file
+
+Generated 2026-09-27T10:00:00.000Z · catalog 0.5.0 · file version 42
+
+| Category | Covered |
+|---|---|
+| phone | 0/1 |
+| foldable-book | 0/5 |
+| foldable-flip | 0/3 |
+| multi-fold | 0/3 |
+| tablet | 0/2 |
+| desktop | 0/1 |
+| dual-screen | 1/3 |
+
+## Frames
+
+### Home (tag)
+- ⛔ **hinge-content** Buy button sits in the folding region.
+
+### Odd (unknown size, nearest pixel-fold/outer/closed/portrait)
+
+No problems found.
+
+## Could not load
+
+- Heavy: Rate limited: retry in 30 s
+"
+`;

@@ -41,6 +41,23 @@ describe('report', () => {
     expect(md).toContain('Could not load');
   });
 
+  it('writes the same Markdown as before when no screenshots are given', () => {
+    expect(toMarkdown(r)).toMatchSnapshot();
+    expect(toMarkdown(r, {})).toBe(toMarkdown(r));
+    expect(toMarkdown(r, { images: {} })).toBe(toMarkdown(r));
+  });
+
+  it('links a screenshot under the heading of each frame that has one', () => {
+    const md = toMarkdown(r, { images: { '1:1': 'screenshots/001-surface-duo-2__spanned__spanned__landscape.png' } });
+    expect(md).toContain('### Home (tag)\n\n![Home](screenshots/001-surface-duo-2__spanned__spanned__landscape.png)\n');
+    expect(md.match(/!\[/g)).toHaveLength(1);
+  });
+
+  it('escapes a frame name that would break the image link', () => {
+    const odd = { ...r, frames: [{ ...r.frames[0], name: 'Home [draft] (v2)' }] };
+    expect(toMarkdown(odd, { images: { '1:1': 'screenshots/x.png' } })).toContain('![Home \\[draft\\] (v2)](screenshots/x.png)');
+  });
+
   it('keeps optional notes, and still reads reports without them', () => {
     const noted = { ...r, notes: ['pixel-9/main/-/portrait: page truncated at 4000 elements'] };
     expect(parseReport(JSON.parse(JSON.stringify(noted))).notes).toEqual(noted.notes);
