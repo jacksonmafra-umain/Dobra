@@ -89,6 +89,10 @@ export interface OpenedReportZip {
   images: Map<string, Uint8Array<ArrayBuffer>>;
   missing: Record<string, string>;
   notes: string[];
+  /** The package's report.md as written, or null when it has none. Untrusted text: render it inertly. */
+  markdown: string | null;
+  /** Frame ref to the path of each screenshot in `images`, as the Markdown links to it. */
+  paths: Record<string, string>;
 }
 
 interface Entry {
@@ -178,7 +182,7 @@ function readEntries(bytes: Uint8Array): Record<string, Uint8Array<ArrayBuffer>>
       throw new ReportZipError('This ZIP would expand to more than is safe to open here.');
     if (!e.name.startsWith(ROOT)) continue;
     const rel = e.name.slice(ROOT.length);
-    if (rel !== 'report.json' && rel !== 'index.json' && !SCREENSHOT.test(rel)) continue;
+    if (rel !== 'report.json' && rel !== 'index.json' && rel !== 'report.md' && !SCREENSHOT.test(rel)) continue;
     // Unzip tools disagree on which of two same-named entries wins, so neither is trusted.
     if (seen.has(e.name)) throw new ReportZipError(`This ZIP has ${short(e.name)} twice.`);
     seen.add(e.name);
@@ -205,6 +209,7 @@ export function readReportZip(bytes: Uint8Array): OpenedReportZip {
 
   const notes: string[] = [];
   const images = new Map<string, Uint8Array<ArrayBuffer>>();
+  const paths: Record<string, string> = {};
   let missing: Record<string, string> = {};
   const rawIndex = files[`${ROOT}index.json`];
   if (rawIndex) {
@@ -225,8 +230,12 @@ export function readReportZip(bytes: Uint8Array): OpenedReportZip {
       }
       const problem = pngProblem(data);
       if (problem) notes.push(`The screenshot for ${ref} was not shown: ${problem}.`);
-      else images.set(ref, data);
+      else {
+        images.set(ref, data);
+        paths[ref] = path;
+      }
     }
   }
-  return { report, images, missing, notes };
+  const md = files[`${ROOT}report.md`];
+  return { report, images, missing, notes, markdown: md ? strFromU8(md) : null, paths };
 }
