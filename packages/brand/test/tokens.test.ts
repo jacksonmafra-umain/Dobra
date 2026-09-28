@@ -27,6 +27,17 @@ describe('tokens.css', () => {
   });
 });
 
+describe('before a surface sets data-theme', () => {
+  // Pages set data-theme from JavaScript, which runs after the first paint. Until then a light
+  // system must already get the light tokens, or light-theme users see a dark flash on every load.
+  it('gives a light system the light theme tokens when no data-theme is set', () => {
+    const at = css.indexOf('@media (prefers-color-scheme: light)');
+    expect(at).toBeGreaterThan(-1);
+    const fallback = cssBlock(css.slice(at), ':root:not([data-theme])');
+    expect(Object.fromEntries(fallback)).toEqual(Object.fromEntries(themes.light));
+  });
+});
+
 describe('tokens.ts', () => {
   it('mirrors both theme blocks of tokens.css exactly', () => {
     for (const theme of ['dark', 'light'] as const) {
