@@ -59,6 +59,7 @@ describe.each([['dark', ':root'], ['light', ":root[data-theme='light']"]] as con
 describe('narrow screens', () => {
   // A Figma file name is shown in an h2; one long word must wrap, not widen a 375 px page.
   it('wraps long headings', () => {
-    expect(declarations(css.slice(css.lastIndexOf('\nh2 {')))).toContainEqual(['overflow-wrap', 'anywhere']);
+    const h2Rules = [...css.matchAll(/(?:^|\n)h2 \{([^}]*)\}/g)].flatMap((m) => declarations(m[1]));
+    expect(h2Rules).toContainEqual(['overflow-wrap', 'anywhere']);
   });
 });
