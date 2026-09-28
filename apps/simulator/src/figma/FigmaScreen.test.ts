@@ -72,7 +72,7 @@ describe('FigmaScreen hit boxes and notes', () => {
 
 describe('FigmaStage', () => {
   it('scrolls the frame inside the collision checker\'s scroll area', () => {
-    const out = renderToStaticMarkup(createElement(FigmaStage, { ...base, env: { width: 402, height: 874 } as never, onCollisions: () => {} }));
+    const out = renderToStaticMarkup(createElement(FigmaStage, { ...base, env: { width: 402, height: 874, safeArea: { top: 62, right: 0, bottom: 34, left: 0 } } as never, onCollisions: () => {} }));
     expect(out).toMatch(/figma-screen__host[^>]*><div class="screen__scroll figma-screen__scroll"><div class="figma-screen"/);
   });
 });

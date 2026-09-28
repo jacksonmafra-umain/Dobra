@@ -797,7 +797,9 @@ body {
   gap: var(--dobra-space-sm);
   min-height: 100%;
   box-sizing: border-box;
-  padding: var(--dobra-space-lg);
+  /* Clear of the status bar and the sides, as the sample screens are (screenVars sets --sa-*). */
+  padding: calc(var(--sa-top, 0px) + var(--dobra-space-lg)) calc(var(--sa-right, 0px) + var(--dobra-space-lg))
+    calc(var(--sa-bottom, 0px) + var(--dobra-space-lg)) calc(var(--sa-left, 0px) + var(--dobra-space-lg));
   color: var(--ui-muted);
   background: var(--ui-bg);
   font: var(--dobra-type-body-md);

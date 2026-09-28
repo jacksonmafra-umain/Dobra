@@ -126,3 +126,13 @@ describe('Figma screen states on a foldable', () => {
     expect(block).toMatch(/justify-items: start/);
   });
 });
+
+describe('Figma screen states and the safe area', () => {
+  // The message must start below the status bar (and clear of the sides in landscape), like the
+  // sample screens, which read the insets from --sa-*.
+  it('pads the state by the safe-area insets', () => {
+    const css = read('./app.css');
+    const block = css.slice(css.indexOf('.figma-screen__state {'), css.indexOf('}', css.indexOf('.figma-screen__state {')));
+    for (const side of ['top', 'right', 'bottom', 'left']) expect(block, side).toContain(`var(--sa-${side}, 0px)`);
+  });
+});
