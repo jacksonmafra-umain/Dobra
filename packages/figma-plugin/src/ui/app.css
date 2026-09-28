@@ -1,9 +1,38 @@
-/* Figma provides --figma-color-* when the plugin opens with themeColors: true. */
+/* The panel's palette, all from @dobra/brand. <html> carries data-theme from Figma's theme class
+   (src/ui/theme.ts), so these follow Figma's light and dark. */
+:root {
+  --bg: var(--dobra-bg);
+  --panel: var(--dobra-panel);
+  --field: var(--dobra-field);
+  --text: var(--dobra-text);
+  --muted: var(--dobra-muted);
+  --border: var(--dobra-border);
+  --border-strong: var(--dobra-border-strong);
+  --accent: var(--dobra-fold);
+  --on-accent: var(--dobra-on-fold);
+  --accent-soft: color-mix(in srgb, var(--dobra-fold) 14%, transparent);
+  --bad: var(--dobra-hinge);
+  --bad-soft: color-mix(in srgb, var(--dobra-hinge) 14%, transparent);
+  --warn: var(--dobra-warn);
+  --warn-soft: color-mix(in srgb, var(--dobra-warn) 14%, transparent);
+  --ok: var(--dobra-pass);
+  --ok-soft: color-mix(in srgb, var(--dobra-pass) 14%, transparent);
+  --info: var(--dobra-accent-2);
+  --info-soft: color-mix(in srgb, var(--dobra-accent-2) 14%, transparent);
+}
+/* On a light background a 14% tint is too dark behind small colored text; 6% keeps chips at 4.5:1. */
+:root[data-theme='light'] {
+  --accent-soft: color-mix(in srgb, var(--dobra-fold) 6%, transparent);
+  --bad-soft: color-mix(in srgb, var(--dobra-hinge) 6%, transparent);
+  --warn-soft: color-mix(in srgb, var(--dobra-warn) 6%, transparent);
+  --ok-soft: color-mix(in srgb, var(--dobra-pass) 6%, transparent);
+  --info-soft: color-mix(in srgb, var(--dobra-accent-2) 6%, transparent);
+}
 body {
   margin: 0;
-  font: 12px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color: var(--figma-color-text, #1e1e1e);
-  background: var(--figma-color-bg, #ffffff);
+  font: var(--dobra-type-body-md);
+  color: var(--text);
+  background: var(--bg);
 }
 main {
   padding: 8px 12px 16px;
@@ -12,14 +41,14 @@ button,
 select {
   font: inherit;
   color: inherit;
-  background: var(--figma-color-bg-secondary, #f5f5f5);
-  border: 1px solid var(--figma-color-border, #e6e6e6);
+  background: var(--field);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 4px 8px;
 }
 button.primary {
-  background: var(--figma-color-bg-brand, #0d99ff);
-  color: var(--figma-color-text-onbrand, #ffffff);
+  background: var(--accent);
+  color: var(--on-accent);
   border-color: transparent;
   margin-bottom: 8px;
 }
@@ -32,7 +61,7 @@ button:disabled {
   margin-bottom: 8px;
 }
 .tabs button[aria-pressed='true'] {
-  border-color: var(--figma-color-border-brand, #0d99ff);
+  border-color: var(--accent);
 }
 .row {
   display: flex;
@@ -44,20 +73,20 @@ button:disabled {
   display: grid;
   gap: 4px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--figma-color-border, #e6e6e6);
+  border-bottom: 1px solid var(--border);
 }
 .muted {
-  color: var(--figma-color-text-secondary, #757575);
+  color: var(--muted);
 }
 .notice {
   padding: 6px 8px;
   border-radius: 6px;
 }
 .notice--error {
-  background: var(--figma-color-bg-danger-tertiary, #ffe0e0);
+  background: var(--bad-soft);
 }
 .notice--info {
-  background: var(--figma-color-bg-secondary, #f5f5f5);
+  background: var(--field);
 }
 table {
   width: 100%;
