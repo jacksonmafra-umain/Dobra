@@ -55,7 +55,7 @@ table {
 }
 main { padding: 12px 12px 20px; }
 h1, h2, h3 { font: var(--dobra-type-headline-sm); margin: 12px 0 6px; }
-button, select, input[type='text'], input[type='search'] {
+button, select, input:not([type]), input[type='text'], input[type='search'] {
   font: 500 12px/1.2 var(--dobra-font-body);
   color: var(--text);
   background: var(--field);

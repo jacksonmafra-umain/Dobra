@@ -26,3 +26,10 @@ describe('app.css', () => {
     expect(css).not.toContain('--figma-color');
   });
 });
+
+describe('inputs', () => {
+  // The Name words fields in the Check tab are <input> with no type attribute.
+  it('styles text inputs that have no type attribute', () => {
+    expect(css).toMatch(/input:not\(\[type\]\)[^{]*\{[^}]*background: var\(--field\)/);
+  });
+});
