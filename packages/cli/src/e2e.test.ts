@@ -105,7 +105,7 @@ describe('dobra report (built binary)', () => {
         child.on('exit', (code) => reject(new Error(`exited ${code}: ${buf}`)));
       });
       expect(await (await fetch(`${url}api/health`)).json()).toMatchObject({ ok: true, mode: 'local' });
-      const res = await fetch(`${url}api/check`, { method: 'POST', body: JSON.stringify({ url: site('06-hinge-content.html'), targets: [DUO] }) });
+      const res = await fetch(`${url}api/check`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url: site('06-hinge-content.html'), targets: [DUO] }) });
       expect(res.status).toBe(200);
       const report = parseReport(await res.json());
       expect(report.source.kind).toBe('web');

@@ -56,13 +56,30 @@ async function fileFor(dir: string, pathname: string): Promise<string | null> {
   }
 }
 
+export const isLoopback = (host: string) => host === 'localhost' || host === '::1' || /^127\./.test(host);
+
 export async function startLocalServer(opts: { port: number; host: string; dir: string; handler: LocalHandler }): Promise<LocalServer> {
+  let port = opts.port;
+  let checking = false;
+  // Bound to loopback, only requests addressed to this machine are served: a page on another site
+  // that points its own domain at 127.0.0.1 (DNS rebinding) sends a foreign Host and is refused.
+  const allowedHost = (h: string | undefined) => {
+    if (!isLoopback(opts.host)) return true;
+    const name = (h ?? '').replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+    return isLoopback(name);
+  };
   const server = createServer(async (req, res) => {
     try {
+      if (!allowedHost(req.headers.host)) return json(res, 403, { error: 'This server only answers requests addressed to this machine.' });
       const { pathname } = new URL(req.url ?? '/', 'http://local');
       if (pathname === '/api/health') return json(res, 200, opts.handler.health());
       if (pathname === '/api/check') {
         if (req.method !== 'POST') return json(res, 405, { error: 'Use POST.' });
+        // JSON only, from this page only: a cross-site form or fetch can't start checks here.
+        if (!(req.headers['content-type'] ?? '').includes('application/json')) return json(res, 415, { error: 'Send the request as application/json.' });
+        const origin = req.headers.origin;
+        if (origin && origin !== `http://${req.headers.host}`) return json(res, 403, { error: 'Checks can only be started from this page.' });
+        if (checking) return json(res, 429, { error: 'A check is already running; try again when it finishes.' });
         const raw = await readBody(req);
         if (raw === null) return json(res, 413, { error: 'The request body is too large.' });
         let body: unknown;
@@ -71,7 +88,13 @@ export async function startLocalServer(opts: { port: number; host: string; dir: 
         } catch {
           return json(res, 400, { error: 'The request body is not JSON.' });
         }
-        const result = await opts.handler.check(body, req.socket.remoteAddress ?? '');
+        checking = true;
+        let result;
+        try {
+          result = await opts.handler.check(body, req.socket.remoteAddress ?? '');
+        } finally {
+          checking = false;
+        }
         return result.ok ? json(res, 200, result.report) : json(res, result.status, { error: result.error });
       }
       const file = await fileFor(opts.dir, pathname);
@@ -94,7 +117,7 @@ export async function startLocalServer(opts: { port: number; host: string; dir: 
     server.once('error', fail);
     server.listen(opts.port, opts.host, () => done());
   });
-  const { port } = server.address() as AddressInfo;
+  port = (server.address() as AddressInfo).port;
   const host = opts.host.includes(':') ? `[${opts.host}]` : opts.host;
   return {
     url: `http://${host}:${port}/`,

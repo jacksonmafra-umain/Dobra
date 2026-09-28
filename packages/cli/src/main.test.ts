@@ -85,4 +85,11 @@ describe('run', () => {
     expect(started).toMatchObject({ port: 5301, host: '127.0.0.1' });
     expect(out.join('\n')).toContain('Foldable Check: http://127.0.0.1:5301/');
   });
+
+  it('warns when dobra report listens beyond this machine', async () => {
+    const { io, err } = harness(report());
+    const serve = async () => ({ url: 'http://0.0.0.0:5301/', close: async () => {}, closed: Promise.resolve() });
+    expect(await run(['report', '--host', '0.0.0.0'], { ...io, serve } as never)).toBe(0);
+    expect(err.join('\n')).toMatch(/other machines on your network can/);
+  });
 });

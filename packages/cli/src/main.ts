@@ -6,7 +6,7 @@ import { loadCatalog } from '@dobra/core/catalog/load';
 import { toMarkdown, type Report } from '@dobra/core/report';
 import { parseArgs } from './args';
 import { checkSite } from './checkSite';
-import { startLocalServer } from './localServer';
+import { isLoopback, startLocalServer } from './localServer';
 import { LOCAL } from './policy';
 import { createCheckHandler } from './server';
 import { chooseTargets } from './targets';
@@ -56,6 +56,8 @@ export async function run(argv: string[], io: Io): Promise<number> {
     const server = await (io.serve ?? startLocalServer)({ port: opts.port, host: opts.host, dir: opts.dir ?? REPORT_DIR, handler });
     io.out(`Foldable Check: ${server.url}`);
     io.out('Checks run on this machine, so local and staging addresses work. Press Ctrl+C to stop.');
+    if (!isLoopback(opts.host))
+      io.err(`Listening on ${opts.host}: other machines on your network can open this page and check any address, including private ones.`);
     process.once('SIGINT', () => void server.close());
     await server.closed;
     return 0;

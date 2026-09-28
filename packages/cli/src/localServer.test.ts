@@ -43,13 +43,14 @@ describe('startLocalServer', () => {
     expect(await r.json()).toMatchObject({ version: 1, echo: { url: 'http://x/' } });
   });
   it('turns a refused check into its HTTP status', async () => {
-    const r = await fetch(`${server.url}api/check`, { method: 'POST', body: JSON.stringify({ url: 'http://private/' }) });
+    const r = await fetch(`${server.url}api/check`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url: 'http://private/' }) });
     expect(r.status).toBe(403);
     expect(await r.json()).toEqual({ error: 'private' });
   });
   it('rejects a body that is not JSON, or too large', async () => {
-    expect((await fetch(`${server.url}api/check`, { method: 'POST', body: '{nope' })).status).toBe(400);
-    expect((await fetch(`${server.url}api/check`, { method: 'POST', body: 'x'.repeat(70_000) })).status).toBe(413);
+    const json = { 'content-type': 'application/json' };
+    expect((await fetch(`${server.url}api/check`, { method: 'POST', headers: json, body: '{nope' })).status).toBe(400);
+    expect((await fetch(`${server.url}api/check`, { method: 'POST', headers: json, body: 'x'.repeat(70_000) })).status).toBe(413);
   });
   it('rejects GET on /api/check', async () => {
     expect((await fetch(`${server.url}api/check`)).status).toBe(405);
@@ -67,6 +68,35 @@ describe('startLocalServer', () => {
       expect((await fetch(`${bare.url}api/health`)).status).toBe(200);
     } finally {
       await bare.close();
+    }
+  });
+
+  it('refuses a request whose Host is not this server (DNS rebinding)', async () => {
+    const { request } = await import('node:http');
+    const status = await new Promise<number>((done) => {
+      const u = new URL(server.url);
+      request({ host: u.hostname, port: u.port, path: '/api/health', headers: { host: 'evil.example' } }, (r) => done(r.statusCode ?? 0)).end();
+    });
+    expect(status).toBe(403);
+  });
+  it('refuses a check that is not sent as JSON, or comes from another site', async () => {
+    expect((await fetch(`${server.url}api/check`, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: '{"url":"http://x/"}' })).status).toBe(415);
+    const cross = await fetch(`${server.url}api/check`, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://evil.example' }, body: '{"url":"http://x/"}' });
+    expect(cross.status).toBe(403);
+  });
+  it('runs one check at a time', async () => {
+    let release!: () => void;
+    const slow = { ...handler, check: () => new Promise<never>((r) => (release = () => r({ ok: true, report: {} } as never))) };
+    const busy = await startLocalServer({ port: 0, host: '127.0.0.1', dir, handler: slow as never });
+    try {
+      const post = () => fetch(`${busy.url}api/check`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"url":"http://x/"}' });
+      const first = post();
+      await new Promise((r) => setTimeout(r, 50));
+      expect((await post()).status).toBe(429);
+      release();
+      expect((await first).status).toBe(200);
+    } finally {
+      await busy.close();
     }
   });
 });
