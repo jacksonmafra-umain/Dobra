@@ -66,6 +66,20 @@ npm run dobra -- emulator script galaxy-z-fold-7   # the same steps as a shell s
 | `--force` | Replace an emulator or simulator that has the same name |
 | `--json` | Print the result as JSON (`"version": 1`), for scripts and agents |
 
+### Switch a running emulator's posture
+
+```bash
+npm run dobra -- emulator posture galaxy-z-fold-7 book
+npm run dobra -- emulator posture galaxy-z-fold-7 tabletop --json
+```
+
+It finds the running emulator for the device (the AVD `dobra_<device>`, or `--name`, or `--serial
+emulator-5554`) and sends the posture: closed, half-open (book, tabletop, flex) or open. A posture the
+catalog marks as rotated, such as tabletop, also turns the screen 90°; `--orientation
+portrait|landscape` chooses it yourself. `dobra emulator list --json` lists each device's postures.
+Postures the emulator doesn't have (rear display), devices with two hinges and iOS simulators exit 2
+with the reason; an emulator that isn't running exits 1 with the command that starts it.
+
 What an emulator can't reproduce is listed as **limits**, never guessed. Examples: a flip phone's
 cover screen, a rear-display posture, and posture switching on devices with two hinges. iOS
 simulators exist only for Apple's own models, so each catalog device maps to the closest one, and a
