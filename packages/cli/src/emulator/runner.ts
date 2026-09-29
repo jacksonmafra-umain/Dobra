@@ -28,29 +28,34 @@ export interface Runner {
 /** A platform tool that is missing or failed: exit 1, with what to do about it. */
 export class ToolError extends Error {}
 
-export const nodeRunner: Runner = {
-  exec: (file, args, input) =>
-    new Promise((resolve) => {
-      const child = execFile(file, args, { maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
-        const code = error ? (typeof (error as { code?: unknown }).code === 'number' ? (error as { code: number }).code : 1) : 0;
-        resolve({ code, stdout: String(stdout), stderr: error && !stderr ? error.message : String(stderr) });
-      });
-      if (input !== undefined) child.stdin?.end(input);
-    }),
-  start: (file, args) => spawn(file, args, { detached: true, stdio: 'ignore' }).unref(),
-  exists: (p) => existsSync(p),
-  list: (d) => {
-    try {
-      return readdirSync(d);
-    } catch {
-      return [];
-    }
-  },
-  read: (p) => readFileSync(p, 'utf8'),
-  write: (p, data) => writeFileSync(p, data, 'utf8'),
-  rename: (a, b) => renameSync(a, b),
-  env: process.env,
-  arch: process.arch,
-  platform: process.platform,
-  home: homedir(),
-};
+/** The real machine. Tools run with `env`, so a caller can point ANDROID_AVD_HOME somewhere else. */
+export function createNodeRunner(env: Record<string, string | undefined> = process.env): Runner {
+  return {
+    exec: (file, args, input) =>
+      new Promise((resolve) => {
+        const child = execFile(file, args, { env, maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
+          const code = error ? (typeof (error as { code?: unknown }).code === 'number' ? (error as { code: number }).code : 1) : 0;
+          resolve({ code, stdout: String(stdout), stderr: error && !stderr ? error.message : String(stderr) });
+        });
+        if (input !== undefined) child.stdin?.end(input);
+      }),
+    start: (file, args) => spawn(file, args, { env, detached: true, stdio: 'ignore' }).unref(),
+    exists: (p) => existsSync(p),
+    list: (d) => {
+      try {
+        return readdirSync(d);
+      } catch {
+        return [];
+      }
+    },
+    read: (p) => readFileSync(p, 'utf8'),
+    write: (p, data) => writeFileSync(p, data, 'utf8'),
+    rename: (a, b) => renameSync(a, b),
+    env,
+    arch: process.arch,
+    platform: process.platform,
+    home: homedir(),
+  };
+}
+
+export const nodeRunner: Runner = createNodeRunner();
