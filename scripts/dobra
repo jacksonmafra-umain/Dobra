@@ -12,7 +12,7 @@ usage() {
 Usage: dobra <command>
 
   simulator            open the simulator in the browser (Ctrl+C stops it)
-  report               open the report in the browser (Ctrl+C stops it)
+  report               open the report, with website checks, in the browser (Ctrl+C stops it)
   plugin               show where the Figma plugin is and how to add it to Figma
   check site <url>     check a website on foldables (dobra check site --help for options)
   update               download the latest version and rebuild everything
@@ -38,9 +38,25 @@ EOF
   fi
 }
 
+# The CLI's report server, so the report's Website check runs on this machine. It doesn't open a
+# browser itself, so this waits for it to answer, then opens it.
+report() {
+  local url="http://127.0.0.1:5301/" pid i
+  node "$DOBRA_DIR/packages/cli/dist/dobra.mjs" report --port 5301 &
+  pid=$!
+  trap 'kill "$pid" 2>/dev/null' INT TERM EXIT
+  for i in $(seq 1 40); do
+    curl -fs -o /dev/null "$url" && break
+    kill -0 "$pid" 2>/dev/null || exit 1
+    sleep 0.25
+  done
+  if [ "$(uname -s)" = Darwin ]; then open "$url"; fi
+  wait "$pid"
+}
+
 case "${1:-}" in
   simulator) cd "$DOBRA_DIR" && exec npm run preview --silent -w @dobra/simulator -- --open ;;
-  report) cd "$DOBRA_DIR" && exec npm exec -w @dobra/report -- vite preview --open ;;
+  report) report ;;
   plugin) plugin ;;
   # Runs in the current folder, so the report files land where the designer is working.
   check) exec node "$DOBRA_DIR/packages/cli/dist/dobra.mjs" "$@" ;;
