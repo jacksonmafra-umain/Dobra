@@ -49,7 +49,7 @@ design, never as a device to test on.
 
 ## 3. Runtime check
 
-First check for the emulator command: see emulators.md. iOS simulators only exist
+First check for the emulator command: see [emulators.md](emulators.md). iOS simulators only exist
 for device types Apple ships, so there are no folds. Use `iphone-17` (portrait and landscape),
 `iphone-17-pro-max` (landscape gives a regular width), and `ipad-11` with a narrow window.
 

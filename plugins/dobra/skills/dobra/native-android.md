@@ -50,7 +50,7 @@ when {
 
 ## 3. Runtime check
 
-First check for the emulator command: see emulators.md. If it's there, follow it
+First check for the emulator command: see [emulators.md](emulators.md). If it's there, follow it
 with these devices, then walk each posture and orientation, capture a screenshot of each screen
 under review, and look for clipped content, content under the hinge, and panes too narrow to read.
 
