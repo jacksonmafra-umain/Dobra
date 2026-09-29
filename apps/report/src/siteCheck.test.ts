@@ -32,7 +32,7 @@ describe('runCheck', () => {
   it('explains a refused private address with the local command', async () => {
     const r = await runCheck(reply(403, { error: 'This address is on a private network.' }), { url: 'http://10.0.0.1/' }, 'hosted');
     expect(r).toMatchObject({ ok: false });
-    expect(!r.ok && r.message).toContain('npm run dobra -- report');
+    expect(!r.ok && r.message).toContain('`dobra report`');
   });
   it('reports an answer that is not a report', async () => {
     const r = await runCheck(reply(200, { nope: true }), { url: 'https://example.com/' });
@@ -61,21 +61,25 @@ describe('hand-off and cancelling', () => {
 describe('cliCommand and actionsStep', () => {
   it('quotes the URL for the shell and lists the targets', () => {
     expect(cliCommand({ url: "https://a.example/?q=1&x=' y", targets: ['pixel-9/main/-/portrait'] })).toBe(
-      "npm run dobra -- check site 'https://a.example/?q=1&x='\\'' y' --targets pixel-9/main/-/portrait",
+      "dobra check site 'https://a.example/?q=1&x='\\'' y' --targets pixel-9/main/-/portrait",
     );
   });
   it('adds one --category per category, and nothing for the representative set', () => {
     expect(cliCommand({ url: 'https://a.example/', categories: ['phone', 'tablet'] })).toBe(
-      "npm run dobra -- check site 'https://a.example/' --category phone --category tablet",
+      "dobra check site 'https://a.example/' --category phone --category tablet",
     );
-    expect(cliCommand({ url: 'https://a.example/' })).toBe("npm run dobra -- check site 'https://a.example/'");
+    expect(cliCommand({ url: 'https://a.example/' })).toBe("dobra check site 'https://a.example/'");
     // The CLI writes foldable-report.json and foldable-report.zip by default, so the command names neither.
-    expect(cliCommand({ url: 'www.umain.com' })).toBe("npm run dobra -- check site 'https://www.umain.com'");
+    expect(cliCommand({ url: 'www.umain.com' })).toBe("dobra check site 'https://www.umain.com'");
+  });
+  it('uses the installed dobra command, or the npm script inside a Dobra checkout', () => {
+    expect(cliCommand({ url: 'https://a.example/' }, 'repo')).toBe("npm run dobra -- check site 'https://a.example/'");
   });
   it('builds a GitHub Actions step that installs Chromium and runs the command', () => {
     const step = actionsStep({ url: 'https://a.example/' });
     expect(step).toContain('npx playwright install --with-deps chromium');
-    expect(step).toContain("check site 'https://a.example/'");
+    // Actions runs in a checkout, where only the npm script exists.
+    expect(step).toContain("npm run dobra -- check site 'https://a.example/'");
   });
 });
 
@@ -85,8 +89,12 @@ describe('messageFor', () => {
     expect(messageFor(429, 'Too many', 'local')).not.toMatch(/minute/);
   });
   it('only suggests running locally when the check was not local', () => {
-    expect(messageFor(403, 'Checks can only be started from this page.', 'local')).not.toContain('npm run dobra -- report');
-    expect(messageFor(403, 'This address is on a private network.', 'hosted')).toContain('npm run dobra -- report');
+    expect(messageFor(403, 'Checks can only be started from this page.', 'local')).not.toContain('dobra report');
+    expect(messageFor(403, 'This address is on a private network.', 'hosted')).toContain('`dobra report`');
+  });
+  it("drops the server's own run-locally hint, in either form, before adding its own", () => {
+    for (const hint of ['Run `npm run dobra -- report` to check it.', 'Run `dobra report` to check it.'])
+      expect(messageFor(403, `Private address. ${hint}`, 'hosted').match(/dobra/g)).toHaveLength(1);
   });
   it('names the limit on a 413 and the wait on a 429', () => {
     expect(messageFor(413, 'At most 6 devices', 'hosted')).toMatch(/6 devices/);
@@ -98,7 +106,7 @@ describe('a pasted Markdown link in the Website field', () => {
   // Reported: the field held "[www.umain.com](https://www.umain.com)" and the command passed it on.
   it('builds the command with the address inside the link', () => {
     expect(cliCommand({ url: '[www.umain.com](https://www.umain.com)', categories: ['foldable-book', 'foldable-flip', 'dual-screen'] })).toBe(
-      "npm run dobra -- check site 'https://www.umain.com' --category foldable-book --category foldable-flip --category dual-screen",
+      "dobra check site 'https://www.umain.com' --category foldable-book --category foldable-flip --category dual-screen",
     );
   });
 });
