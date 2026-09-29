@@ -435,6 +435,10 @@
             "source": "estimated"
           }
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-SE-3rd-generation",
+        "source": "apple-device"
       }
     },
     {
@@ -500,6 +504,11 @@
           },
           "$note": "375×812 pt, the iPhone 13 mini / 12 mini class (Apple HIG device table). No mini is on sale; kept as the smallest notch-era size. Corner radius copied from the template: Apple publishes none."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-13-mini",
+        "source": "apple-device",
+        "estimated": true
       }
     },
     {
@@ -564,6 +573,10 @@
             "source": "estimated"
           }
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-17",
+        "source": "apple-device"
       }
     },
     {
@@ -633,6 +646,11 @@
           },
           "$note": "430×932 pt, the iPhone 16 Plus / 15 Plus class (Apple HIG). The 16 Plus is the last Plus model. Corner radius copied from the template: Apple publishes none."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Plus",
+        "source": "apple-device",
+        "estimated": true
       }
     },
     {
@@ -702,6 +720,10 @@
           },
           "$note": "420×912 pt (Apple HIG). Safe areas copied from the Pro Max and marked estimated. Corner radius copied from the template: Apple publishes none."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-Air",
+        "source": "apple-device"
       }
     },
     {
@@ -766,6 +788,10 @@
             "source": "estimated"
           }
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max",
+        "source": "apple-device"
       }
     },
     {
@@ -1064,6 +1090,10 @@
           },
           "$note": "744×1133 pt, iPad mini (A17 Pro), apple.com/ipad/compare. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+        "source": "apple-device"
       }
     },
     {
@@ -1129,6 +1159,11 @@
           },
           "$note": "820×1180 pt, shared by iPad (A16) and iPad Air 11-inch (M4). Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPad-A16",
+        "source": "apple-device",
+        "estimated": true
       }
     },
     {
@@ -1194,6 +1229,10 @@
           },
           "$note": "834×1210 pt, iPad Pro 11-inch (M4/M5), apple.com/ipad-pro/specs. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M5-12GB",
+        "source": "apple-device"
       }
     },
     {
@@ -1259,6 +1298,10 @@
           },
           "$note": "1024×1366 pt, iPad Air 13-inch (M4); also the older 12.9-inch Pro. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M4",
+        "source": "apple-device"
       }
     },
     {
@@ -1324,6 +1367,10 @@
           },
           "$note": "1032×1376 pt, iPad Pro 13-inch (M4/M5), apple.com/ipad-pro/specs. Corner radius 18 pt, safe areas and keyboard heights are estimates: Apple publishes none of them."
         }
+      },
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB",
+        "source": "apple-device"
       }
     },
     {
