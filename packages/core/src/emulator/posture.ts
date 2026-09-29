@@ -12,6 +12,8 @@ export interface EmulatorPosture {
   emulator: 1 | 2 | 3;
   /** USER_ROTATION to set, or null to leave the rotation as it is. */
   rotation: 0 | 1 | null;
+  /** What that rotation shows, or null when it's left alone. */
+  orientation: 'portrait' | 'landscape' | null;
   note?: string;
 }
 
@@ -43,6 +45,7 @@ export function emulatorPosture(catalog: Catalog, deviceId: string, postureId: s
     posture: posture.id,
     emulator: POSTURE_ID[posture.kind],
     rotation,
+    orientation: rotation === null ? null : rotation === 0 ? natural : natural === 'portrait' ? 'landscape' : 'portrait',
     ...(posture.windowArea === 'dual-screen' ? { note: `The ${posture.label} posture's dual-screen window area isn't emulated; it opens as the open posture.` } : {}),
   };
 }

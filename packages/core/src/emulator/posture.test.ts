@@ -15,13 +15,13 @@ const code = (fn: () => unknown) => {
 
 describe('emulatorPosture', () => {
   it('maps a book foldable posture to the emulator posture and leaves rotation to the user', () => {
-    expect(emulatorPosture(catalog, 'galaxy-z-fold-7', 'book')).toEqual({ device: 'galaxy-z-fold-7', posture: 'book', emulator: 2, rotation: 0 });
+    expect(emulatorPosture(catalog, 'galaxy-z-fold-7', 'book')).toEqual({ device: 'galaxy-z-fold-7', posture: 'book', emulator: 2, rotation: 0, orientation: 'portrait' });
     expect(emulatorPosture(catalog, 'galaxy-z-fold-7', 'closed')).toMatchObject({ emulator: 1, rotation: null });
     expect(emulatorPosture(catalog, 'galaxy-z-fold-7', 'open')).toMatchObject({ emulator: 3, rotation: null });
   });
 
   it('turns the screen for a posture the catalog marks as rotated', () => {
-    expect(emulatorPosture(catalog, 'galaxy-z-fold-7', 'tabletop')).toMatchObject({ emulator: 2, rotation: 1 });
+    expect(emulatorPosture(catalog, 'galaxy-z-fold-7', 'tabletop')).toMatchObject({ emulator: 2, rotation: 1, orientation: 'landscape' });
   });
 
   it('takes an orientation relative to the posture display', () => {
