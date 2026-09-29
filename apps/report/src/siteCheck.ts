@@ -22,7 +22,7 @@ export interface CheckRequest {
 /** `handoff`: whether running the command yourself would help. `aborted`: the request was cancelled. */
 export type CheckOutcome = { ok: true; report: Report } | { ok: false; message: string; handoff: boolean; aborted?: true };
 
-const LOCAL_HINT = 'Run `npm run dobra -- report` to check it on your machine.';
+const LOCAL_HINT = 'Run `dobra report` to check it on your machine.';
 
 /** The endpoint's health, or null when there is none (a static host answers 404 or with the page). */
 export async function probe(fetch: Fetch, origin = globalThis.location?.origin ?? ''): Promise<Health | null> {
@@ -38,7 +38,7 @@ export async function probe(fetch: Fetch, origin = globalThis.location?.origin ?
 
 export function messageFor(status: number, error: string, mode: 'local' | 'hosted'): string {
   const hint = mode === 'hosted' ? ` ${LOCAL_HINT}` : '';
-  const plain = error.replace(/ ?Run `npm run dobra -- report`.*$/, '');
+  const plain = error.replace(/ ?Run `(?:npm run dobra -- |dobra )report`.*$/, '');
   if (status === 429) return mode === 'local' ? 'A check is already running; try again when it finishes.' : 'Too many checks from this address. Wait a minute and try again.';
   if (status === 403 || status === 413) return `${plain || `The check was refused (status ${status}).`}${hint}`;
   if (status === 400) return plain || 'The check endpoint could not read that request.';
@@ -79,8 +79,12 @@ export async function runCheck(
 /** Single-quotes a value for a POSIX shell. */
 const quote = (s: string) => `'${s.replaceAll("'", "'\\''")}'`;
 
-export function cliCommand(req: CheckRequest): string {
-  const parts = ['npm run dobra -- check site', quote(withScheme(req.url))];
+/** `installed`: the `dobra` command the installer adds. `repo`: the npm script inside a Dobra checkout. */
+export type CommandForm = 'installed' | 'repo';
+const PREFIX: Record<CommandForm, string> = { installed: 'dobra check site', repo: 'npm run dobra -- check site' };
+
+export function cliCommand(req: CheckRequest, form: CommandForm = 'installed'): string {
+  const parts = [PREFIX[form], quote(withScheme(req.url))];
   if (req.targets?.length) parts.push('--targets', req.targets.join(','));
   for (const c of req.categories ?? []) parts.push('--category', c);
   return parts.join(' ');
@@ -89,6 +93,6 @@ export function cliCommand(req: CheckRequest): string {
 export function actionsStep(req: CheckRequest): string {
   return [
     '- run: npm ci && npx playwright install --with-deps chromium && npm run build:cli',
-    `- run: ${cliCommand(req)}`,
+    `- run: ${cliCommand(req, 'repo')}`,
   ].join('\n');
 }
