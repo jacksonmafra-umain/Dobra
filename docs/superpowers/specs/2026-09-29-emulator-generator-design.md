@@ -65,8 +65,8 @@ Because both consume the same plan, the site and the CLI can't disagree about se
   that fails. The script lists the folder.
 - **Settings, from the catalog only** (no hardcoded device values):
   - **Single-display devices** (phones, tablets, desktop): `hw.lcd.width`, `hw.lcd.height` and
-    `hw.lcd.density` from the display's `pixels` and `density` (density × 160, rounded to the nearest
-    density the emulator accepts; the rounding is listed in `applied` when it changes the value).
+    `hw.lcd.density` from the display's `pixels` and `density` (density × 160, rounded to a whole
+    number: the emulator takes any dpi, and Google's own Pixel 9 Pro Fold AVD uses 390).
   - **Book foldables** (for example Galaxy Z Fold 7): `hw.lcd.*` from the inner display.
     `hw.displayRegion.0.1.*` from the cover display, as the region shown when folded.
     `hw.sensor.hinge=yes`, with count, type, areas and ranges from the inner display's hinges.
