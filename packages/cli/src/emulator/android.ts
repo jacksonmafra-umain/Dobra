@@ -90,3 +90,22 @@ export async function createAvd(r: Runner, plan: EmulatorPlan, force: boolean): 
   }
   return { id: plan.name, image };
 }
+
+/** adb from the SDK's platform-tools, else the one on PATH. */
+export function adbPath(r: Runner, paths: AndroidPaths): string {
+  const bundled = join(paths.sdk, 'platform-tools/adb');
+  return r.exists(bundled) ? bundled : 'adb';
+}
+
+/** The serial of the running emulator whose AVD has this name, or null. */
+export async function findEmulator(r: Runner, adb: string, avd: string): Promise<string | null> {
+  const res = await r.exec(adb, ['devices']);
+  if (res.code !== 0) throw new ToolError(`adb devices failed: ${(res.stderr || res.stdout).trim()}`);
+  const serials = [...res.stdout.matchAll(/^(emulator-\d+)\s+device\s*$/gm)].map((m) => m[1]);
+  for (const serial of serials) {
+    const name = await r.exec(adb, ['-s', serial, 'emu', 'avd', 'name']);
+    if (name.code === 0 && name.stdout.split(/\r?\n/)[0].trim() === avd) return serial;
+  }
+  return null;
+}
+

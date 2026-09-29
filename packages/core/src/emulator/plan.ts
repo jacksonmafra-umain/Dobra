@@ -34,7 +34,7 @@ export interface PlanOptions {
 
 export class EmulatorPlanError extends Error {
   constructor(
-    readonly code: 'unknown-device' | 'no-simulator' | 'bad-name',
+    readonly code: 'unknown-device' | 'no-simulator' | 'bad-name' | 'no-posture',
     message: string,
   ) {
     super(message);
