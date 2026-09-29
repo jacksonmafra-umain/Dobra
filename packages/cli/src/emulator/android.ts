@@ -15,6 +15,15 @@ const TAGS = ['google_apis_playstore', 'google_apis', 'default'];
 
 export const hostAbi = (arch: string): 'arm64-v8a' | 'x86_64' => (arch === 'arm64' ? 'arm64-v8a' : 'x86_64');
 
+/** The ABI for this machine. An x64 Node under Rosetta says x64 on Apple silicon, so ask the hardware. */
+export async function machineAbi(r: Runner): Promise<'arm64-v8a' | 'x86_64'> {
+  if (r.platform === 'darwin') {
+    const res = await r.exec('sysctl', ['-n', 'hw.optional.arm64']);
+    if (res.code === 0 && res.stdout.trim() === '1') return 'arm64-v8a';
+  }
+  return hostAbi(r.arch);
+}
+
 export function androidPaths(r: Runner): AndroidPaths {
   const candidates = [r.env.ANDROID_HOME, r.env.ANDROID_SDK_ROOT, join(r.home, r.platform === 'darwin' ? 'Library/Android/sdk' : 'Android/Sdk')];
   const sdk = candidates.find((p): p is string => Boolean(p) && r.exists(p!));
@@ -25,17 +34,18 @@ export function androidPaths(r: Runner): AndroidPaths {
 }
 
 /** The newest installed image for this processor, as an sdkmanager package path. */
-export function findImage(r: Runner, sdk: string, api: number | null): string {
+export function findImage(r: Runner, sdk: string, api: number | null, abi: 'arm64-v8a' | 'x86_64' = hostAbi(r.arch)): string {
   const root = join(sdk, 'system-images');
-  const abi = hostAbi(r.arch);
-  let best: { api: number; image: string } | null = null;
+  let best: { score: number; image: string } | null = null;
   const other: string[] = [];
   for (const folder of r.list(root)) {
-    const level = /^android-(\d+)(?:-|$)/.exec(folder);
+    // android-36, android-36-ext18 and android-36.1 (a minor release, newer than 36) all count.
+    const level = /^android-(\d+)(?:\.(\d+))?(?:-|$)/.exec(folder);
     if (!level || (api !== null && Number(level[1]) !== api)) continue;
+    const score = Number(level[1]) * 100 + Number(level[2] ?? 0);
     const tag = TAGS.find((t) => r.exists(join(root, folder, t, abi)));
     if (tag) {
-      if (!best || Number(level[1]) > best.api) best = { api: Number(level[1]), image: `system-images;${folder};${tag};${abi}` };
+      if (!best || score > best.score) best = { score, image: `system-images;${folder};${tag};${abi}` };
     } else {
       for (const t of TAGS) for (const a of r.list(join(root, folder, t))) other.push(`${folder}/${t}/${a}`);
     }
@@ -62,10 +72,10 @@ function withSettings(config: string, settings: Record<string, string>): string 
 
 export async function createAvd(r: Runner, plan: EmulatorPlan, force: boolean): Promise<{ id: string; image: string }> {
   const paths = androidPaths(r);
-  const find = plan.steps.find((s) => s.kind === 'find-image');
-  const image = findImage(r, paths.sdk, find && find.platform === 'android' ? find.api : null);
   const folder = join(paths.avdHome, `${plan.name}.avd`);
   if (!force && r.exists(folder)) throw new ToolError(`An emulator named ${plan.name} already exists. Pass --force to replace it.`);
+  const find = plan.steps.find((s) => s.kind === 'find-image');
+  const image = findImage(r, paths.sdk, find && find.platform === 'android' ? find.api : null, await machineAbi(r));
   for (const s of plan.steps) {
     if (s.kind === 'run') {
       const [tool, ...args] = s.argv.map((w) => (w === '{image}' ? image : w));

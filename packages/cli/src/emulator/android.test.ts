@@ -34,8 +34,9 @@ describe('android emulator creation', () => {
     const r = fakeRunner({ ...dir(SDK), ...dir(`${SDK}/system-images/android-36/google_apis_playstore/arm64-v8a`) });
     const out = await createAvd(r, emulatorPlan(catalog, 'galaxy-z-fold-7'), false);
     expect(out).toEqual({ id: 'dobra_galaxy-z-fold-7', image: 'system-images;android-36;google_apis_playstore;arm64-v8a' });
-    expect(r.calls[0].args).toEqual(['create', 'avd', '-n', 'dobra_galaxy-z-fold-7', '-k', out.image]);
-    expect(r.calls[0].input).toBe('no\n');
+    const avdmanager = r.calls.find((c) => c.file.endsWith('avdmanager'))!;
+    expect(avdmanager.args).toEqual(['create', 'avd', '-n', 'dobra_galaxy-z-fold-7', '-k', out.image]);
+    expect(avdmanager.input).toBe('no\n');
     const config = r.fs.get(`${AVD}/dobra_galaxy-z-fold-7.avd/config.ini`)!;
     expect(config).toContain('hw.lcd.width=1968\n');
     expect(config).not.toContain('hw.lcd.width=320');
@@ -50,7 +51,7 @@ describe('android emulator creation', () => {
     expect(r.calls).toHaveLength(0);
     const forced = fakeRunner(files);
     await createAvd(forced, emulatorPlan(catalog, 'pixel-9', { force: true }), true);
-    expect(forced.calls[0].args).toContain('--force');
+    expect(forced.calls.find((c) => c.file.endsWith('avdmanager'))!.args).toContain('--force');
   });
 
   it('writes nothing when avdmanager fails', async () => {
@@ -63,4 +64,20 @@ describe('android emulator creation', () => {
     expect(hostAbi('arm64')).toBe('arm64-v8a');
     expect(hostAbi('x64')).toBe('x86_64');
   });
+
+  it('takes a minor-version image such as android-36.1 as the newest', () => {
+    const r = fakeRunner({ ...dir(SDK), ...dir(`${SDK}/system-images/android-36/google_apis/arm64-v8a`), ...dir(`${SDK}/system-images/android-36.1/google_apis_playstore/arm64-v8a`) });
+    expect(findImage(r, SDK, null)).toBe('system-images;android-36.1;google_apis_playstore;arm64-v8a');
+    expect(findImage(r, SDK, 36)).toBe('system-images;android-36.1;google_apis_playstore;arm64-v8a');
+  });
+
+  it('uses arm64 images on Apple silicon even when Node runs under Rosetta', async () => {
+    const r = fakeRunner(
+      { ...dir(SDK), ...dir(`${SDK}/system-images/android-36/google_apis/arm64-v8a`), ...dir(`${SDK}/system-images/android-36/google_apis/x86_64`) },
+      {},
+      { arch: 'x64', exec: (file, args) => (file === 'sysctl' && args.join(' ') === '-n hw.optional.arm64' ? { code: 0, stdout: '1\n', stderr: '' } : undefined) },
+    );
+    expect((await createAvd(r, emulatorPlan(catalog, 'pixel-9'), false)).image).toBe('system-images;android-36;google_apis;arm64-v8a');
+  });
 });
+

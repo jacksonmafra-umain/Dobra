@@ -14,9 +14,9 @@ describe('emulatorPlan', () => {
   });
 
   it('passes the API level, a custom name and --force through', () => {
-    const p = emulatorPlan(catalog, 'pixel-9', { api: 34, name: 'my phone', force: true });
+    const p = emulatorPlan(catalog, 'pixel-9', { api: 34, name: 'my_phone', force: true });
     expect(p.steps[0]).toEqual({ kind: 'find-image', platform: 'android', api: 34 });
-    expect(p.name).toBe('my phone');
+    expect(p.name).toBe('my_phone');
     expect((p.steps[1] as { argv: string[] }).argv).toContain('--force');
   });
 
@@ -59,3 +59,21 @@ describe('avdName', () => {
     expect(avdName('a b/c')).toBe('dobra_a_b_c');
   });
 });
+
+describe('names and replacing', () => {
+  it('refuses an Android name an AVD cannot have, instead of writing it into a script', () => {
+    let error: unknown;
+    try {
+      emulatorPlan(catalog, 'pixel-9', { name: 'x$(touch /tmp/pwn)"y' });
+    } catch (e) {
+      error = e;
+    }
+    expect((error as EmulatorPlanError).code).toBe('bad-name');
+  });
+
+  it('carries --force into an iOS plan', () => {
+    const find = emulatorPlan(catalog, 'iphone-17', { force: true }).steps[0];
+    expect(find).toMatchObject({ kind: 'find-image', platform: 'ios', force: true });
+  });
+});
+

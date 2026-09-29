@@ -11,8 +11,8 @@ export interface ExecResult {
 
 export interface Runner {
   exec(file: string, args: string[], input?: string): Promise<ExecResult>;
-  /** Starts a long-running program (the emulator) and returns without waiting for it. */
-  start(file: string, args: string[]): void;
+  /** Starts a long-running program (the emulator) and returns without waiting; `onError` hears a failed start. */
+  start(file: string, args: string[], onError?: (message: string) => void): void;
   exists(path: string): boolean;
   /** Entry names in a folder; empty when it's missing. */
   list(dir: string): string[];
@@ -39,7 +39,12 @@ export function createNodeRunner(env: Record<string, string | undefined> = proce
         });
         if (input !== undefined) child.stdin?.end(input);
       }),
-    start: (file, args) => spawn(file, args, { env, detached: true, stdio: 'ignore' }).unref(),
+    start: (file, args, onError) => {
+      const child = spawn(file, args, { env, detached: true, stdio: 'ignore' });
+      // Without a listener, a missing binary is an unhandled 'error' event that kills the process.
+      child.on('error', (e) => onError?.(e.message));
+      child.unref();
+    },
     exists: (p) => existsSync(p),
     list: (d) => {
       try {
