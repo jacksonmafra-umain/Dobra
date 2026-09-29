@@ -9,9 +9,10 @@ its display sizes, density, hinges and postures come from the catalog, each with
 
 - **It prints JSON** (exit 0): the command is there. Keep the list: each device has `id`, `name`,
   `platform`, `category`, `support` (`full`, `partial` or `none`) and `limits`.
-- **`Unknown command: emulator`**: this Dobra is older. Say "Emulator creation isn't available in
-  this Dobra version. `dobra update` gets the latest." Then use the "Runtime check without
-  emulators" section of [native-android.md](native-android.md) or [native-ios.md](native-ios.md).
+- **`Unknown command: emulator`**, or in a checkout the site-check usage text: this Dobra is
+  older. Say "Emulator creation isn't available in this Dobra version. `dobra update` gets the
+  latest." Then use the "Runtime check without emulators" section of
+  [native-android.md](native-android.md) or [native-ios.md](native-ios.md).
 
 Don't probe with `--help`: it prints the usage and exits 2 even when the command exists.
 
@@ -63,13 +64,25 @@ Xcode.
 Install and launch the user's app with their own build tools. Then walk the postures and
 orientations:
 
+- **Find the device:** `adb devices` lists running Android emulators with their serials
+  (`emulator-5554`); on iOS the UDID is the `id` from `create --json`.
 - **Android postures:** `adb -s <serial> emu posture <n>`, where 1 is closed, 2 half-open and 3
-  open. The command doesn't change a running emulator's posture itself.
+  open, matching the posture list `create` configures. Source: Dobra's emulator work, checked on a
+  generated Galaxy Z Fold 7 with emulator 36.6.8; it's an emulator console command, not in
+  Android's app documentation. The console answers `OK` when it takes it and `KO` when it doesn't.
+  After each change, take a screenshot and confirm the posture on screen before you check
+  anything in it. `dobra emulator` itself doesn't change a running emulator's posture.
 - **Rotation:** rotate with the emulator's controls or the Simulator's Device menu.
 
-Capture a screenshot of each screen under review in each posture and orientation (`adb -s <serial>
-exec-out screencap -p > shot.png`, or `xcrun simctl io <udid> screenshot shot.png`), and look at them
-for what the native workflow's runtime section lists.
+Keep screenshots out of the user's project:
+
+    shots="$(mktemp -d)"; echo "$shots"
+    adb -s <serial> exec-out screencap -p > "$shots/<screen>-<posture>.png"
+    xcrun simctl io <udid> screenshot "$shots/<screen>-<orientation>.png"
+
+Use the folder it printed in later commands. Capture each screen under review in each posture and
+orientation, and look at the images for what the native workflow's runtime section lists.
 
 Report per [report-format.md](report-format.md). Name each device, posture and orientation you ran,
-and copy its `limits` into "What wasn't checked".
+copy its `limits` into "What wasn't checked", and list any posture whose change you couldn't
+confirm on screen as not checked.

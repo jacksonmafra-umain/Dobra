@@ -126,6 +126,18 @@ describe('dobra skill', () => {
     for (const f of files()) expect(read(f)).not.toContain('${DOBRA_DIR:-$HOME/Dobra}');
   });
 
+  it('keeps emulator screenshots out of the user project', () => {
+    for (const line of read('emulators.md').split('\n')) {
+      if (/screencap|simctl io/.test(line)) expect(line).toMatch(/\$shots\//);
+    }
+  });
+
+  it('sources the posture command and has the agent confirm it', () => {
+    const text = read('emulators.md');
+    expect(text).toMatch(/adb devices/);
+    expect(text).toMatch(/emu posture[\s\S]{0,600}OK/);
+  });
+
   it('links only files in the skill', () => {
     const broken: string[] = [];
     for (const f of files()) {
