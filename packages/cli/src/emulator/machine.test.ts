@@ -39,7 +39,7 @@ describe.skipIf(!hasSdk)('on a machine with the Android SDK', () => {
 });
 
 describe.skipIf(!hasSdk)('on a running emulator', () => {
-  it('switches a created Fold 7 to tabletop: half-open and turned 90°', async () => {
+  it('switches a created Fold 7 to tabletop (half-open, turned 90°) and folds it to its cover screen', async () => {
     const avdHome = mkdtempSync(join(tmpdir(), 'dobra avd '));
     const runner = createNodeRunner({ ...process.env, ANDROID_AVD_HOME: avdHome });
     const quiet = { out: () => {}, err: () => {} };
@@ -61,6 +61,10 @@ describe.skipIf(!hasSdk)('on a running emulator', () => {
       await new Promise((r) => setTimeout(r, 3000));
       expect(adb('shell', 'dumpsys', 'device_state')).toMatch(/mCommittedState=.*HALF_OPENED/);
       expect(adb('shell', 'dumpsys', 'window', 'displays')).toContain('mCurrentRotation=ROTATION_90');
+      // Folded, the emulator shows the catalog's cover display (1080×2520), not the inner one.
+      expect(await runEmulator(['posture', 'galaxy-z-fold-7', 'closed', '--name', 'dobra_posture_test'], quiet, runner)).toBe(0);
+      await new Promise((r) => setTimeout(r, 4000));
+      expect(adb('shell', 'wm', 'size')).toContain('1080x2520');
     } finally {
       try {
         adb('emu', 'kill');

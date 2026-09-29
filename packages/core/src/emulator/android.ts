@@ -21,6 +21,15 @@ export interface AndroidSettings {
 export const POSTURE_ID = { cover: 1, flat: 3, book: 2, tabletop: 2, partial: 2, dual: 3 } as const;
 const POSTURE_ANGLES: Record<number, string> = { 1: '0-30', 2: '30-150', 3: '150-180' };
 
+/**
+ * The emulator switches to the folded region only for device names built into it (resizable,
+ * pixel_fold, pixel_9_pro_fold, pixel_10_pro_fold, "7.6in Foldable") and only with no hardware keys.
+ * Found by experiment on emulator 36.6.8 with android-36-ext18: pixel_9_pro_fold folds, "7.6in
+ * Foldable" doesn't. The name only turns folding on; the screen, region and hinge stay the catalog's.
+ * Verified for book foldables only, so other categories don't get it yet.
+ */
+const FOLD_SWITCH: Record<string, string> = { 'hw.device.name': 'pixel_9_pro_fold', 'hw.mainKeys': 'no', 'hw.dPad': 'no', 'hw.trackBall': 'no' };
+
 type Display = AndroidDevice['displays'][string];
 const pixelsOf = (d: Display) => d.pixels ?? { width: Math.round(d.size.width * d.density), height: Math.round(d.size.height * d.density) };
 
@@ -60,6 +69,10 @@ export function androidSettings(device: AndroidDevice): AndroidSettings {
       settings['hw.displayRegion.0.1.height'] = String(cpx.height);
       settings['hw.sensor.hinge.fold_to_displayRegion.0.1_at_posture'] = '1';
       applied.push({ label: 'Folded region', value: `${cover.label}, ${cpx.width}×${cpx.height}`, source: cover.pixels ? cover.source : 'derived' });
+      if (device.category === 'foldable-book') {
+        Object.assign(settings, FOLD_SWITCH);
+        applied.push({ label: 'Folding switch', value: `hw.device.name=${FOLD_SWITCH['hw.device.name']} (turns on the emulator's folded screen)`, source: 'emulator' });
+      }
     }
   }
   for (const id of ids) if (!used.has(id)) limits.push(`The ${device.displays[id].label} isn't emulated as its own region.`);
