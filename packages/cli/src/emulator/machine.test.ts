@@ -1,6 +1,6 @@
-// Creates and removes a real AVD and simulator when the SDK or Xcode is on this machine. CI has
-// neither, so it skips; locally it proves the plan works with the real tools. The AVD goes to a
-// temporary ANDROID_AVD_HOME, so it never touches your own emulators.
+// Creates and removes a real AVD and simulator with the real SDK and Xcode. Opt in with
+// DOBRA_MACHINE_TEST=1, so a plain npm test never touches the machine. The AVD goes to a temporary
+// ANDROID_AVD_HOME, so it never touches your own emulators.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -10,9 +10,10 @@ import { runEmulator } from './command';
 import { createNodeRunner } from './runner';
 
 const sdk = process.env.ANDROID_HOME ?? join(homedir(), 'Library/Android/sdk');
-const hasSdk = !process.env.CI && existsSync(join(sdk, 'system-images')) && existsSync(join(sdk, 'cmdline-tools/latest/bin/avdmanager'));
+const optedIn = process.env.DOBRA_MACHINE_TEST === '1';
+const hasSdk = optedIn && existsSync(join(sdk, 'system-images')) && existsSync(join(sdk, 'cmdline-tools/latest/bin/avdmanager'));
 const hasXcode = (() => {
-  if (process.env.CI) return false;
+  if (!optedIn) return false;
   try {
     execFileSync('xcrun', ['simctl', 'help'], { stdio: 'ignore' });
     return true;
