@@ -2,7 +2,7 @@
 import { loadCatalog } from '@dobra/core/catalog/load';
 import { frameCandidates, parseFileKey, patternsFromDocument, restToGeo, type RestNode } from '@dobra/core/figmaRest';
 import { buildReport, type Report } from '@dobra/core/report';
-import { FigmaError, type FigmaClient } from './figmaClient';
+import { FigmaError, type FigmaClient } from '@dobra/core/figmaClient';
 
 const catalog = loadCatalog();
 
