@@ -1,0 +1,101 @@
+---
+// Pick a catalog device and copy the script that creates an Android emulator or iOS simulator like it.
+import Base from '../layouts/Base.astro';
+import { deviceOptions, generate } from '../lib/generator';
+
+const groups = deviceOptions();
+const first = groups[0].devices[0];
+const initial = generate(first.id, {});
+---
+<Base title="Emulator generator" description="Create an Android emulator or an iOS simulator configured like any device in the Dobra catalog: pick one, copy the script, run it." path="/generator/">
+  <section class="generator">
+    <h1>Emulator generator</h1>
+    <p class="generator__lede">
+      Pick a device and copy the script. It creates an Android emulator with that device's screen, density, fold and
+      postures, or the matching iOS simulator. It runs on macOS and Linux and needs only Android Studio (the Android SDK)
+      or Xcode.
+    </p>
+    <div class="generator__form">
+      <label>
+        Device
+        <select id="gen-device">
+          {
+            groups.map((g) => (
+              <optgroup label={g.category}>
+                {g.devices.map((d) => (
+                  <option value={d.id} data-platform={d.platform} selected={d.id === first.id}>
+                    {d.name}
+                    {d.support === 'none' ? ' (no simulator)' : ''}
+                  </option>
+                ))}
+              </optgroup>
+            ))
+          }
+        </select>
+      </label>
+      <label id="gen-api-field" hidden={first.platform !== 'android'}>
+        Android API level <span class="muted">(optional)</span>
+        <input id="gen-api" type="number" min="1" inputmode="numeric" placeholder="newest installed" />
+      </label>
+      <label id="gen-runtime-field" hidden={first.platform !== 'ios'}>
+        iOS runtime <span class="muted">(optional)</span>
+        <input id="gen-runtime" type="text" placeholder="newest installed" />
+      </label>
+    </div>
+
+    <p id="gen-error" class="generator__error" role="alert" hidden={!initial.error}>{initial.error}</p>
+    <div id="gen-output" hidden={!initial.script}>
+      <h2>Script</h2>
+      <pre><code id="gen-script">{initial.script}</code></pre>
+      <button class="button" type="button" data-copy="gen-script">Copy script</button>
+      <div id="gen-limits-block" hidden={!initial.limits.length}>
+        <h3>Not emulated</h3>
+        <ul id="gen-limits">{initial.limits.map((l) => <li>{l}</li>)}</ul>
+      </div>
+    </div>
+    <div id="gen-cli-block" hidden={!initial.script}>
+      <h2>With the dobra command</h2>
+      <p>If you installed Dobra, this does the same and adds <code>--start</code> and <code>--json</code>:</p>
+      <pre><code id="gen-cli">{initial.cli}</code></pre>
+      <button class="button" type="button" data-copy="gen-cli">Copy command</button>
+    </div>
+  </section>
+  <script>
+    import { generate } from '../lib/generator';
+
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+    const device = $<HTMLSelectElement>('gen-device');
+    const api = $<HTMLInputElement>('gen-api');
+    const runtime = $<HTMLInputElement>('gen-runtime');
+
+    function render() {
+      const platform = device.selectedOptions[0]?.dataset.platform;
+      $('gen-api-field').hidden = platform !== 'android';
+      $('gen-runtime-field').hidden = platform !== 'ios';
+      const level = Number(api.value);
+      const r = generate(device.value, {
+        ...(platform === 'android' && Number.isInteger(level) && level > 0 ? { api: level } : {}),
+        ...(platform === 'ios' && runtime.value.trim() ? { runtime: runtime.value.trim() } : {}),
+      });
+      $('gen-error').hidden = !r.error;
+      $('gen-error').textContent = r.error ?? '';
+      $('gen-output').hidden = !r.script;
+      $('gen-cli-block').hidden = !r.script;
+      $('gen-script').textContent = r.script ?? '';
+      $('gen-cli').textContent = r.cli;
+      $('gen-limits-block').hidden = !r.limits.length;
+      $('gen-limits').replaceChildren(...r.limits.map((l) => Object.assign(document.createElement('li'), { textContent: l })));
+    }
+
+    for (const el of [device, api, runtime]) el.addEventListener('input', render);
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copy]'))
+      b.addEventListener('click', () => {
+        const text = document.getElementById(b.dataset.copy!)?.textContent ?? '';
+        void navigator.clipboard?.writeText(text).then(() => {
+          const label = b.textContent;
+          b.textContent = 'Copied';
+          setTimeout(() => (b.textContent = label), 1500);
+        });
+      });
+  </script>
+</Base>

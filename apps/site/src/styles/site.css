@@ -76,6 +76,21 @@ p.has-unverified { border-left: 2px solid var(--dobra-warn); padding-left: 12px;
 .quickstart pre { background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 16px; overflow-x: auto; font: 13px/1.7 var(--dobra-font-mono); }
 @media (max-width: 600px) { .hero h1 { font-size: 34px; } }
 
+/* Emulator generator. */
+.generator { max-width: 72rem; }
+.generator h1 { font: var(--dobra-type-headline-lg); margin: 32px 0 8px; }
+.generator h2 { font: var(--dobra-type-headline-md); margin: 32px 0 12px; }
+.generator h3 { font: var(--dobra-type-headline-sm); margin: 20px 0 8px; }
+.generator__lede, .generator p { color: var(--dobra-muted); max-width: 70ch; }
+.generator__form { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+.generator__form label { display: grid; gap: 6px; font: var(--dobra-type-body-md); color: var(--dobra-muted); }
+.generator__form label[hidden] { display: none; }
+.generator__form select, .generator__form input { font: var(--dobra-type-body-md); padding: 8px 10px; min-width: 16rem; max-width: 100%; box-sizing: border-box; border: 1px solid var(--dobra-border-strong); border-radius: var(--dobra-radius); background: var(--dobra-field); color: var(--dobra-text); }
+.generator pre { background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 16px; overflow: auto; max-height: 28rem; font: 12px/1.6 var(--dobra-font-mono); }
+.generator ul { color: var(--dobra-muted); padding-left: 1.4em; line-height: 1.7; }
+.generator .generator__error { color: var(--dobra-hinge); }
+.generator .button { margin-top: 8px; }
+
 /* JetBrains Mono joins "://" and "--" into ligatures, which misreads URLs and flags. `font` shorthand resets
    font-variant-ligatures on every element that sets it, so this has to win over those. */
 *, ::before, ::after { font-variant-ligatures: no-contextual !important; }

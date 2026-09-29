@@ -62,12 +62,12 @@ check endpoint (`/api/health`):
   `localhost` and staging addresses work, and the report opens when it finishes. One check runs at a
   time.
 - **A hosted endpoint:** public addresses only, with a limit on devices per check, shown on the form.
-- **No endpoint** (the hosted copy or a local build): the form
-  fills in the command to run instead, with a **Copy command** button and a GitHub Actions step.
-  Run it on your machine, then open the `foldable-report.zip` it writes (see below). From the repo,
-  build the checker once with `npm run build:cli && npx playwright install chromium`; with the
-  installer, `dobra check site <url>` runs the same check, and the installer
-  has already installed Chromium.
+- **No endpoint** (the hosted copy or a local build): the form fills in the command to run
+  instead, `dobra check site <url>` for the installer's `dobra` command, with a **Copy command**
+  button, the installer line for anyone who doesn't have it yet, and a GitHub Actions step. Run it
+  on your machine, then open the `foldable-report.zip` it writes (see below). In a Dobra checkout,
+  the form also shows the same check as `npm run dobra -- check site <url>`, after building the
+  checker once with `npm run build:cli && npx playwright install chromium`.
 
 When a check fails in a way that running it yourself would fix, the form shows the command too.
 

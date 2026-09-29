@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { loadCatalog } from '../catalog/load';
 import { rawConfig as raw } from './load';
 import { ConfigError, parseConfig } from './schema';
 
@@ -111,5 +112,21 @@ describe('config schema', () => {
     const unknown = clone();
     unknown.layoutDefaults.ios.regular.source = 'nowhere';
     expect(issuesOf(unknown).join('\n')).toMatch(/Unknown source "nowhere"/);
+  });
+});
+
+describe('iOS simulator mapping', () => {
+  const ios = loadCatalog().devices.filter((d) => d.platform === 'ios');
+
+  it('names an Apple simulator device type for every real iOS device', () => {
+    for (const d of ios) {
+      if (d.id === 'iphone-duo') expect(d.simulator, d.id).toBeUndefined();
+      else expect(d.simulator?.deviceType, d.id).toMatch(/^com\.apple\.CoreSimulator\.SimDeviceType\.(iPhone|iPad)-[A-Za-z0-9-]+$/);
+    }
+  });
+
+  it('marks the closest-model mappings as estimated', () => {
+    const estimated = ios.filter((d) => d.simulator?.estimated).map((d) => d.id).sort();
+    expect(estimated).toEqual(['ipad-11', 'iphone-mini', 'iphone-plus']);
   });
 });
