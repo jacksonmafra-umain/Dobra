@@ -106,4 +106,11 @@ describe('built site', () => {
   it('loads no fonts from the network', () => {
     for (const file of pages) expect(readFileSync(file, 'utf8')).not.toContain('fonts.googleapis');
   });
+
+  it('builds the Generator page with a script for the first device', () => {
+    const html = readFileSync(join(dist, 'generator/index.html'), 'utf8');
+    expect(html).toContain('#!/bin/sh');
+    expect(html).toContain('dobra emulator create');
+    expect(html).toContain('<optgroup');
+  });
 });
