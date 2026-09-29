@@ -10,14 +10,24 @@ drives the installed `dobra` command and cites the Dobra guide for every fix.
 
 ## Find Dobra
 
-Try these in order and use the first that works:
+Try these in order and use the first that works. Each gives a command to run and the Dobra folder
+(`DOBRA_DIR`), which holds the catalog and the guide.
 
-1. `command -v dobra`: use `dobra`.
-2. `test -x ~/.dobra/bin/dobra`: use `~/.dobra/bin/dobra`.
-3. The current folder is a Dobra checkout (its `package.json` has `"name": "dobra"`): use
-   `npm run dobra --` after `npm run build:cli` and `npx playwright install chromium`.
+1. **Installed** (`command -v dobra`, or `~/.dobra/bin/dobra` when it isn't on the PATH yet): the
+   command is `dobra` (or that full path). Read the folder from it:
 
-If none works, Dobra isn't installed. Tell the user, show the installer, and **ask before running
+       wrapper="$(command -v dobra || echo ~/.dobra/bin/dobra)"
+       eval "$(grep '^export DOBRA_DIR=' "$wrapper")"; echo "$DOBRA_DIR"
+
+2. **A Dobra checkout** (the current folder's `package.json` has `"name": "dobra"`): the folder is
+   the checkout root, and the command is `node packages/cli/dist/dobra.mjs`, after
+   `npm run build:cli` and `npx playwright install chromium`. Don't use `npm run dobra --`: npm's
+   banner lands on stdout and breaks `--json` output.
+
+Shell variables don't survive between commands, so use the folder path it printed literally from
+then on. Below, `<DOBRA_DIR>` means that path.
+
+If neither works, Dobra isn't installed. Tell the user, show the installer, and **ask before running
 it**: it downloads Node, the Dobra code (into `~/Dobra`) and Chromium.
 
     bash -c "$(curl -fsSL https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh)"
@@ -26,13 +36,13 @@ After installing, `~/.dobra/bin/dobra` works in the current shell; a new Termina
 
 ## Find the guide
 
-The guide is in `${DOBRA_DIR:-$HOME/Dobra}/docs/guide`, or `docs/guide` in a checkout. If neither
-exists, use the published guide: `02-android.md#foldables-and-postures` is
+The guide is `<DOBRA_DIR>/docs/guide`. If it's missing, use the published guide:
+`02-android.md#foldables-and-postures` is
 `https://dobra-five.vercel.app/guide/android/#foldables-and-postures` (drop the number prefix and
 `.md`). Read the section you cite before citing it.
 
 The catalog of devices, displays and postures is
-`${DOBRA_DIR:-$HOME/Dobra}/packages/core/src/catalog/catalog.json`.
+`<DOBRA_DIR>/packages/core/src/catalog/catalog.json`.
 
 ## Workflows
 

@@ -120,6 +120,12 @@ describe('dobra skill', () => {
     expect(text).toMatch(/curl[^\n]*--max-time/);
   });
 
+  it('finds the Dobra folder from the installed command, not a default', () => {
+    const text = read('SKILL.md');
+    expect(text).toMatch(/grep '\^export DOBRA_DIR='/);
+    for (const f of files()) expect(read(f)).not.toContain('${DOBRA_DIR:-$HOME/Dobra}');
+  });
+
   it('links only files in the skill', () => {
     const broken: string[] = [];
     for (const f of files()) {
