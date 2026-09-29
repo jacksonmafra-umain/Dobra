@@ -40,5 +40,6 @@ Read the file for the request before doing anything. A request can need more tha
 
 | The user wants to | Read |
 |---|---|
+| Check whether a URL works on foldables, dual screens or tablets | [site-check.md](site-check.md) |
 
 Before writing any report, read [report-format.md](report-format.md).
