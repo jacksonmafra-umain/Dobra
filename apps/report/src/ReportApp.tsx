@@ -9,7 +9,7 @@ import { CoverageSummary } from './CoverageSummary';
 import { download } from './download';
 import { FindingsView } from './FindingsView';
 import { MarkdownView } from './MarkdownView';
-import { createFigmaClient, FigmaError } from './figmaClient';
+import { createFigmaClient, FigmaError } from '@dobra/core/figmaClient';
 import { loadFigmaReport } from './loadReport';
 import { ReportHeader } from './ReportHeader';
 import { ReportNotes } from './ReportNotes';

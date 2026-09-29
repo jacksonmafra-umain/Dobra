@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { RestNode } from '@dobra/core/figmaRest';
-import type { FigmaClient } from './figmaClient';
-import { FigmaError } from './figmaClient';
+import type { FigmaClient } from '@dobra/core/figmaClient';
+import { FigmaError } from '@dobra/core/figmaClient';
 import { loadFigmaReport } from './loadReport';
 
 const box = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
