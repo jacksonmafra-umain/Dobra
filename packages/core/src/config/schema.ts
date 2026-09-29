@@ -204,6 +204,8 @@ const iosDevice = z.strictObject({
   media,
   displays: z.record(z.string(), iosDisplay),
   poses: z.array(iosPose).optional(),
+  /** The Apple simulator that matches this device (`xcrun simctl list devicetypes`); absent for hypothetical devices. */
+  simulator: z.strictObject({ deviceType: z.string(), source: sourceRef, estimated: z.boolean().optional() }).optional(),
 });
 
 // ---------------------------------------------------------------------------------------------
