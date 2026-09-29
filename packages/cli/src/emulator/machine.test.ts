@@ -38,6 +38,41 @@ describe.skipIf(!hasSdk)('on a machine with the Android SDK', () => {
   }, 180_000);
 });
 
+describe.skipIf(!hasSdk)('on a running emulator', () => {
+  it('switches a created Fold 7 to tabletop: half-open and turned 90°', async () => {
+    const avdHome = mkdtempSync(join(tmpdir(), 'dobra avd '));
+    const runner = createNodeRunner({ ...process.env, ANDROID_AVD_HOME: avdHome });
+    const quiet = { out: () => {}, err: () => {} };
+    const adb = (...args: string[]) => execFileSync(join(sdk, 'platform-tools/adb'), ['-s', 'emulator-5596', ...args], { encoding: 'utf8', env: runner.env as NodeJS.ProcessEnv });
+    try {
+      expect(await runEmulator(['create', 'galaxy-z-fold-7', '--name', 'dobra_posture_test'], quiet, runner)).toBe(0);
+      runner.start(join(sdk, 'emulator/emulator'), ['-avd', 'dobra_posture_test', '-port', '5596', '-no-window', '-no-audio', '-no-snapshot', '-no-boot-anim']);
+      for (let i = 0; i < 90; i++) {
+        try {
+          if (adb('shell', 'getprop', 'sys.boot_completed').trim() === '1') break;
+        } catch {
+          // not up yet
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+      // boot_completed comes before first-boot setup settles, and that setup resets the rotation.
+      await new Promise((r) => setTimeout(r, 15_000));
+      expect(await runEmulator(['posture', 'galaxy-z-fold-7', 'tabletop', '--name', 'dobra_posture_test'], quiet, runner)).toBe(0);
+      await new Promise((r) => setTimeout(r, 3000));
+      expect(adb('shell', 'dumpsys', 'device_state')).toMatch(/mCommittedState=.*HALF_OPENED/);
+      expect(adb('shell', 'dumpsys', 'window', 'displays')).toContain('mCurrentRotation=ROTATION_90');
+    } finally {
+      try {
+        adb('emu', 'kill');
+      } catch {
+        // already gone
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+      rmSync(avdHome, { recursive: true, force: true });
+    }
+  }, 300_000);
+});
+
 describe.skipIf(!hasXcode)('on a Mac with Xcode', () => {
   it('creates and removes a simulator', async () => {
     const out: string[] = [];

@@ -18,7 +18,7 @@ export interface AndroidSettings {
  * Emulator posture ids (hardware-properties.ini `hw.sensor.posture_list`: 1 closed, 2 half-open,
  * 3 open) and the angle range of each, as the emulator's own foldable AVD defines them.
  */
-const POSTURE_ID = { cover: 1, flat: 3, book: 2, tabletop: 2, partial: 2, dual: 3 } as const;
+export const POSTURE_ID = { cover: 1, flat: 3, book: 2, tabletop: 2, partial: 2, dual: 3 } as const;
 const POSTURE_ANGLES: Record<number, string> = { 1: '0-30', 2: '30-150', 3: '150-180' };
 
 type Display = AndroidDevice['displays'][string];

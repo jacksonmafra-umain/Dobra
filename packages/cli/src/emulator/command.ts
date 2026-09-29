@@ -1,9 +1,10 @@
 // dobra emulator: list the catalog's devices, create an emulator or simulator for one, or print
 // the shell script that does the same. Exit 0 on success, 2 for invalid use, 1 when a tool fails.
 import { loadCatalog } from '@dobra/core/catalog/load';
-import { emulationSupport, emulatorPlan, EmulatorPlanError, type EmulatorPlan } from '@dobra/core/emulator/plan';
+import { avdName, emulationSupport, emulatorPlan, EmulatorPlanError, type EmulatorPlan } from '@dobra/core/emulator/plan';
+import { emulatorPosture, posturesOf } from '@dobra/core/emulator/posture';
 import { renderScript } from '@dobra/core/emulator/script';
-import { androidPaths, createAvd } from './android';
+import { adbPath, androidPaths, createAvd, findEmulator } from './android';
 import { parseEmulatorArgs } from './args';
 import { createSimulator } from './ios';
 import { nodeRunner, ToolError, type Runner } from './runner';
@@ -14,7 +15,8 @@ interface Out {
 }
 
 function list(json: boolean, io: Out): number {
-  const devices = emulationSupport(loadCatalog());
+  const catalog = loadCatalog();
+  const devices = emulationSupport(catalog).map((d) => ({ ...d, postures: posturesOf(catalog, d.id) }));
   if (json) {
     io.out(JSON.stringify({ version: 1, devices }, null, 2));
     return 0;
@@ -44,6 +46,7 @@ export async function runEmulator(argv: string[], io: Out, runner: Runner = node
     return 2;
   }
   if (args.command === 'list') return list(args.json, io);
+  if (args.command === 'posture') return posture(args, io, runner);
 
   let plan: EmulatorPlan;
   try {
@@ -96,3 +99,52 @@ export async function runEmulator(argv: string[], io: Out, runner: Runner = node
     throw e;
   }
 }
+
+type PostureArgs = Extract<ReturnType<typeof parseEmulatorArgs>, { command: 'posture' }>;
+
+/** Switches a running emulator to a catalog posture: exit 0, 2 for a posture it can't take, 1 when adb or the emulator isn't there. */
+async function posture(args: PostureArgs, io: Out, runner: Runner): Promise<number> {
+  let target;
+  try {
+    target = emulatorPosture(loadCatalog(), args.device, args.posture, args.orientation ?? undefined);
+  } catch (e) {
+    if (e instanceof EmulatorPlanError) {
+      io.err(e.message);
+      return 2;
+    }
+    throw e;
+  }
+  try {
+    const paths = androidPaths(runner);
+    const adb = adbPath(runner, paths);
+    const name = args.name ?? avdName(args.device);
+    const serial = args.serial ?? (await findEmulator(runner, adb, name));
+    if (!serial) throw new ToolError(`${name} isn't running. Start it with:\n  ${paths.emulator} -avd ${name}`);
+    const send = async (argv: string[]) => {
+      const res = await runner.exec(adb, ['-s', serial, ...argv]);
+      if (res.code !== 0 || /^KO/m.test(res.stdout)) throw new ToolError(`adb ${argv.join(' ')} failed on ${serial}: ${(res.stderr || res.stdout).trim()}`);
+    };
+    if (target.rotation !== null) {
+      // Absolute rotation: auto-rotate off, then USER_ROTATION (0 natural, 1 turned 90°), then the posture.
+      await send(['shell', 'settings', 'put', 'system', 'accelerometer_rotation', '0']);
+      await send(['shell', 'settings', 'put', 'system', 'user_rotation', String(target.rotation)]);
+    }
+    await send(['emu', 'posture', String(target.emulator)]);
+    const { orientation } = target;
+    if (args.json) {
+      io.out(JSON.stringify({ version: 1, device: target.device, posture: target.posture, emulator: target.emulator, serial, orientation }, null, 2));
+      return 0;
+    }
+    const state = { 1: 'closed', 2: 'half-open', 3: 'open' }[target.emulator];
+    io.out(`${serial}: ${target.posture} (${state}${orientation ? `, ${orientation}` : ''}).`);
+    if (target.note) io.out(`  ${target.note}`);
+    return 0;
+  } catch (e) {
+    if (e instanceof ToolError) {
+      io.err(e.message);
+      return 1;
+    }
+    throw e;
+  }
+}
+
