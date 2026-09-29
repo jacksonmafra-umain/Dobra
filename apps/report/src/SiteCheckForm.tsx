@@ -13,17 +13,16 @@ export interface SiteCheckFormProps {
   onReport(report: Report): void;
 }
 
+const INSTALLER_DOCS = 'https://github.com/jacksonmafra-umain/Dobra#install-on-your-mac';
+const INSTALL_LINE = 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh)"';
+
 function Handoff({ req, reason }: { req: CheckRequest; reason?: string }) {
   return (
     <div className="site-check__handoff">
       {reason && <p className="site-check__error" role="alert">{reason}</p>}
       <p>
         Run the check on your machine, then drop the <code>foldable-report.zip</code> it writes below: it has the findings,
-        the Markdown and a screenshot of each device. Or run <code>npm run dobra -- report</code> and open the address it
-        prints, to check from there.
-      </p>
-      <p className="muted">
-        From the Dobra repo, once: <code>npm run build:cli &amp;&amp; npx playwright install chromium</code>
+        the Markdown and a screenshot of each device. Or run <code>dobra report</code> and check from the page it opens.
       </p>
       <pre>
         <code>{cliCommand(req)}</code>
@@ -31,6 +30,17 @@ function Handoff({ req, reason }: { req: CheckRequest; reason?: string }) {
       <button className="site-check__copy" type="button" onClick={() => void navigator.clipboard?.writeText(cliCommand(req))}>
         Copy command
       </button>
+      <p className="muted">
+        No <code>dobra</code> command yet? Paste the{' '}
+        <a href={INSTALLER_DOCS} target="_blank" rel="noopener">
+          one-line installer
+        </a>{' '}
+        in Terminal: <code>{INSTALL_LINE}</code>
+      </p>
+      <p className="muted">
+        In a Dobra checkout instead, once: <code>npm run build:cli &amp;&amp; npx playwright install chromium</code>, then{' '}
+        <code>{cliCommand(req, 'repo')}</code>
+      </p>
       <p className="muted">In GitHub Actions:</p>
       <pre>
         <code>{actionsStep(req)}</code>
