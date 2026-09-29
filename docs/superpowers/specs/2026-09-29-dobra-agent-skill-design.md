@@ -31,12 +31,12 @@ The skill wraps what Dobra already has (the `dobra` CLI, the catalog, the report
   `dobra simulator`, `dobra plugin`, `dobra update` (re-runs the installer), the catalog at
   `@dobra/core/catalog/catalog.json` with target keys such as `galaxy-z-fold-7/inner/book/landscape`,
   and the report schema in `packages/core/src/report.ts`.
-- Not yet available (confirmed by agent/02): the emulator CLI. It is in design with no spec, branch
-  or ETA. Tentative shape `dobra emulator create <device-id|target-key>`, generated from the catalog
-  by a generator in `@dobra/core`. Android AVDs use the emulator's hinge and posture config; iOS can
-  only use Apple's shipped simctl device types, so no folds and no hypothetical devices. Open on their
-  side: default system image, tri-fold, iPad, changing a running emulator's posture or rotation.
-  agent/04 asked for JSON output. The skill must not depend on any of this until it merges.
+- The emulator CLI (agent/02, #184-#186, merged while this was being built): `dobra emulator list
+  [--json]`, `dobra emulator create <device-id> [--api] [--runtime] [--name] [--start] [--force]
+  [--json]` and `dobra emulator script <device-id>`. It reads devices from the catalog. Exit 2 is
+  invalid use, exit 1 a missing or failing tool. `--help` also exits 2, so the skill probes with
+  `list --json`. Changing a running emulator's posture isn't in it; `adb -s <serial> emu posture
+  <1|2|3>` does that on Android.
 
 ## Structure and distribution
 
@@ -136,13 +136,11 @@ The skill does not edit the user's code unless asked. It offers to apply the fix
 
 ## Workflow 3: emulators (`emulators.md`)
 
-- Probe with `dobra emulator --help`. If it fails, say "Emulator creation isn't available in this
+- Probe with `dobra emulator list --json`. If it answers `Unknown command`, say "Emulator creation isn't available in this
   Dobra version yet" and fall back to the manual matrix in workflow 2. Never write AVD `config.ini`
   files or `simctl` calls by hand.
-- If it exists: follow agent/02's interface (provisional: `create <device-id|target-key>` with JSON
-  output), choose devices from the catalog, and state the iOS limit (Apple's device types only, no
-  folds, no hypothetical devices).
-- The interface is marked provisional in the file. When agent/02 ships, only this file changes.
+- If it exists: read `support` and `limits` from `list --json`, create with `create <device-id>
+  --json`, and state the iOS limit (Apple's device types only, no folds, no hypothetical devices).
 
 ## Output rules (`report-format.md`)
 
@@ -168,7 +166,7 @@ The skill does not edit the user's code unless asked. It offers to apply the fix
 - One GitHub issue (labels `enhancement`, `area:docs` and a new `area:skill`), one PR linked with
   `Closes #N`, microcommits in this order: skill files, plugin and marketplace manifests, the
   `install.sh` step, the drift test, README docs.
-- The emulator wiring is a follow-up PR after agent/02's command merges.
+- The emulator wiring ships in the same PR, since the command merged first.
 
 ## Out of scope
 
