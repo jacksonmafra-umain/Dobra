@@ -1,0 +1,9 @@
+{
+  "name": "dobra",
+  "description": "Check websites and Android and iOS apps on foldable, dual-screen and tablet devices with Dobra, and fix what breaks using the Dobra guide.",
+  "version": "0.5.0",
+  "author": { "name": "Jackson Mafra" },
+  "homepage": "https://dobra-five.vercel.app/",
+  "repository": "https://github.com/jacksonmafra-umain/Dobra",
+  "keywords": ["foldable", "dual-screen", "responsive", "android", "ios", "adaptive-layout"]
+}

@@ -14,6 +14,7 @@ workspaces monorepo; each part has its own README with its build and options.
 - `apps/report` (`@dobra/report`): the web report that opens report JSON.
 - `packages/brand` (`@dobra/brand`): design tokens, fonts, logo and icon shared by every surface.
 - `apps/site` (`@dobra/site`): the Astro site with the landing page, the guide and the bundled tools. Deploys from `main` via Vercel.
+- `plugins/dobra`: the `dobra` Claude Code skill (site checks, Android and iOS reviews, emulators) and its plugin manifest; `.claude-plugin/marketplace.json` lists it. `packages/cli/src/skill.test.ts` checks its guide anchors, CLI options and links.
 - `docs/guide`: the cross-platform responsive design guide the site renders. `docs/android-extension-brief.md`: the Android brief.
 
 Commands: `npm test`, `npm run typecheck`, `npm run dev`, `npm run build`, `npm run build:single`,
