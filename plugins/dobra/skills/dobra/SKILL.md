@@ -1,6 +1,6 @@
 ---
 name: dobra
-description: Use when checking whether a website works on foldable, flip, dual-screen, tri-fold or tablet devices; when reviewing or testing an Android (Jetpack Compose or Views) or iOS (SwiftUI or UIKit) app's adaptive layout (window size classes, WindowSizeClass, size classes, folding features, hinge, postures, split panes); or when creating foldable emulators or simulators. Runs the Dobra CLI and cites the Dobra guide.
+description: Use for any request to check, test, audit or review a website URL, or an Android or iOS app, on foldable, flip, dual-screen, tri-fold, tablet or resizable-window devices, and to create foldable emulators or simulators. Use it instead of opening a browser, guessing viewport sizes or reviewing adaptive layout from memory - it runs the Dobra CLI (a real device catalog, hinge emulation, report JSON) and cites the Dobra guide for every fix. Covers foldables, folds, hinges, postures, dual screens, tablets, window size classes (WindowSizeClass, FoldingFeature), iOS size classes, NavigationSplitView, and adaptive or responsive layout.
 ---
 
 # Dobra
