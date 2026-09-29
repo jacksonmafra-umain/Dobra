@@ -10,7 +10,9 @@ Figma variables. This guide walks through each tab, then through three common wo
 ## Before you start
 
 - **Install:** the plugin runs in Figma desktop.
-  1. Build it once with `npm run build -w @dobra/figma-plugin`.
+  1. Build it once: paste the one-line installer from the
+     [README](../../README.md#install-on-your-mac) in Terminal, or run
+     `npm run build -w @dobra/figma-plugin` in a checkout. `dobra plugin` then shows the manifest.
   2. In Figma, go to **Plugins › Development › Import plugin from manifest…** and choose
      `packages/figma-plugin/manifest.json`.
   3. Run it from **Plugins › Development › Dobra**.
