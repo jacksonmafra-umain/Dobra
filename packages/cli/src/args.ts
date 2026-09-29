@@ -31,6 +31,7 @@ export interface SiteOptions {
 
 export const USAGE = `Usage: dobra check site <url> [options]
        dobra report [--port <n>] [--host <addr>] [--dir <folder>]
+       dobra emulator list | create <device> | script <device>  (dobra emulator --help)
 
   --targets <keys>     Comma-separated target keys (device/display/posture/orientation)
   --category <name>    Every target of a category; repeat for more
