@@ -138,6 +138,13 @@ describe('dobra skill', () => {
     expect(text).toMatch(/emu posture[\s\S]{0,600}OK/);
   });
 
+  it('builds Android preview sizes from fields Android displays have', () => {
+    const text = read('native-android.md');
+    expect(text).not.toMatch(/portraitSize/);
+    expect(text).toMatch(/`size`/);
+    expect(text).toMatch(/density × 160/);
+  });
+
   it('links only files in the skill', () => {
     const broken: string[] = [];
     for (const f of files()) {

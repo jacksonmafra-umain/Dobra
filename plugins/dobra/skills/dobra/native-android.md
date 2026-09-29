@@ -62,8 +62,9 @@ Devices, by catalog ID: `galaxy-z-fold-7` (book foldable), `galaxy-z-flip-7` (fl
 Say plainly that the app wasn't run, and give the user this matrix
 (`02-android.md#testing`):
 
-- **Compose previews** at the catalog's window sizes. Read each display's `portraitSize` (dp) from
-  the catalog and write a spec per size, plus the platform presets:
+- **Compose previews** at the catalog's window sizes. For each Android display, read `size`
+  (width and height in dp) and `density` from the catalog, and use `dpi = density × 160`, rounded
+  (the same rule the emulator command uses). Write a spec per display, plus the platform presets:
 
   ```kotlin
   @Preview(name = "Fold 7 inner", device = "spec:width=<w>dp,height=<h>dp,dpi=<dpi>")
