@@ -6,6 +6,7 @@ export const dir = (p: string): Record<string, null> => ({ [p]: null });
 
 export interface FakeRunner extends Runner {
   calls: { file: string; args: string[]; input?: string }[];
+  started: { file: string; args: string[] }[];
   fs: Map<string, string | null>;
 }
 
@@ -16,9 +17,12 @@ export function fakeRunner(
 ): FakeRunner {
   const fs = new Map(Object.entries(files));
   const calls: FakeRunner['calls'] = [];
+  const started: FakeRunner['started'] = [];
   const home = '/Users/me';
   return {
     calls,
+    started,
+    start: (file, args) => void started.push({ file, args }),
     fs,
     env,
     arch: opts.arch ?? 'arm64',

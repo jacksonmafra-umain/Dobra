@@ -1,5 +1,5 @@
 // What dobra emulator needs from the machine: run a tool, and read and write files. Tests pass a fake.
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 
@@ -11,6 +11,8 @@ export interface ExecResult {
 
 export interface Runner {
   exec(file: string, args: string[], input?: string): Promise<ExecResult>;
+  /** Starts a long-running program (the emulator) and returns without waiting for it. */
+  start(file: string, args: string[]): void;
   exists(path: string): boolean;
   /** Entry names in a folder; empty when it's missing. */
   list(dir: string): string[];
@@ -35,6 +37,7 @@ export const nodeRunner: Runner = {
       });
       if (input !== undefined) child.stdin?.end(input);
     }),
+  start: (file, args) => spawn(file, args, { detached: true, stdio: 'ignore' }).unref(),
   exists: (p) => existsSync(p),
   list: (d) => {
     try {
