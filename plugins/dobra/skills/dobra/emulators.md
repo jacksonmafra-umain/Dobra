@@ -8,7 +8,8 @@ its display sizes, density, hinges and postures come from the catalog, each with
     dobra emulator list --json
 
 - **It prints JSON** (exit 0): the command is there. Keep the list: each device has `id`, `name`,
-  `platform`, `category`, `support` (`full`, `partial` or `none`) and `limits`.
+  `platform`, `category`, `support` (`full`, `partial` or `none`), `limits` and `postures` (the
+  catalog posture names, such as `book` or `tabletop`).
 - **`Unknown command: emulator`**, or in a checkout the site-check usage text: this Dobra is
   older. Say "Emulator creation isn't available in this Dobra version. `dobra update` gets the
   latest." Then use the "Runtime check without emulators" section of
@@ -66,13 +67,26 @@ orientations:
 
 - **Find the device:** `adb devices` lists running Android emulators with their serials
   (`emulator-5554`); on iOS the UDID is the `id` from `create --json`.
-- **Android postures:** `adb -s <serial> emu posture <n>`, where 1 is closed, 2 half-open and 3
-  open, matching the posture list `create` configures. Source: Dobra's emulator work, checked on a
-  generated Galaxy Z Fold 7 with emulator 36.6.8; it's an emulator console command, not in
-  Android's app documentation. The console answers `OK` when it takes it and `KO` when it doesn't.
-  After each change, take a screenshot and confirm the posture on screen before you check
-  anything in it. `dobra emulator` itself doesn't change a running emulator's posture.
-- **Rotation:** rotate with the emulator's controls or the Simulator's Device menu.
+- **Android postures and rotation:**
+
+      dobra emulator posture <device-id> <posture> --json
+
+  `<posture>` is one of the device's `postures` from `list --json`; never invent one. It finds the
+  emulator created for that device (`dobra_<device-id>`); pass `--name <avd>` or `--serial <id>` for
+  another. It sets the rotation the posture implies, or the one you give with
+  `--orientation portrait` or `--orientation landscape`. The JSON has `device`, `posture`,
+  `emulator` (the emulator's posture number), `serial` and `orientation`.
+
+  | Exit | Meaning | What to do |
+  |---|---|---|
+  | 0 | Switched | Screenshot, and confirm the posture on screen before checking anything in it |
+  | 2 | A posture it can't take (rear display, a device with two hinges, iOS, an unknown posture); the reason is on stderr | Report it as not checked, with the reason |
+  | 1 | The emulator isn't running (stderr has the start command) or `adb` failed | Start it, or tell the user what failed |
+
+  On an emulator that has just booted, wait until `adb -s <serial> shell getprop
+  sys.boot_completed` prints `1`, then about 15 s more: first-boot setup resets the rotation
+  otherwise.
+- **iOS rotation:** use the Simulator's Device menu; iOS has no postures.
 
 Keep screenshots out of the user's project:
 

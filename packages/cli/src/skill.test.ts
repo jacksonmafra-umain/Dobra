@@ -132,10 +132,12 @@ describe('dobra skill', () => {
     }
   });
 
-  it('sources the posture command and has the agent confirm it', () => {
+  it('switches postures with dobra emulator posture, using the listed posture names', () => {
     const text = read('emulators.md');
-    expect(text).toMatch(/adb devices/);
-    expect(text).toMatch(/emu posture[\s\S]{0,600}OK/);
+    expect(text).toMatch(/dobra emulator posture <device-id> <posture>/);
+    expect(text).not.toMatch(/emu posture \d|emu posture <n>/);
+    expect(text).toMatch(/`postures`/);
+    expect(text).toMatch(/sys\.boot_completed/);
   });
 
   it('builds Android preview sizes from fields Android displays have', () => {
