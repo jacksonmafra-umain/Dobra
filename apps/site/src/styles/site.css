@@ -69,7 +69,10 @@ p.has-unverified { border-left: 2px solid var(--dobra-warn); padding-left: 12px;
 .tool:hover { border-color: color-mix(in srgb, var(--dobra-fold) 45%, transparent); }
 .tool h3 { font: var(--dobra-type-headline-sm); margin: 0 0 8px; }
 .tool p { margin: 0; color: var(--dobra-muted); font: var(--dobra-type-body-md); }
-.quickstart p { color: var(--dobra-muted); max-width: 70ch; }
+.quickstart p, .quickstart .steps { color: var(--dobra-muted); max-width: 70ch; }
+.quickstart h3 { font: var(--dobra-type-headline-sm); margin: 28px 0 8px; }
+.quickstart .steps { padding-left: 1.4em; line-height: 1.7; }
+.quickstart .steps strong { color: var(--dobra-text); }
 .quickstart pre { background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 16px; overflow-x: auto; font: 13px/1.7 var(--dobra-font-mono); }
 @media (max-width: 600px) { .hero h1 { font-size: 34px; } }
 

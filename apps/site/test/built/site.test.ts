@@ -99,6 +99,8 @@ describe('built site', () => {
     const html = readFileSync(join(dist, 'index.html'), 'utf8');
     expect(html).toContain('curl -fsSL https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh');
     expect(html).toContain('dobra plugin');
+    expect(html).toContain('Import plugin from manifest');
+    expect(html).toContain('packages/figma-plugin/manifest.json');
   });
 
   it('loads no fonts from the network', () => {

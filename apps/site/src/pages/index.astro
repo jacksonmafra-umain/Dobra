@@ -45,10 +45,19 @@ const installer = 'https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/ma
       window:
     </p>
     <pre><code>dobra simulator          # open the simulator
-dobra report             # open the web report
+dobra report             # open the web report and check websites
 dobra plugin             # add the Figma plugin to Figma desktop
 dobra check site https://example.com
 dobra update             # get the latest version</code></pre>
+    <h3 id="plugin-title">Add the Figma plugin</h3>
+    <p>The plugin runs in the Figma desktop app, not in the browser. Add it once:</p>
+    <ol class="steps">
+      <li>Run <code>dobra plugin</code>. It opens Figma and shows the plugin's <code>manifest.json</code> in Finder.</li>
+      <li>In Figma, open any design file, then go to <strong>Plugins › Development › Import plugin from manifest…</strong></li>
+      <li>Choose <code>~/Dobra/packages/figma-plugin/manifest.json</code>, the file Finder shows.</li>
+      <li>Run it from <strong>Plugins › Development › Dobra</strong>.</li>
+    </ol>
+    <p>After <code>dobra update</code>, Figma loads the new version the next time you run the plugin. The <a href="https://github.com/jacksonmafra-umain/Dobra/blob/main/docs/figma-plugin/guide.md" target="_blank" rel="noopener">plugin guide</a> walks through each tab.</p>
   </section>
   <section class="quickstart" aria-labelledby="qs-title">
     <h2 id="qs-title">For developers</h2>
