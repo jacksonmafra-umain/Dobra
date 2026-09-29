@@ -41,5 +41,7 @@ Read the file for the request before doing anything. A request can need more tha
 | The user wants to | Read |
 |---|---|
 | Check whether a URL works on foldables, dual screens or tablets | [site-check.md](site-check.md) |
+| Review or test an Android app (Compose or Views) for foldables, tablets and window sizes | [native-android.md](native-android.md) |
+| Review or test an iOS app (SwiftUI or UIKit) for size classes, iPad windows and Dynamic Type | [native-ios.md](native-ios.md) |
 
 Before writing any report, read [report-format.md](report-format.md).
