@@ -75,4 +75,19 @@ describe('androidSettings', () => {
   it('lists a display it cannot place', () => {
     expect(androidSettings(device('huawei-mate-xt')).limits.join(' ')).toMatch(/isn't emulated as its own region/);
   });
+
+  it("turns on the emulator's folded screen for a book foldable", () => {
+    // The emulator switches to the folded region only for built-in foldable names and with no hardware keys.
+    expect(androidSettings(device('galaxy-z-fold-7')).settings).toMatchObject({
+      'hw.device.name': 'pixel_9_pro_fold',
+      'hw.mainKeys': 'no',
+      'hw.dPad': 'no',
+      'hw.trackBall': 'no',
+    });
+  });
+
+  it('leaves the device name alone for anything that is not a book foldable', () => {
+    for (const id of ['pixel-9', 'galaxy-z-flip-7', 'galaxy-z-trifold', 'surface-duo-2']) expect(androidSettings(device(id)).settings['hw.device.name'], id).toBeUndefined();
+  });
 });
+
