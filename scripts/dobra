@@ -15,6 +15,7 @@ Usage: dobra <command>
   report               open the report, with website checks, in the browser (Ctrl+C stops it)
   plugin               show where the Figma plugin is and how to add it to Figma
   check site <url>     check a website on foldables (dobra check site --help for options)
+  emulator <command>   create an Android emulator or iOS simulator like a catalog device (dobra emulator --help)
   update               download the latest version and rebuild everything
 EOF
 }
@@ -60,6 +61,7 @@ case "${1:-}" in
   plugin) plugin ;;
   # Runs in the current folder, so the report files land where the designer is working.
   check) exec node "$DOBRA_DIR/packages/cli/dist/dobra.mjs" "$@" ;;
+  emulator) exec node "$DOBRA_DIR/packages/cli/dist/dobra.mjs" "$@" ;;
   update) DOBRA_DIR="$DOBRA_DIR" DOBRA_HOME="$DOBRA_HOME" DOBRA_UPDATE=1 exec bash -c "$(curl -fsSL "$INSTALLER")" ;;
   '' | help | -h | --help) usage ;;
   *) printf 'Unknown command: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;

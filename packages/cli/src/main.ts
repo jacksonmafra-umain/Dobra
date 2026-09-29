@@ -6,6 +6,7 @@ import { loadCatalog } from '@dobra/core/catalog/load';
 import { toMarkdown, type Report } from '@dobra/core/report';
 import { reportZip } from '@dobra/core/reportZip';
 import { parseArgs } from './args';
+import { runEmulator } from './emulator/command';
 import { checkSite } from './checkSite';
 import { isLoopback, startLocalServer } from './localServer';
 import { LOCAL } from './policy';
@@ -42,6 +43,7 @@ function summarise(report: Report, io: Io): void {
 
 /** Runs the command and returns the exit code: 0 clean, 1 findings or unloaded targets, 2 bad input. */
 export async function run(argv: string[], io: Io): Promise<number> {
+  if (argv[0] === 'emulator') return runEmulator(argv.slice(1), io);
   const opts = parseArgs(argv);
   if ('help' in opts) {
     if (opts.error) io.err(opts.error);

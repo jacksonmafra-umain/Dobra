@@ -123,3 +123,14 @@ describe('a rejected address', () => {
     expect(out.join('\n')).toMatch(/Usage: dobra check site/);
   });
 });
+
+describe('dobra emulator', () => {
+  it('runs the emulator command, and the main usage mentions it', async () => {
+    const h = harness(report());
+    expect(await run(['emulator', 'list', '--json'], h.io)).toBe(0);
+    expect(JSON.parse(h.out.join('\n')).version).toBe(1);
+    const help = harness(report());
+    expect(await run(['--help'], help.io)).toBe(2);
+    expect(help.out.join('\n')).toMatch(/dobra emulator list \| create <device> \| script <device>/);
+  });
+});
