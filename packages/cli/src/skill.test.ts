@@ -114,6 +114,12 @@ describe('dobra skill', () => {
     expect(read('emulators.md')).toMatch(/dobra emulator list --json/);
   });
 
+  it('checks local servers with the same scheme the check uses', () => {
+    const text = read('site-check.md');
+    expect(text).toMatch(/http:\/\//);
+    expect(text).toMatch(/curl[^\n]*--max-time/);
+  });
+
   it('links only files in the skill', () => {
     const broken: string[] = [];
     for (const f of files()) {

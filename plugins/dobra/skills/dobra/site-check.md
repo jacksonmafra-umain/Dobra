@@ -6,19 +6,21 @@ out again when a foldable unfolds.
 
 ## 1. Scope
 
-- **The address.** Pass it as given; the CLI adds `https://` when it's missing. For `localhost`,
-  `127.0.0.1`, `*.local`, `*.test` or a staging host, first check it answers:
+- **The address.** Use one exact URL for every command. For `localhost`, `127.0.0.1`, `*.local`,
+  `*.test` or a staging host given without a scheme, add `http://` yourself: the CLI adds
+  `https://`, which a local dev server usually doesn't answer. Check the server answers first:
 
-      curl -sS -o /dev/null -w '%{http_code}\n' <url>
+      curl -sS --max-time 10 -o /dev/null -w '%{http_code}\n' <url>
 
-  If nothing answers, tell the user the server isn't running and stop. That isn't a site finding.
+  - Nothing answers: tell the user the server isn't running, and stop. That isn't a site finding.
+  - A 4xx or 5xx code: the server answered with an error. Say so and ask before checking it.
 - **The targets.** With no request, use the default: one representative device per required
   coverage cell. When the user names kinds of device, pass one `--category` per kind: `phone`,
   `foldable-book`, `foldable-flip`, `dual-screen`, `multi-fold`, `tablet`, `desktop`.
 - **Named devices.** Build `--targets` keys, `device/display/posture/orientation` (`-` for no
   posture), from the catalog. Never guess an ID. List a device's displays and postures:
 
-      node -e 'const c=require(process.argv[1]);const d=c.devices.find(d=>d.id===process.argv[2]);console.log(d?JSON.stringify({displays:Object.keys(d.displays),postures:(d.postures||d.poses||[]).map(p=>p.id+"@"+p.display)}):"unknown device")' "${DOBRA_DIR:-$HOME/Dobra}/packages/core/src/catalog/catalog.json" galaxy-z-fold-7
+      node -e 'const c=require(process.argv[1]);const d=c.devices.find(d=>d.id===process.argv[2]);console.log(d?JSON.stringify({displays:Object.keys(d.displays),postures:(d.postures||d.poses||[]).map(p=>p.id+"@"+p.display)}):"unknown device")' "<DOBRA_DIR>/packages/core/src/catalog/catalog.json" galaxy-z-fold-7
 
   `book@inner` becomes `galaxy-z-fold-7/inner/book/landscape`. If the CLI answers
   `Unknown target <key>`, that orientation isn't offered: try the other one.
@@ -38,7 +40,7 @@ If it fails before checking anything:
 
 | Output | Meaning | Tell the user |
 |---|---|---|
-| `Executable doesn't exist` or `browserType.launch` | Chromium is missing | Run `npx playwright install chromium` in `~/Dobra`, or the installer again |
+| `Executable doesn't exist` or `browserType.launch` | Chromium is missing | Run `npx playwright install chromium` in `<DOBRA_DIR>`, or the installer again |
 | `Not a web address` | The URL is malformed | Ask for a full URL |
 | `Unknown target` | A bad `--targets` key | Rebuild it from the catalog (step 1) |
 
