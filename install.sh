@@ -12,6 +12,7 @@
 #   DOBRA_HOME          where Node and the `dobra` command go (default ~/.dobra)
 #   DOBRA_BRANCH        the branch to download (default main)
 #   DOBRA_SKIP_BROWSER  set to 1 to skip Chromium; only the site checker needs it
+#   DOBRA_SKIP_SKILL    set to 1 to skip copying the Claude Code skill to ~/.claude/skills/dobra
 #   DOBRA_UPDATE        set to 1 to download the latest code even when run from a checkout
 set -euo pipefail
 
@@ -104,6 +105,22 @@ install_command() {
   done
 }
 
+# Copies the dobra agent skill to ~/.claude/skills so Claude Code can use Dobra in any project. A
+# folder there that this script didn't write is left alone.
+install_skill() {
+  local src="$1/plugins/dobra/skills/dobra" dest="$HOME/.claude/skills/dobra"
+  [ -d "$src" ] || { info "This version has no agent skill"; return 0; }
+  if [ -e "$dest" ] && [ ! -f "$dest/$MARKER" ]; then
+    info "Leaving $dest alone: Dobra didn't install it"
+    return 0
+  fi
+  mkdir -p "$HOME/.claude/skills"
+  rm -rf "$dest"
+  cp -R "$src" "$dest"
+  : >"$dest/$MARKER"
+  info "Claude Code can now use Dobra: $dest"
+}
+
 main() {
   local dir
   command -v curl >/dev/null 2>&1 || fail "curl is missing."
@@ -141,6 +158,13 @@ main() {
   step "Adding the dobra command"
   install_command "$dir"
 
+  if [ "${DOBRA_SKIP_SKILL:-}" = 1 ]; then
+    step "Skipping the Claude Code skill (DOBRA_SKIP_SKILL=1)"
+  else
+    step "Adding the dobra skill for Claude Code"
+    install_skill "$dir"
+  fi
+
   printf '\n%sDobra is installed in %s%s\n\n' "$B" "$dir" "$N"
   cat <<EOF
 Open a new Terminal window, then:
@@ -150,6 +174,8 @@ Open a new Terminal window, then:
   dobra plugin               set up the Figma plugin
   dobra check site <url>     check a website on foldables
   dobra update               get the latest version
+
+In Claude Code, ask to check a site or an app on foldables: the dobra skill runs these for you.
 
 In this window, use $DOBRA_HOME/bin/dobra until you open a new one.
 EOF
