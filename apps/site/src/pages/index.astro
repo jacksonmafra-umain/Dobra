@@ -7,6 +7,7 @@ const tools = [
   { name: 'Web report', href: '/report/', text: "Opens a Figma file or a report JSON and shows the file's coverage and the rule findings per frame, with thumbnails and downloads." },
   { name: 'CLI', href: 'https://github.com/jacksonmafra-umain/Dobra/tree/main/packages/cli', text: 'Checks a website in Chromium at every device target with fold emulation, and writes the same report the other tools read.' },
 ];
+const installer = 'https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh';
 ---
 <Base title="Dobra" description="Tools for designing foldable and dual-screen UIs on iOS and Android: a simulator, a Figma plugin, a web report and a website checker." path="/">
   <section class="hero">
@@ -34,8 +35,23 @@ const tools = [
       }
     </div>
   </section>
+  <section class="quickstart" aria-labelledby="install-title">
+    <h2 id="install-title">Install on your Mac</h2>
+    <p>No GitHub, Node or admin rights needed. Open Terminal and paste this line:</p>
+    <pre><code>bash -c "$(curl -fsSL {installer})"</code></pre>
+    <p>
+      Or download the <a href="https://github.com/jacksonmafra-umain/Dobra/archive/refs/heads/main.zip" target="_blank" rel="noopener">ZIP</a>, unzip it
+      and run <code>bash install.sh</code> in that folder. It takes a few minutes the first time. Then, in a new Terminal
+      window:
+    </p>
+    <pre><code>dobra simulator          # open the simulator
+dobra report             # open the web report
+dobra plugin             # add the Figma plugin to Figma desktop
+dobra check site https://example.com
+dobra update             # get the latest version</code></pre>
+  </section>
   <section class="quickstart" aria-labelledby="qs-title">
-    <h2 id="qs-title">Quick start</h2>
+    <h2 id="qs-title">For developers</h2>
     <pre><code>npm install
 npm run dev            # simulator
 npm run dev:report     # web report

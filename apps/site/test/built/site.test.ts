@@ -95,6 +95,12 @@ describe('built site', () => {
     expect(JSON.parse(readFileSync(join(dist, 'vercel.json'), 'utf8'))).toMatchObject({ trailingSlash: true });
   });
 
+  it('shows designers the one-line installer on the landing page', () => {
+    const html = readFileSync(join(dist, 'index.html'), 'utf8');
+    expect(html).toContain('curl -fsSL https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh');
+    expect(html).toContain('dobra plugin');
+  });
+
   it('loads no fonts from the network', () => {
     for (const file of pages) expect(readFileSync(file, 'utf8')).not.toContain('fonts.googleapis');
   });
