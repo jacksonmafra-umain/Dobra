@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "dobra",
+  "description": "Dobra tools for foldable and dual-screen layouts.",
+  "owner": { "name": "Jackson Mafra", "url": "https://github.com/jacksonmafra-umain" },
+  "plugins": [
+    {
+      "name": "dobra",
+      "source": "./plugins/dobra",
+      "description": "Check websites and Android and iOS apps on foldables, and fix what breaks.",
+      "category": "development"
+    }
+  ]
+}
