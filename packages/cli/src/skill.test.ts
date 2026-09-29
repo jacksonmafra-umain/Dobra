@@ -4,6 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { USAGE } from './args';
+import { EMULATOR_USAGE } from './emulator/args';
 
 const ROOT = join(import.meta.dirname, '../../..');
 const SKILL = join(ROOT, 'plugins/dobra/skills/dobra');
@@ -56,6 +57,24 @@ describe('dobra skill', () => {
       }
     }
     expect(unknown).toEqual([]);
+  });
+
+  it('passes only options dobra emulator accepts', () => {
+    const unknown: string[] = [];
+    for (const f of files()) {
+      for (const line of read(f).split('\n')) {
+        if (!line.includes('dobra emulator')) continue;
+        for (const [option] of line.matchAll(/--[a-z][a-z-]*/g)) {
+          if (!EMULATOR_USAGE.includes(option)) unknown.push(`${f}: ${option}`);
+        }
+      }
+    }
+    expect(unknown).toEqual([]);
+  });
+
+  it('probes for the emulator command with one that exits 0 when it exists', () => {
+    // `dobra emulator --help` prints the usage but exits 2, so it can't tell "missing" from "there".
+    expect(read('emulators.md')).toMatch(/dobra emulator list --json/);
   });
 
   it('links only files in the skill', () => {
