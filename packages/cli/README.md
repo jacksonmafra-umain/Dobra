@@ -45,6 +45,33 @@ or keep beacons open still finish. If `load` has not fired after 30 s (one slow 
 resource), the page is checked as it is and the report notes it. A page whose script stops
 answering for 30 s is listed under **Could not load**.
 
+## Create an emulator or simulator
+
+`dobra emulator` turns a catalog device into an Android emulator (AVD) or an iOS simulator configured
+like it. For Android that means the screen, the density, the region shown when folded, the hinges
+and the postures. It needs the Android SDK (Android Studio) or Xcode on this machine.
+
+```bash
+npm run dobra -- emulator list                     # every device and how well it can be emulated
+npm run dobra -- emulator create galaxy-z-fold-7   # creates dobra_galaxy-z-fold-7
+npm run dobra -- emulator script galaxy-z-fold-7   # the same steps as a shell script
+```
+
+| Option | Meaning |
+|---|---|
+| `--api <n>` | Android API level. Default: the newest system image installed for this processor. With none installed, the command prints the `sdkmanager` line to install one |
+| `--runtime <id>` | iOS runtime, for example `com.apple.CoreSimulator.SimRuntime.iOS-26-4`. Default: the newest one that supports the device |
+| `--name <name>` | Name to create. Default `dobra_<device>`, or `<Device> (Dobra)` for simulators |
+| `--start` | Start the emulator, or boot the simulator, once it's created |
+| `--force` | Replace an emulator or simulator that has the same name |
+| `--json` | Print the result as JSON (`"version": 1`), for scripts and agents |
+
+What an emulator can't reproduce is listed as **limits**, never guessed. Examples: a flip phone's
+cover screen, a rear-display posture, and posture switching on devices with two hinges. iOS
+simulators exist only for Apple's own models, so each catalog device maps to the closest one, and a
+hypothetical device such as iPhone Duo has none. `script` needs only the Android SDK or Xcode, not
+Dobra, and it runs on macOS and Linux. The site's Generator page prints the same script.
+
 ## Check sites from the report
 
 `dobra report` serves Foldable Check with a local site-check endpoint, so a website can be checked
