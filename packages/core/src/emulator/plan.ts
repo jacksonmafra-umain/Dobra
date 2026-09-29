@@ -8,7 +8,7 @@ export type { AppliedSetting } from './android';
 export type Placeholder = '{image}' | '{runtime}' | '{udid}';
 export type EmulatorStep =
   | { kind: 'find-image'; platform: 'android'; api: number | null }
-  | { kind: 'find-image'; platform: 'ios'; runtime: string | null; deviceType: string }
+  | { kind: 'find-image'; platform: 'ios'; runtime: string | null; deviceType: string; force: boolean }
   | { kind: 'run'; argv: string[]; input?: string }
   | { kind: 'write-config'; avd: string; settings: Record<string, string> }
   | { kind: 'print'; text: string };
@@ -34,7 +34,7 @@ export interface PlanOptions {
 
 export class EmulatorPlanError extends Error {
   constructor(
-    readonly code: 'unknown-device' | 'no-simulator',
+    readonly code: 'unknown-device' | 'no-simulator' | 'bad-name',
     message: string,
   ) {
     super(message);
@@ -62,6 +62,8 @@ export function emulatorPlan(catalog: Catalog, deviceId: string, options: PlanOp
 
   if (device.platform === 'android') {
     const name = options.name ?? avdName(device.id);
+    // The name ends up in a path and a script, so only the characters an AVD name allows get through.
+    if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new EmulatorPlanError('bad-name', `"${name}" can't be an emulator name: use letters, digits, dots, underscores and hyphens.`);
     const { settings, applied, limits } = androidSettings(device);
     return {
       ...base,
@@ -89,7 +91,7 @@ export function emulatorPlan(catalog: Catalog, deviceId: string, options: PlanOp
     platform: 'ios',
     name,
     steps: [
-      { kind: 'find-image', platform: 'ios', runtime: options.runtime ?? null, deviceType: simulator.deviceType },
+      { kind: 'find-image', platform: 'ios', runtime: options.runtime ?? null, deviceType: simulator.deviceType, force: options.force ?? false },
       { kind: 'run', argv: ['xcrun', 'simctl', 'create', name, simulator.deviceType, '{runtime}'] },
       { kind: 'print', text: `Created ${name}.` },
     ],
