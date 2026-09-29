@@ -69,7 +69,10 @@ export async function runEmulator(argv: string[], io: Out, runner: Runner = node
     const made = plan.platform === 'android' ? await createAvd(runner, plan, args.force) : await createSimulator(runner, plan, args.force);
     const start = startCommands(plan, made.id, made.image, runner);
     if (args.start) {
-      if (plan.platform === 'android') runner.start(start[0][0], start[0].slice(1));
+      if (plan.platform === 'android') {
+        if (!runner.exists(start[0][0])) throw new ToolError(`Created ${plan.name}, but the Android emulator isn't installed, so it can't start. Install it in Android Studio's SDK Manager (Android Emulator), then run: ${start[0].join(' ')}`);
+        runner.start(start[0][0], start[0].slice(1), (m) => io.err(`The emulator didn't start: ${m}`));
+      }
       else for (const [tool, ...rest] of start) await runner.exec(tool, rest);
     }
     if (args.json) {

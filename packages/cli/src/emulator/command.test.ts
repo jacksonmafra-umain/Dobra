@@ -67,4 +67,25 @@ describe('dobra emulator', () => {
     expect(await runEmulator([], io(), fakeRunner({}))).toBe(2);
     expect(await runEmulator(['create'], io(), fakeRunner({}))).toBe(2);
   });
+
+  it('exits 2 for a name an emulator cannot have', async () => {
+    const o = io();
+    expect(await runEmulator(['create', 'pixel-9', '--name', 'a b'], o, withImage())).toBe(2);
+    expect(o.errText()).toMatch(/can't be an emulator name/);
+  });
+
+  it('exits 1, and starts nothing, when --start has no emulator to run', async () => {
+    const r = withImage();
+    const o = io();
+    expect(await runEmulator(['create', 'pixel-9', '--start'], o, r)).toBe(1);
+    expect(o.errText()).toMatch(/emulator isn't installed/);
+    expect(r.started).toEqual([]);
+  });
+
+  it('starts the emulator when it is installed', async () => {
+    const r = fakeRunner({ ...dir(SDK), ...dir(`${SDK}/system-images/android-36/google_apis_playstore/arm64-v8a`), [`${SDK}/emulator/emulator`]: '' });
+    expect(await runEmulator(['create', 'pixel-9', '--start'], io(), r)).toBe(0);
+    expect(r.started).toEqual([{ file: `${SDK}/emulator/emulator`, args: ['-avd', 'dobra_pixel-9'] }]);
+  });
 });
+
