@@ -7,6 +7,9 @@ JSON that the web report opens, an optional Markdown summary, and an exit code f
 
 ## Install and build
 
+Without a checkout, the [installer](../../README.md#install-on-your-mac) sets up everything and adds
+`dobra check site <url>` to the Terminal. In a checkout:
+
 ```bash
 npm install
 npx playwright install chromium   # once: downloads Playwright's Chromium build

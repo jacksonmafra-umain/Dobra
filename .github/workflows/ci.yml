@@ -28,6 +28,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Check the installer scripts parse
+        run: bash -n install.sh && bash -n scripts/dobra
+
       # The CLI's tests drive Chromium through Playwright; install the build the lockfile pins.
       - name: Cache Playwright browsers
         uses: actions/cache@v4

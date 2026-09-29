@@ -2,6 +2,11 @@
 
 Artboards for foldable and dual-screen devices, straight from the device catalog in `@dobra/core`.
 
+## Install
+
+Designers: run the [installer](../../README.md#install-on-your-mac), then `dobra plugin`. It builds
+the plugin and shows the manifest to import.
+
 ## Build
 
 ```bash

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# The `dobra` command that install.sh puts on the PATH. It opens each tool from the local install.
+set -euo pipefail
+
+DOBRA_DIR="${DOBRA_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+DOBRA_HOME="${DOBRA_HOME:-$HOME/.dobra}"
+INSTALLER="https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh"
+[ -x "$DOBRA_HOME/node/bin/node" ] && export PATH="$DOBRA_HOME/node/bin:$PATH"
+
+usage() {
+  cat <<'EOF'
+Usage: dobra <command>
+
+  simulator            open the simulator in the browser (Ctrl+C stops it)
+  report               open the report in the browser (Ctrl+C stops it)
+  plugin               show where the Figma plugin is and how to add it to Figma
+  check site <url>     check a website on foldables (dobra check site --help for options)
+  update               download the latest version and rebuild everything
+EOF
+}
+
+plugin() {
+  local manifest="$DOBRA_DIR/packages/figma-plugin/manifest.json"
+  cat <<EOF
+The Figma plugin is built. Add it to Figma once:
+
+  1. Open the Figma desktop app (the plugin doesn't run in the browser).
+  2. Open any design file, then Plugins > Development > Import plugin from manifest...
+  3. Choose this file:
+       $manifest
+  4. Run it from Plugins > Development > Dobra.
+
+After "dobra update", Figma picks up the new version the next time you run the plugin.
+EOF
+  if [ "$(uname -s)" = Darwin ]; then
+    open -R "$manifest"
+    open -a Figma 2>/dev/null || true
+  fi
+}
+
+case "${1:-}" in
+  simulator) cd "$DOBRA_DIR" && exec npm run preview --silent -w @dobra/simulator -- --open ;;
+  report) cd "$DOBRA_DIR" && exec npm exec -w @dobra/report -- vite preview --open ;;
+  plugin) plugin ;;
+  # Runs in the current folder, so the report files land where the designer is working.
+  check) exec node "$DOBRA_DIR/packages/cli/dist/dobra.mjs" "$@" ;;
+  update) DOBRA_DIR="$DOBRA_DIR" DOBRA_HOME="$DOBRA_HOME" DOBRA_UPDATE=1 exec bash -c "$(curl -fsSL "$INSTALLER")" ;;
+  '' | help | -h | --help) usage ;;
+  *) printf 'Unknown command: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
+esac

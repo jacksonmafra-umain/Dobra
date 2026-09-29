@@ -33,7 +33,34 @@ Try it at [dobra-five.vercel.app](https://dobra-five.vercel.app).
   breaks, including pages that don't lay themselves out again after an unfold. It exits non-zero
   on errors, so it can gate a pull request.
 
-## Run it locally
+## Install on your Mac
+
+You don't need GitHub, Node or admin rights. Open Terminal and paste this line:
+
+```sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh)"
+```
+
+Or download the ZIP from GitHub (**Code › Download ZIP**), unzip it, and run `bash install.sh` in
+that folder. A clone works the same way.
+
+The installer adds Node when it's missing, installs the packages, builds every tool and installs
+Chromium for the site checker. It takes a few minutes the first time. Then, in a new Terminal
+window:
+
+| Command | What it does |
+| --- | --- |
+| `dobra simulator` | Opens the simulator in the browser |
+| `dobra report` | Opens the report in the browser |
+| `dobra plugin` | Shows the Figma plugin's manifest and how to import it in Figma desktop |
+| `dobra check site <url>` | Checks a website on foldables; the report lands in the current folder |
+| `dobra update` | Gets the latest version and rebuilds |
+
+The code goes in `~/Dobra` when the installer downloads it, and Node and the `dobra` command go in
+`~/.dobra`. Set `DOBRA_DIR` or `DOBRA_HOME` to use other folders, and `DOBRA_SKIP_BROWSER=1` to skip
+Chromium. `dobra update` replaces the contents of `~/Dobra`, so keep your own files elsewhere.
+
+## Develop
 
 ```sh
 npm install
