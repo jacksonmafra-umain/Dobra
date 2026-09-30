@@ -49,5 +49,17 @@ describe('openChrome', () => {
     await openChrome(r, 'RZ', "http://x/?a=1&b=2;reboot'", instant);
     expect(sent(r).find((c) => c.startsWith('shell am start'))).toBe("shell am start -a android.intent.action.VIEW -d 'http://x/?a=1&b=2;reboot'\\''' com.android.chrome");
   });
+
+  it('skips Chrome\'s first-run screens on an emulator, and touches nothing like that on a phone', async () => {
+    const emu = device();
+    await openChrome(emu, 'RZ', 'http://x', { ...instant, emulator: true });
+    const cmds = sent(emu);
+    expect(cmds).toContain("shell echo '_ --disable-fre --no-default-browser-check --no-first-run' > /data/local/tmp/chrome-command-line");
+    expect(cmds).toContain('shell am set-debug-app --persistent com.android.chrome');
+    expect(cmds.indexOf('shell am force-stop com.android.chrome')).toBeLessThan(cmds.findIndex((c) => c.startsWith('shell am start')));
+    const phone = device();
+    await openChrome(phone, 'RZ', 'http://x', instant);
+    expect(sent(phone).some((c) => /chrome-command-line|set-debug-app|force-stop/.test(c))).toBe(false);
+  });
 });
 

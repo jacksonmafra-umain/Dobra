@@ -13,9 +13,23 @@ export async function openChrome(
   r: Runner,
   serial: string,
   url: string,
-  { waitMs = 20_000, sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms)) }: { waitMs?: number; sleep?: (ms: number) => Promise<void> } = {},
+  {
+    waitMs = 20_000,
+    sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms)),
+    emulator = false,
+  }: { waitMs?: number; sleep?: (ms: number) => Promise<void>; emulator?: boolean } = {},
 ): Promise<ChromeSession> {
   const adb = adbFor(r);
+  if (emulator) {
+    // A fresh emulator's Chrome stops on its first-run screens and never opens DevTools. Emulators
+    // only: Chrome reads these flags from /data/local/tmp when it's the debug app. Never on a phone.
+    for (const cmd of [
+      ["echo '_ --disable-fre --no-default-browser-check --no-first-run' > /data/local/tmp/chrome-command-line"],
+      ['am', 'set-debug-app', '--persistent', 'com.android.chrome'],
+      ['am', 'force-stop', 'com.android.chrome'],
+    ])
+      await r.exec(adb, ['-s', serial, 'shell', ...cmd]);
+  }
   // adb shell hands its arguments to the device's shell as one line, so the address is quoted.
   const start = await r.exec(adb, ['-s', serial, 'shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', shQuote(url), 'com.android.chrome']);
   if (start.code !== 0 || /^Error/m.test(start.stdout)) throw new ToolError(`Chrome isn't installed on ${serial}.`);

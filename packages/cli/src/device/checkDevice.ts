@@ -103,7 +103,7 @@ export async function checkDevice(url: string, serial: string, opts: DeviceCheck
 
   const inputs: ReportInput[] = [];
   const extra = new Map<string, Finding[]>();
-  const chrome = await openChrome(runner, serial, url);
+  const chrome = await openChrome(runner, serial, url, { emulator: device.emulator });
   let connection: Awaited<ReturnType<DeviceCheckDeps['connect']>> | null = null;
   const stop = deps.onInterrupt(() => void chrome.close());
   try {
