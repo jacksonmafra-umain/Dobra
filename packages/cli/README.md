@@ -90,6 +90,35 @@ creates each one, and exits 1 if any failed. `script` needs only the Android SDK
 and it runs on macOS and Linux. Save it and run it with `sh dobra-emulators.sh`. Don't paste it into
 a terminal: pasted, a failure would close that terminal. The site's Generator page prints the same script.
 
+## Check in Chrome on a device
+
+The checks above run Chromium on this machine and emulate each device. `--on` runs the same check in
+Chrome on a real Android device instead: an emulator, or a phone connected over USB.
+
+```bash
+npm run dobra -- check site --on                                   # list connected devices
+npm run dobra -- check site https://example.com --on emulator-5554 # every posture, automatically
+npm run dobra -- check device RZCXA15YFEJ https://example.com      # the same, device first
+npm run dobra -- check site https://example.com --on RZCXA15YFEJ --hold  # a phone, posture by posture
+```
+
+- **Emulators** created with `dobra emulator create` are put in each catalog posture in turn.
+  Postures that look the same on the emulator (open and dual-screen) are checked once.
+- **Phones** are checked in the posture they're in. With `--hold`, Dobra asks you to fold the phone
+  to each other posture and press Enter, and waits up to 60 s for it to get there. On a phone, Dobra
+  only opens a Chrome tab and reads its state. It never changes a setting or installs anything.
+- **Which device it is:** an emulator's AVD name (`dobra_<device>`), or a phone's model id matched to
+  the catalog's `models`, such as `SM-F741` for the Galaxy Z Flip 6. A phone the catalog doesn't
+  know is checked as a window only.
+- **Fold APIs:** each frame records the viewport, `navigator.devicePosture` and the viewport segments
+  Chrome reports, and two rules read them: `fold-layout-missing` and `fold-posture-mismatch`. They
+  need Chrome 138 or newer. On older Chrome (the emulator images ship 133), the report says the fold
+  APIs weren't checked, instead of passing them.
+- **The same outputs:** report JSON, Markdown, the ZIP with screenshots from the device, and the same
+  exit codes. It also exits 1 when the device disconnects, Chrome isn't installed, or DevTools can't
+  be reached (unlock the phone and keep Chrome in front). `--targets` and `--category` don't apply
+  with `--on`.
+
 ## Check sites from the report
 
 `dobra report` serves Foldable Check with a local site-check endpoint, so a website can be checked
