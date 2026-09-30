@@ -37,28 +37,37 @@ gets the closest Apple model.
 
 ## 3. Create
 
-    dobra emulator create <device-id> --json
+Create every device you chose in one command:
+
+    dobra emulator create <device-id> <device-id> … --json
 
 Add `--api <n>` (Android image level) or `--runtime <id>` (iOS runtime) when the user needs one;
-by default the newest installed is used. `--start` starts the emulator or boots the simulator once
-it's created. `--name <name>` picks the name; the default is `dobra_<device>` on Android.
+by default the newest installed is used. `--start` starts each emulator or boots each simulator
+once it's created. `--name <name>` picks the name, for one device only (with several it exits 2);
+the default is `dobra_<device>` on Android.
 
-The JSON result has `platform`, `device`, `name`, `id` (the AVD name on Android, the UDID on iOS),
-`image`, `applied` (each setting with its `label`, `value` and `source`), `limits`, and `start` (the
-commands that start it, each as an argument list with real paths). Run a `start` entry as given,
-or use `--start`.
+Every device is checked before anything is created, so an unknown device or one with no simulator
+stops the whole command with exit 2 and nothing is made. Then each device is created in turn.
+
+The JSON for one device is a single result. For several, it's `{ version: 1, results: [...] }`:
+`results` has one entry per device, in order. A result has `platform`, `device`, `name`, `id` (the AVD name on
+Android, the UDID on iOS), `image`, `applied` (each setting with its `label`, `value` and `source`),
+`limits`, and `start` (the commands that start it, each as an argument list with real paths). A
+device that failed has `error` in place of those. Run a `start` entry as given, or use `--start`.
 
 | Exit | Meaning | What to do |
 |---|---|---|
-| 0 | Created | Go on |
-| 2 | Invalid use: unknown device, a device with no simulator, bad options, or a name outside `[A-Za-z0-9._-]` | Fix the request; don't retry as is |
-| 1 | A tool is missing or failed: no Android SDK or Xcode, no image for this processor, the name exists | Tell the user what's missing. Replace an existing one only with their yes: add `--force` |
+| 0 | Every device created | Go on |
+| 2 | Invalid use: unknown device, a device with no simulator, bad options, `--name` with several devices, or a name outside `[A-Za-z0-9._-]`; nothing was created | Fix the request; don't retry as is |
+| 1 | At least one device failed: no Android SDK or Xcode, no image for this processor, the name exists | Read each result's `error`, go on with the ones created, and tell the user what's missing. Replace an existing one only with their yes: add `--force` |
 
 `--force` replaces an emulator or simulator of the same name. Ask before using it.
 
 For a user who wants to run the steps themselves, or on another machine,
-`dobra emulator script <device-id>` prints a shell script that needs only the Android SDK or
-Xcode.
+`dobra emulator script <device-id> <device-id> …` prints one shell script for all of them that
+needs only the Android SDK or Xcode. Tell them to save it and run it as a file
+(`sh dobra-emulators.sh`), not paste it into Terminal: pasted, its error handling runs in their own
+shell and can close it. The site's emulator generator does the same with "Download script".
 
 ## 4. Use them
 

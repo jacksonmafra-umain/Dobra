@@ -161,4 +161,12 @@ describe('dobra skill', () => {
     if (!existsSync(join(SKILL, 'native-android.md'))) return;
     expect(read('native-android.md')).not.toMatch(/\d\s?pt\b/);
   });
+
+  it('creates several devices in one command and reads each result', () => {
+    const text = read('emulators.md');
+    expect(text).toMatch(/dobra emulator create <device-id> <device-id> \S* --json/);
+    expect(text).toMatch(/`results`/);
+    expect(text).toMatch(/`error`/);
+    expect(text).toMatch(/--name[^\n]*one device/);
+  });
 });
