@@ -34,7 +34,9 @@ export async function listDevices(r: Runner): Promise<ConnectedDevice[]> {
     }
     const prop = async (name: string) => (await shell(r, adb, serial, 'getprop', name)).trim();
     const chrome = /versionName=(\S+)/.exec(await shell(r, adb, serial, 'dumpsys', 'package', 'com.android.chrome'))?.[1] ?? null;
-    out.push({ serial, state, emulator: (await prop('ro.kernel.qemu')) === '1', model: await prop('ro.product.model'), android: await prop('ro.build.version.release'), chrome });
+    // Recent emulator images leave ro.kernel.qemu empty and set ro.boot.qemu; adb names emulators emulator-<port>.
+    const emulator = serial.startsWith('emulator-') || (await prop('ro.kernel.qemu')) === '1' || (await prop('ro.boot.qemu')) === '1';
+    out.push({ serial, state, emulator, model: await prop('ro.product.model'), android: await prop('ro.build.version.release'), chrome });
   }
   return out;
 }

@@ -38,4 +38,10 @@ describe('deviceState', () => {
   it('gives null for a state it does not know', async () => {
     expect((await deviceState(fakeAdb({ x: { deviceStates: ['REAR_DISPLAY'] } }), 'x')).state).toBeNull();
   });
+
+  it('knows an emulator whose image leaves ro.kernel.qemu empty', async () => {
+    const [d] = await listDevices(fakeAdb({ 'emulator-5614': { model: 'sdk_gphone64_arm64', emulator: false } }));
+    expect(d.emulator).toBe(true);
+  });
 });
+
