@@ -18,7 +18,8 @@ parts have the detail.
 | Layout unit | `dp`: 1 dp ≈ 1 px at 160 dpi ([Android](https://developer.android.com/training/multiscreen/screendensities)) | `pt` | CSS `px`: 1/96 in ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length)) |
 | Text unit that follows the user's size | `sp`: "scaled by the user's font size preference" ([Android](https://developer.android.com/guide/topics/resources/more-resources)) | Dynamic Type sizes ([Apple](https://developer.apple.com/documentation/swiftui/dynamictypesize)) | `rem`: the root font size, which "user-defined preferences may modify" ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length)) |
 | A number that scales with text | Size in `sp`, or read the font scale | `ScaledMetric` ([Apple](https://developer.apple.com/documentation/swiftui/scaledmetric)) | `rem` or `em` |
-| A fold or hinge | `FoldingFeature` ([Android](https://developer.android.com/reference/androidx/window/layout/FoldingFeature)) | None | Viewport Segments API, experimental and not Baseline ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API)) |
+| A fold or hinge | `FoldingFeature` ([Android](https://developer.android.com/reference/androidx/window/layout/FoldingFeature)) | `UIView.ReservedRegion` of kind `division`, iOS 27.1 beta ([Apple](https://developer.apple.com/documentation/uikit/uiview/reservedregion)) | Viewport Segments API, experimental and not Baseline ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API)) |
+| Two panes that follow the fold | Panes of the adaptive scaffolds split at a separating fold | `ArrangementView`, iOS 27.1 beta ([Apple](https://developer.apple.com/documentation/swiftui/arrangementview)) | A grid on viewport segments |
 | List and detail | `ListDetailPaneScaffold` ([Android](https://developer.android.com/develop/ui/compose/layouts/adaptive/list-detail)) | `NavigationSplitView` ([Apple](https://developer.apple.com/documentation/swiftui/navigationsplitview)) | A grid with a container query |
 | Supporting pane | `SupportingPaneScaffold` ([Android](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-a-supporting-pane-layout)) | `inspector` ([Apple](https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:))) | An `aside` column |
 | Navigation that changes shape | `NavigationSuiteScaffold`: bar or rail ([Android](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-adaptive-navigation)) | `TabView` with `.sidebarAdaptable`: sidebar or tab bar ([Apple](https://developer.apple.com/documentation/swiftui/tabview)) | Media query on the layout |
@@ -85,6 +86,8 @@ touch target | The area of a control that accepts a tap | Android, iOS, Web | An
 - https://developer.apple.com/documentation/swiftui/navigationsplitview
 - https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:)
 - https://developer.apple.com/documentation/swiftui/tabview
+- https://developer.apple.com/documentation/swiftui/arrangementview
+- https://developer.apple.com/documentation/uikit/uiview/reservedregion
 - https://developer.mozilla.org/en-US/docs/Web/CSS/@container
 - https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver
 - https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/env
