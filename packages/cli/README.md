@@ -54,7 +54,8 @@ and the postures. It needs the Android SDK (Android Studio) or Xcode on this mac
 ```bash
 npm run dobra -- emulator list                     # every device and how well it can be emulated
 npm run dobra -- emulator create galaxy-z-fold-7   # creates dobra_galaxy-z-fold-7
-npm run dobra -- emulator script galaxy-z-fold-7   # the same steps as a shell script
+npm run dobra -- emulator create galaxy-z-fold-7 pixel-tablet iphone-17 --start   # several at once
+npm run dobra -- emulator script galaxy-z-fold-7 iphone-17 > dobra-emulators.sh  # the same steps as a script
 ```
 
 | Option | Meaning |
@@ -64,7 +65,7 @@ npm run dobra -- emulator script galaxy-z-fold-7   # the same steps as a shell s
 | `--name <name>` | Name to create. Default `dobra_<device>`, or `<Device> (Dobra)` for simulators |
 | `--start` | Start the emulator, or boot the simulator, once it's created |
 | `--force` | Replace an emulator or simulator that has the same name |
-| `--json` | Print the result as JSON (`"version": 1`), for scripts and agents |
+| `--json` | Print the result as JSON (`"version": 1`), for scripts and agents. With several devices it's `{ "version": 1, "results": [...] }`, one entry per device, with `error` for one that failed |
 
 ### Switch a running emulator's posture
 
@@ -83,8 +84,10 @@ with the reason; an emulator that isn't running exits 1 with the command that st
 What an emulator can't reproduce is listed as **limits**, never guessed. Examples: a flip phone's
 cover screen, a rear-display posture, and posture switching on devices with two hinges. iOS
 simulators exist only for Apple's own models, so each catalog device maps to the closest one, and a
-hypothetical device such as iPhone Duo has none. `script` needs only the Android SDK or Xcode, not
-Dobra, and it runs on macOS and Linux. The site's Generator page prints the same script.
+hypothetical device such as iPhone Duo has none. With several devices, `create` checks them all first,
+creates each one, and exits 1 if any failed. `script` needs only the Android SDK or Xcode, not Dobra,
+and it runs on macOS and Linux. Save it and run it with `sh dobra-emulators.sh`. Don't paste it into
+a terminal: pasted, a failure would close that terminal. The site's Generator page prints the same script.
 
 ## Check sites from the report
 

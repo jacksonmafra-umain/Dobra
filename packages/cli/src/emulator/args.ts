@@ -3,17 +3,18 @@ import { parseArgs as parseNodeArgs } from 'node:util';
 
 export type EmulatorArgs =
   | { command: 'list'; json: boolean }
-  | { command: 'create' | 'script'; device: string; api: number | null; runtime: string | null; name: string | null; start: boolean; force: boolean; json: boolean }
+  | { command: 'create' | 'script'; devices: string[]; api: number | null; runtime: string | null; name: string | null; start: boolean; force: boolean; json: boolean }
   | { command: 'posture'; device: string; posture: string; orientation: 'portrait' | 'landscape' | null; name: string | null; serial: string | null; json: boolean }
   | { help: string; error?: string };
 
 export const EMULATOR_USAGE = `Usage: dobra emulator list [--json]
-       dobra emulator create <device> [options]
-       dobra emulator script <device> [--api <n>] [--runtime <id>] [--name <name>]
+       dobra emulator create <device>... [options]
+       dobra emulator script <device>... [--api <n>] [--runtime <id>] [--name <name>]
        dobra emulator posture <device> <posture> [--orientation portrait|landscape] [--name <name> | --serial <id>] [--json]
 
 Creates an Android emulator or an iOS simulator configured like a catalog device (see list).
-script prints the same steps as a shell script that needs only the Android SDK or Xcode.
+script prints the same steps as one shell script, to save and run with sh, that needs only the
+Android SDK or Xcode. Several devices run one after another; --name takes one device only.
 posture switches a running Android emulator to one of the device's catalog postures.
 
   --api <n>            Android API level (default: the newest installed image)
@@ -52,14 +53,16 @@ export function parseEmulatorArgs(argv: string[]): EmulatorArgs {
     if (orientation !== null && orientation !== 'portrait' && orientation !== 'landscape') return { help: EMULATOR_USAGE, error: `Not an orientation: ${orientation}` };
     return { command: 'posture', device, posture: extra[0], orientation, name: v.name ?? null, serial: v.serial ?? null, json: Boolean(v.json) };
   }
-  if (v.help || extra.length) return { help: EMULATOR_USAGE };
+  if (v.help) return { help: EMULATOR_USAGE };
   if (command === 'list' && !device) return { command: 'list', json: Boolean(v.json) };
   if ((command !== 'create' && command !== 'script') || !device) return { help: EMULATOR_USAGE };
+  const devices = [device, ...extra];
+  if (devices.length > 1 && v.name !== undefined) return { help: EMULATOR_USAGE, error: '--name names one emulator; leave it out when creating several.' };
   const api = v.api === undefined ? null : Number(v.api);
   if (api !== null && (!Number.isInteger(api) || api <= 0)) return { help: EMULATOR_USAGE, error: `Not an API level: ${v.api}` };
   return {
     command,
-    device,
+    devices,
     api,
     runtime: v.runtime ?? null,
     name: v.name ?? null,

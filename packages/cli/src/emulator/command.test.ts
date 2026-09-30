@@ -87,5 +87,40 @@ describe('dobra emulator', () => {
     expect(await runEmulator(['create', 'pixel-9', '--start'], io(), r)).toBe(0);
     expect(r.started).toEqual([{ file: `${SDK}/emulator/emulator`, args: ['-avd', 'dobra_pixel-9'] }]);
   });
+
+  it('creates several devices, one result each, and keeps the single-device JSON as it was', async () => {
+    const o = io();
+    const r = withImage();
+    expect(await runEmulator(['create', 'pixel-9', 'galaxy-z-fold-7', '--json'], o, r)).toBe(0);
+    const json = JSON.parse(o.outText());
+    expect(json.version).toBe(1);
+    expect(json.results.map((x: { device: { id: string } }) => x.device.id)).toEqual(['pixel-9', 'galaxy-z-fold-7']);
+    expect(json.results[0]).toMatchObject({ platform: 'android', name: 'dobra_pixel-9', id: 'dobra_pixel-9' });
+  });
+
+  it('exits 1 when one of several fails, and still creates the others', async () => {
+    const files = { ...dir(SDK), ...dir(`${SDK}/system-images/android-36/google_apis_playstore/arm64-v8a`), ...dir('/Users/me/.android/avd/dobra_pixel-9.avd') };
+    const o = io();
+    const r = fakeRunner(files);
+    expect(await runEmulator(['create', 'pixel-9', 'galaxy-z-fold-7', '--json'], o, r)).toBe(1);
+    const json = JSON.parse(o.outText());
+    expect(json.results[0]).toMatchObject({ device: { id: 'pixel-9' }, error: expect.stringMatching(/already exists/) });
+    expect(json.results[1]).toMatchObject({ device: { id: 'galaxy-z-fold-7' }, id: 'dobra_galaxy-z-fold-7' });
+  });
+
+  it('checks every device before creating any, and refuses --name with several', async () => {
+    const r = withImage();
+    expect(await runEmulator(['create', 'pixel-9', 'nope'], io(), r)).toBe(2);
+    expect(r.calls.filter((c) => c.file.endsWith('avdmanager'))).toHaveLength(0);
+    const o = io();
+    expect(await runEmulator(['create', 'pixel-9', 'galaxy-z-fold-7', '--name', 'x'], o, withImage())).toBe(2);
+    expect(o.errText()).toMatch(/--name/);
+  });
+
+  it('prints one script for several devices', async () => {
+    const o = io();
+    expect(await runEmulator(['script', 'pixel-9', 'iphone-17'], o, fakeRunner({}))).toBe(0);
+    expect(o.outText().match(/^sh <<'DOBRA_DEVICE_\d+'$/gm)).toHaveLength(2);
+  });
 });
 
