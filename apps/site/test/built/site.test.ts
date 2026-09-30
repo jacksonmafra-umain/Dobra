@@ -113,4 +113,16 @@ describe('built site', () => {
     expect(html).toContain('dobra emulator create');
     expect(html).toContain('<optgroup');
   });
+
+  it('presents the dobra Claude Code skill on the landing page and its own page', () => {
+    const home = readFileSync(join(dist, 'index.html'), 'utf8');
+    expect(home).toContain('href="/claude-code/"');
+    expect(home).toContain('Claude Code');
+    const page = readFileSync(join(dist, 'claude-code/index.html'), 'utf8');
+    expect(page).toContain('/plugin marketplace add jacksonmafra-umain/Dobra');
+    expect(page).toContain('/plugin install dobra@dobra');
+    expect(page).toContain('~/.claude/skills/dobra');
+    expect(page).toContain('dobra check site');
+    expect(page).toContain('dobra emulator create');
+  });
 });

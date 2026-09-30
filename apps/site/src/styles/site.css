@@ -91,6 +91,15 @@ p.has-unverified { border-left: 2px solid var(--dobra-warn); padding-left: 12px;
 .generator .generator__error { color: var(--dobra-hinge); }
 .generator .button { margin-top: 8px; }
 
+/* Claude Code skill page. */
+.skill-page { max-width: 72rem; }
+.skill-page h1 { font: var(--dobra-type-headline-lg); margin: 32px 0 8px; }
+.skill-page h2 { font: var(--dobra-type-headline-md); margin: 32px 0 12px; }
+.skill-page__lede, .skill-page p, .skill-page ul { color: var(--dobra-muted); max-width: 70ch; }
+.skill-page ul { padding-left: 1.4em; line-height: 1.7; }
+.skill-page strong { color: var(--dobra-text); }
+.skill-page pre { background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 16px; overflow-x: auto; font: 13px/1.7 var(--dobra-font-mono); }
+
 /* JetBrains Mono joins "://" and "--" into ligatures, which misreads URLs and flags. `font` shorthand resets
    font-variant-ligatures on every element that sets it, so this has to win over those. */
 *, ::before, ::after { font-variant-ligatures: no-contextual !important; }
