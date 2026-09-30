@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import catalogJson from '../catalog/catalog.json';
 import { loadCatalog } from '../catalog/load';
 import { avdName, emulationSupport, emulatorPlan, EmulatorPlanError } from './plan';
 
 const catalog = loadCatalog();
+/** The same catalog with the iPhone Duo's simulator removed: a device Apple has no simulator for. */
+const noSimulator = loadCatalog({ ...catalogJson, devices: catalogJson.devices.map((d) => (d.id === 'iphone-duo' ? { ...d, simulator: undefined } : d)) });
 
 describe('emulatorPlan', () => {
   it('creates an AVD, then writes the device settings', () => {
@@ -26,8 +29,12 @@ describe('emulatorPlan', () => {
     expect(p.steps[1]).toEqual({ kind: 'run', argv: ['xcrun', 'simctl', 'create', 'iPhone 17 (Dobra)', 'com.apple.CoreSimulator.SimDeviceType.iPhone-17', '{runtime}'] });
   });
 
-  it('refuses a hypothetical iOS device', () => {
-    expect(() => emulatorPlan(catalog, 'iphone-duo')).toThrow(EmulatorPlanError);
+  it('refuses an iOS device Apple has no simulator for', () => {
+    expect(() => emulatorPlan(noSimulator, 'iphone-duo')).toThrow(EmulatorPlanError);
+  });
+
+  it('creates the iPhone Duo simulator now that Apple ships one', () => {
+    expect(emulatorPlan(catalog, 'iphone-duo').steps[1]).toEqual({ kind: 'run', argv: ['xcrun', 'simctl', 'create', 'iPhone Duo (Dobra)', 'com.apple.CoreSimulator.SimDeviceType.iPhone-Duo', '{runtime}'] });
   });
 
   it('refuses an unknown id and suggests close ones', () => {
@@ -49,7 +56,8 @@ describe('emulationSupport', () => {
     expect(rows.find((r) => r.id === 'pixel-9')?.support).toBe('full');
     expect(rows.find((r) => r.id === 'galaxy-z-flip-7')?.support).toBe('partial');
     expect(rows.find((r) => r.id === 'iphone-mini')?.support).toBe('full');
-    expect(rows.find((r) => r.id === 'iphone-duo')?.support).toBe('none');
+    expect(rows.find((r) => r.id === 'iphone-duo')?.support).toBe('full');
+    expect(emulationSupport(noSimulator).find((r) => r.id === 'iphone-duo')?.support).toBe('none');
   });
 });
 

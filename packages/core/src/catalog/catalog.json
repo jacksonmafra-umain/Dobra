@@ -812,8 +812,8 @@
             "height": 2034
           },
           "scale": 3,
-          "estimated": true,
-          "cornerRadius": 48,
+          "estimated": false,
+          "cornerRadius": 59,
           "homeIndicator": true,
           "orientations": {
             "portrait": {
@@ -885,16 +885,16 @@
         "inner": {
           "label": "Inner display (open)",
           "portraitSize": {
-            "width": 626,
-            "height": 890
+            "width": 669,
+            "height": 951
           },
           "pixels": {
-            "width": 1878,
-            "height": 2670
+            "width": 2007,
+            "height": 2853
           },
           "scale": 3,
-          "estimated": true,
-          "cornerRadius": 40,
+          "estimated": false,
+          "cornerRadius": 55,
           "homeIndicator": true,
           "orientations": {
             "portrait": {
@@ -1025,7 +1025,11 @@
           "$comment": "Interpretation to confirm: partially open and standing, so the hinge runs across the middle."
         }
       ],
-      "$note": "Apple published pixels for the iPhone Duo (apple.com/iphone-duo/specs): inner 1878×2670 px, outer 1398×2034 px. Point sizes are not published: the 3x scale, and so every pt value, stays estimated."
+      "simulator": {
+        "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo",
+        "source": "apple-device"
+      },
+      "$note": "Display sizes from Apple's simulator (iPhone Duo.simdevicetype capabilities.plist, Xcode 27.2 beta 2): outer 1398×2034 px at 3x (466×678 pt, 460 ppi; corner radius 59, and 8 on the hinge-side corners, which the catalog's single value can't hold); inner 2007×2853 px at 3x (669×951 pt, native orientation 270°, corner radius 55). Pixels here are rendered pixels, as for the iPhone mini: apple.com/iphone-duo/specs gives the physical inner panel, 1878×2670 px at 430 ppi, the same width in inches, so the phone scales its 3x render down (native scale about 2.81). Safe areas, keyboard heights, the fold width and the reserved regions stay estimated."
     },
     {
       "id": "ipad-mini",

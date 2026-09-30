@@ -118,10 +118,9 @@ describe('config schema', () => {
 describe('iOS simulator mapping', () => {
   const ios = loadCatalog().devices.filter((d) => d.platform === 'ios');
 
-  it('names an Apple simulator device type for every real iOS device', () => {
+  it('names an Apple simulator device type for every iOS device', () => {
     for (const d of ios) {
-      if (d.id === 'iphone-duo') expect(d.simulator, d.id).toBeUndefined();
-      else expect(d.simulator?.deviceType, d.id).toMatch(/^com\.apple\.CoreSimulator\.SimDeviceType\.(iPhone|iPad)-[A-Za-z0-9-]+$/);
+      expect(d.simulator?.deviceType, d.id).toMatch(/^com\.apple\.CoreSimulator\.SimDeviceType\.(iPhone|iPad)-[A-Za-z0-9-]+$/);
     }
   });
 

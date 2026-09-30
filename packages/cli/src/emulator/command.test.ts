@@ -2,6 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { runEmulator } from './command';
 import { dir, fakeRunner, SDK } from './fakeRunner';
 
+import { vi } from 'vitest';
+
+// Every catalog device has an Apple simulator now, so these tests use a catalog where the iPhone
+// Duo has none, to keep covering devices Apple ships no simulator for.
+vi.mock('@dobra/core/catalog/load', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@dobra/core/catalog/load')>();
+  const json = (await import('@dobra/core/catalog/catalog.json')).default as { devices: { id: string }[] };
+  const withoutDuoSimulator = { ...json, devices: json.devices.map((d) => (d.id === 'iphone-duo' ? { ...d, simulator: undefined } : d)) };
+  return { ...real, loadCatalog: (j: unknown = withoutDuoSimulator) => real.loadCatalog(j) };
+});
+
 const io = () => {
   const out: string[] = [];
   const err: string[] = [];
