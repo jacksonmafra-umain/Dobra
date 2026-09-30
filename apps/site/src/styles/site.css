@@ -89,6 +89,16 @@ p.has-unverified { border-left: 2px solid var(--dobra-warn); padding-left: 12px;
 .generator pre { background: var(--dobra-field); border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 16px; overflow: auto; max-height: 28rem; font: 12px/1.6 var(--dobra-font-mono); }
 .generator ul { color: var(--dobra-muted); padding-left: 1.4em; line-height: 1.7; }
 .generator .generator__error { color: var(--dobra-hinge); }
+.generator__devices { border: 1px solid var(--dobra-border); border-radius: var(--dobra-radius-lg); padding: 12px 16px 16px; margin: 20px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 12px 24px; }
+.generator__devices legend { font: var(--dobra-type-label-lg); letter-spacing: var(--dobra-tracking-label-lg); color: var(--dobra-muted); padding: 0 6px; }
+.generator__group h3 { font: var(--dobra-type-label-md); letter-spacing: var(--dobra-tracking-label-md); color: var(--dobra-muted); margin: 4px 0 6px; text-transform: uppercase; }
+.generator__device { display: flex; align-items: center; gap: 8px; font: var(--dobra-type-body-md); color: var(--dobra-text); padding: 3px 0; cursor: pointer; }
+.generator__device--none { color: var(--dobra-muted); cursor: default; }
+.generator__device input { accent-color: var(--dobra-fold); }
+.generator .generator__note { color: var(--dobra-muted); }
+.generator ul.generator__error:empty { display: none; }
+.generator__script { margin-top: 12px; }
+.generator__script summary { cursor: pointer; color: var(--dobra-muted); font: var(--dobra-type-body-md); }
 .generator .button { margin-top: 8px; }
 
 /* Claude Code skill page. */

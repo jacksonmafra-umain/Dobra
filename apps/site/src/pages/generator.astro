@@ -1,101 +1,119 @@
 ---
-// Pick a catalog device and copy the script that creates an Android emulator or iOS simulator like it.
+// Pick catalog devices, then either run one dobra line or download one script for all of them.
+// The script is a file on purpose: pasted into a terminal, its exit on a failure would close it.
 import Base from '../layouts/Base.astro';
 import { deviceOptions, generate } from '../lib/generator';
 
 const groups = deviceOptions();
-const first = groups[0].devices[0];
-const initial = generate(first.id, {});
+const first = groups[0].devices.find((d) => d.support !== 'none')!;
+const initial = generate([first.id], {});
 ---
-<Base title="Emulator generator" description="Create an Android emulator or an iOS simulator configured like any device in the Dobra catalog: pick one, copy the script, run it." path="/generator/">
+<Base title="Emulator generator" description="Create Android emulators and iOS simulators configured like devices in the Dobra catalog: pick them, then run one dobra line or download one script." path="/generator/">
   <section class="generator">
     <h1>Emulator generator</h1>
     <p class="generator__lede">
-      Pick a device and copy the script. It creates an Android emulator with that device's screen, density, fold and
-      postures, or the matching iOS simulator. It runs on macOS and Linux and needs only Android Studio (the Android SDK)
-      or Xcode.
+      Pick devices. Dobra creates an Android emulator with each one's screen, density, fold and postures, or the matching iOS
+      simulator. It needs Android Studio (the Android SDK) or Xcode on your Mac or Linux machine.
     </p>
+
+    <fieldset class="generator__devices">
+      <legend>Devices</legend>
+      {
+        groups.map((g) => (
+          <div class="generator__group">
+            <h3>{g.category}</h3>
+            {g.devices.map((d) => (
+              <label class:list={['generator__device', { 'generator__device--none': d.support === 'none' }]}>
+                <input type="checkbox" name="device" value={d.id} data-platform={d.platform} checked={d.id === first.id} disabled={d.support === 'none'} />
+                {d.name}
+                {d.support === 'none' ? <span class="muted"> (no simulator)</span> : d.support === 'partial' ? <span class="muted"> (partly)</span> : null}
+              </label>
+            ))}
+          </div>
+        ))
+      }
+    </fieldset>
     <div class="generator__form">
       <label>
-        Device
-        <select id="gen-device">
-          {
-            groups.map((g) => (
-              <optgroup label={g.category}>
-                {g.devices.map((d) => (
-                  <option value={d.id} data-platform={d.platform} selected={d.id === first.id}>
-                    {d.name}
-                    {d.support === 'none' ? ' (no simulator)' : ''}
-                  </option>
-                ))}
-              </optgroup>
-            ))
-          }
-        </select>
-      </label>
-      <label id="gen-api-field" hidden={first.platform !== 'android'}>
         Android API level <span class="muted">(optional)</span>
         <input id="gen-api" type="number" min="1" inputmode="numeric" placeholder="newest installed" />
       </label>
-      <label id="gen-runtime-field" hidden={first.platform !== 'ios'}>
+      <label>
         iOS runtime <span class="muted">(optional)</span>
         <input id="gen-runtime" type="text" placeholder="newest installed" />
       </label>
     </div>
 
-    <p id="gen-error" class="generator__error" role="alert" hidden={!initial.error}>{initial.error}</p>
-    <div id="gen-output" hidden={!initial.script}>
-      <h2>Script</h2>
-      <pre><code id="gen-script">{initial.script}</code></pre>
-      <button class="button" type="button" data-copy="gen-script">Copy script</button>
+    <p id="gen-empty" class="generator__note" hidden={Boolean(initial.cli)}>Pick at least one device.</p>
+    <ul id="gen-skipped" class="generator__error">{initial.skipped.map((s) => <li>{s}</li>)}</ul>
+
+    <div id="gen-output" hidden={!initial.cli}>
+      <h2>With Dobra installed</h2>
+      <pre><code id="gen-cli">{initial.cli}</code></pre>
+      <button class="button" type="button" id="gen-copy">Copy command</button>
+
+      <h2>Without Dobra</h2>
+      <p>
+        Download one script for all the devices, then run it in Terminal with <code>sh ~/Downloads/dobra-emulators.sh</code>.
+        Run it as a file, don't paste it: pasted, a failure would close your terminal.
+      </p>
+      <button class="button button--primary" type="button" id="gen-download">Download script</button>
+      <details class="generator__script">
+        <summary>Show script</summary>
+        <pre><code id="gen-script">{initial.script}</code></pre>
+      </details>
+
       <div id="gen-limits-block" hidden={!initial.limits.length}>
         <h3>Not emulated</h3>
-        <ul id="gen-limits">{initial.limits.map((l) => <li>{l}</li>)}</ul>
+        <ul id="gen-limits">{initial.limits.flatMap((d) => d.limits.map((l) => <li><strong>{d.device}:</strong> {l}</li>))}</ul>
       </div>
-    </div>
-    <div id="gen-cli-block" hidden={!initial.script}>
-      <h2>With the dobra command</h2>
-      <p>If you installed Dobra, this does the same and adds <code>--start</code> and <code>--json</code>:</p>
-      <pre><code id="gen-cli">{initial.cli}</code></pre>
-      <button class="button" type="button" data-copy="gen-cli">Copy command</button>
     </div>
   </section>
   <script>
     import { generate } from '../lib/generator';
 
     const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-    const device = $<HTMLSelectElement>('gen-device');
+    const boxes = [...document.querySelectorAll<HTMLInputElement>('input[name="device"]')];
     const api = $<HTMLInputElement>('gen-api');
     const runtime = $<HTMLInputElement>('gen-runtime');
+    let current = { cli: $('gen-cli').textContent, script: $('gen-script').textContent };
 
-    function render() {
-      const platform = device.selectedOptions[0]?.dataset.platform;
-      $('gen-api-field').hidden = platform !== 'android';
-      $('gen-runtime-field').hidden = platform !== 'ios';
-      const level = Number(api.value);
-      const r = generate(device.value, {
-        ...(platform === 'android' && Number.isInteger(level) && level > 0 ? { api: level } : {}),
-        ...(platform === 'ios' && runtime.value.trim() ? { runtime: runtime.value.trim() } : {}),
-      });
-      $('gen-error').hidden = !r.error;
-      $('gen-error').textContent = r.error ?? '';
-      $('gen-output').hidden = !r.script;
-      $('gen-cli-block').hidden = !r.script;
-      $('gen-script').textContent = r.script ?? '';
-      $('gen-cli').textContent = r.cli;
-      $('gen-limits-block').hidden = !r.limits.length;
-      $('gen-limits').replaceChildren(...r.limits.map((l) => Object.assign(document.createElement('li'), { textContent: l })));
+    function item(html: [string, string] | string) {
+      const li = document.createElement('li');
+      if (typeof html === 'string') li.textContent = html;
+      else li.append(Object.assign(document.createElement('strong'), { textContent: `${html[0]}: ` }), html[1]);
+      return li;
     }
 
-    for (const el of [device, api, runtime]) el.addEventListener('input', render);
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copy]'))
-      b.addEventListener('click', () => {
-        const text = document.getElementById(b.dataset.copy!)?.textContent ?? '';
-        void navigator.clipboard?.writeText(text).then(() => {
-          const label = b.textContent;
-          b.textContent = 'Copied';
-          setTimeout(() => (b.textContent = label), 1500);
-        });
+    function render() {
+      const level = Number(api.value);
+      const r = generate(
+        boxes.filter((b) => b.checked).map((b) => b.value),
+        { ...(Number.isInteger(level) && level > 0 ? { api: level } : {}), ...(runtime.value.trim() ? { runtime: runtime.value.trim() } : {}) },
+      );
+      current = { cli: r.cli, script: r.script };
+      $('gen-empty').hidden = Boolean(r.cli);
+      $('gen-output').hidden = !r.cli;
+      $('gen-cli').textContent = r.cli ?? '';
+      $('gen-script').textContent = r.script ?? '';
+      $('gen-skipped').replaceChildren(...r.skipped.map((s) => item(s)));
+      $('gen-limits-block').hidden = !r.limits.length;
+      $('gen-limits').replaceChildren(...r.limits.flatMap((d) => d.limits.map((l) => item([d.device, l]))));
+    }
+
+    for (const el of [...boxes, api, runtime]) el.addEventListener('input', render);
+    $('gen-copy').addEventListener('click', (e) => {
+      const b = e.currentTarget as HTMLButtonElement;
+      void navigator.clipboard?.writeText(current.cli ?? '').then(() => {
+        b.textContent = 'Copied';
+        setTimeout(() => (b.textContent = 'Copy command'), 1500);
       });
+    });
+    $('gen-download').addEventListener('click', () => {
+      if (!current.script) return;
+      const url = URL.createObjectURL(new Blob([current.script], { type: 'text/x-shellscript' }));
+      Object.assign(document.createElement('a'), { href: url, download: 'dobra-emulators.sh' }).click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
   </script>
 </Base>
