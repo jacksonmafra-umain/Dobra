@@ -108,6 +108,11 @@ describe('device frames', () => {
     expect(without.frames[0].findings.map((f) => f.ruleId)).toContain('frame-size-mismatch');
   });
 
+  it("never matches an untagged device frame by size, so no other device's geometry is checked", () => {
+    const r = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [{ ...input, name: 'SM-T510 (T5)', tag: '', width: 1100, height: 756 }]);
+    expect(r.frames[0]).toMatchObject({ confidence: 'none', targets: [], findings: [] });
+  });
+
   it('still parses a report from before these fields', () => {
     const r = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [{ ...input, runtime: undefined, signals: undefined }]);
     expect(parseReport(JSON.parse(JSON.stringify(r))).frames[0].runtime).toBeUndefined();
