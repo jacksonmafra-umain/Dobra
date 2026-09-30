@@ -169,4 +169,15 @@ describe('dobra skill', () => {
     expect(text).toMatch(/`error`/);
     expect(text).toMatch(/--name[^\n]*one device/);
   });
+
+  it('checks a site on a real device with --on, leaving --hold prompts to the user', () => {
+    const text = read('site-check.md');
+    expect(text).toMatch(/dobra check site --on\n/);
+    expect(text).toMatch(/dobra check site <url> --on <serial>/);
+    expect(text).toMatch(/--hold[\s\S]{0,400}own terminal/);
+    expect(text).toMatch(/\b130\b/);
+    expect(text).toMatch(/`runtime`/);
+    expect(text).toMatch(/`signals`/);
+    expect(read('SKILL.md')).toMatch(/real (Android )?device[^\n]*\[site-check\.md\]/);
+  });
 });
