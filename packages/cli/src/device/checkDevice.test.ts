@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FrameSignals } from '@dobra/core/signals';
 import type { Page } from 'playwright';
+import { ToolError } from '../emulator/runner';
 import { checkDevice, UsageError, type DeviceCheckDeps } from './checkDevice';
 import { ADB, fakeAdb, type FakeDevice } from './fakeAdb';
 
@@ -14,17 +15,21 @@ const signals = (deviceState: FrameSignals['deviceState']): FrameSignals => ({
   deviceState,
 });
 
-function setup(devices: Record<string, FakeDevice>, opts: { collectThrows?: boolean; clockStep?: number } = {}) {
+function setup(
+  devices: Record<string, FakeDevice>,
+  opts: { collectThrows?: boolean; collectHangs?: boolean; clockStep?: number; unixReady?: boolean; connectThrows?: boolean; interruptOnSleep?: boolean } = {},
+) {
   const runner = fakeAdb(devices, (args) => {
     const cmd = args.slice(2).join(' ');
     if (cmd.startsWith('forward tcp:0')) return { code: 0, stdout: '41817\n', stderr: '' };
     if (cmd.startsWith('shell am start')) return { code: 0, stdout: 'Starting: Intent\n', stderr: '' };
-    if (cmd === 'shell cat /proc/net/unix') return { code: 0, stdout: UNIX_READY, stderr: '' };
+    if (cmd === 'shell cat /proc/net/unix') return { code: 0, stdout: opts.unixReady === false ? '' : UNIX_READY, stderr: '' };
     if (cmd.startsWith('emu posture') || cmd.startsWith('shell settings put')) return { code: 0, stdout: 'OK\n', stderr: '' };
     return undefined;
   });
   const events: string[] = [];
   let clock = 0;
+  let interrupt: (() => void) | null = null;
   const page = {
     goto: async (u: string) => void events.push(`goto ${u}`),
     reload: async () => void events.push('reload'),
@@ -35,19 +40,31 @@ function setup(devices: Record<string, FakeDevice>, opts: { collectThrows?: bool
     runner,
     connect: async (port) => {
       events.push(`connect ${port}`);
+      if (opts.connectThrows) throw new Error('browserType.connectOverCDP: Timeout 30000ms exceeded.');
       return { page, close: async () => void events.push('disconnect') };
     },
     collect: async () => {
       if (opts.collectThrows) throw new Error('collector failed');
+      if (opts.collectHangs) return new Promise<never>(() => {});
       return { root: [] };
     },
     signals: async (_p, state) => signals(state),
     waitForEnter: async (prompt) => void events.push(`prompt ${prompt}`),
     sleep: async () => {
       clock += opts.clockStep ?? 0;
+      if (opts.interruptOnSleep && interrupt) {
+        // Ctrl+C: the handler runs, and the process exits before anything else.
+        interrupt();
+        throw new Error('exited');
+      }
     },
     now: () => clock,
-    onInterrupt: () => () => {},
+    onInterrupt: (cleanup) => {
+      interrupt = cleanup;
+      return () => {
+        interrupt = null;
+      };
+    },
   };
   return { runner, deps, events };
 }
@@ -82,6 +99,27 @@ describe('checkDevice on an emulator', () => {
   it('refuses --hold on an emulator', async () => {
     const { deps } = setup(fold);
     await expect(checkDevice(URL_, 'emulator-5554', { ...opts, hold: true }, deps)).rejects.toThrow(UsageError);
+  });
+
+  it('removes the forward on Ctrl+C while it waits for Chrome', async () => {
+    const { deps, runner } = setup(fold, { unixReady: false, interruptOnSleep: true });
+    await expect(checkDevice(URL_, 'emulator-5554', opts, deps)).rejects.toThrow('exited');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(sentTo(runner, 'emulator-5554')).toContain('forward --remove tcp:41817');
+  });
+
+  it("exits 1 with the fix when Playwright can't connect over DevTools", async () => {
+    const { deps } = setup(fold, { connectThrows: true });
+    const e = await checkDevice(URL_, 'emulator-5554', opts, deps).catch((x) => x);
+    expect(e).toBeInstanceOf(ToolError);
+    expect(e.message).toMatch(/couldn't connect to Chrome's DevTools on emulator-5554/i);
+  });
+
+  it("fails a frame whose page doesn't answer, instead of hanging", async () => {
+    const { deps } = setup(fold, { collectHangs: true });
+    const r = await checkDevice(URL_, 'emulator-5554', { ...opts, frameTimeoutMs: 5 }, deps);
+    expect(r.frames).toHaveLength(0);
+    expect(r.unloaded[0].reason).toMatch(/didn't answer within/);
   });
 
   it('captures one screenshot per frame', async () => {
@@ -119,12 +157,29 @@ describe('checkDevice on a phone', () => {
     expect(r.notes?.filter((n) => n.startsWith('Skipped'))).toHaveLength(3);
   });
 
+  it('stops with the fix when the phone is locked', async () => {
+    const { deps, events } = setup({ RZCXA15YFEJ: { ...flip().RZCXA15YFEJ, shell: { 'shell dumpsys power': '  mWakefulness=Asleep\n' } } });
+    const e = await checkDevice(URL_, 'RZCXA15YFEJ', opts, deps).catch((x) => x);
+    expect(e).toBeInstanceOf(ToolError);
+    expect(e.message).toMatch(/unlock the phone/);
+    expect(events).not.toContain('connect 41817');
+  });
+
+  it('asks with --hold only for postures a phone can report', async () => {
+    const { deps, events } = setup({ P9: { model: 'Pixel 9 Pro Fold', android: '16', chrome: '154.0', deviceStates: ['OPENED'] } }, { clockStep: 61_000 });
+    await checkDevice(URL_, 'P9', { ...opts, hold: true }, deps);
+    const prompts = events.filter((e) => e.startsWith('prompt'));
+    expect(prompts).toHaveLength(3);
+    expect(prompts.join(' ')).not.toMatch(/Rear|Dual/);
+  });
+
   it('checks an unknown phone as a window only, and says so', async () => {
     const { deps } = setup({ T5: { model: 'SM-T510', android: '11', chrome: '153.0' } });
     const r = await checkDevice(URL_, 'T5', opts, deps);
     expect(r.frames).toHaveLength(1);
     expect(r.frames[0].targets).toEqual([]);
     expect(r.notes?.join(' ')).toMatch(/SM-T510 isn't in the Dobra catalog/);
+    expect(r.notes?.join(' ')).toMatch(/no rules ran/);
   });
 
   it('removes the forward and closes the connection even when the check fails', async () => {

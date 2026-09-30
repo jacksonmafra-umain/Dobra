@@ -57,3 +57,12 @@ export async function deviceState(r: Runner, serial: string): Promise<{ state: '
   const state = name === 'CLOSED' || name === 'HALF_OPENED' || name === 'OPENED' ? name : null;
   return { state, rotation: ((degrees / 90) % 4) as 0 | 1 | 2 | 3 };
 }
+
+/** Whether a phone's screen is off or behind the lock screen, when dumpsys says so. Read-only. */
+export async function screenLocked(r: Runner, serial: string): Promise<boolean> {
+  const adb = adbFor(r);
+  const power = await r.exec(adb, ['-s', serial, 'shell', 'dumpsys', 'power']);
+  if (/mWakefulness=(Asleep|Dozing)/.test(power.stdout)) return true;
+  const window = await r.exec(adb, ['-s', serial, 'shell', 'dumpsys', 'window', 'policy']);
+  return /(mShowingLockscreen|mDreamingLockscreen|isKeyguardShowing)=true/.test(window.stdout);
+}

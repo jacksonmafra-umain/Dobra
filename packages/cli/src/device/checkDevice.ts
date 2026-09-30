@@ -12,12 +12,16 @@ import type { Finding } from '@dobra/core/engine/checks';
 import type { Page } from 'playwright';
 import { setEmulatorPosture } from '../emulator/android';
 import type { Runner } from '../emulator/runner';
-import { adbFor, deviceState, requireDevice } from './adb';
+import { ToolError } from '../emulator/runner';
+import { adbFor, deviceState, requireDevice, screenLocked } from './adb';
 import { openChrome } from './chrome';
 import { identify, phonePosture } from './identify';
 
 /** Invalid use (exit 2), as opposed to a device or tool that failed (ToolError, exit 1). */
 export class UsageError extends Error {}
+
+/** The person stopped the check (Ctrl+C at a prompt): exit 130. */
+export class Interrupted extends Error {}
 
 export interface DeviceCheckDeps {
   runner: Runner;
@@ -35,6 +39,8 @@ export interface DeviceCheckOptions {
   wait: number;
   transitions: boolean;
   hold: boolean;
+  /** How long one frame's collect and signals may take before the frame fails (default 30 s). */
+  frameTimeoutMs?: number;
   onProgress?(m: string): void;
   capture?: { images: Map<string, Uint8Array>; missing: Record<string, string> };
 }
@@ -48,6 +54,27 @@ interface Step {
 }
 
 const HOLD_TIMEOUT = 60_000;
+const FRAME_TIMEOUT = 30_000;
+
+/** A page that stops answering (a locked phone, Chrome in the background) fails the frame, not the run. */
+function within<T>(ms: number, work: Promise<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`The page didn't answer within ${Math.round(ms / 1000)} s: unlock the phone and keep Chrome in front.`)), ms);
+  });
+  return Promise.race([work, late]).finally(() => clearTimeout(timer));
+}
+
+/** The postures phonePosture can return for some fold state and rotation: the only ones --hold can wait for. */
+function reachable(catalog: ReturnType<typeof loadCatalog>, deviceId: string): Set<string> {
+  const out = new Set<string>();
+  for (const state of ['CLOSED', 'HALF_OPENED', 'OPENED'] as const)
+    for (const rotation of [0, 1, 2, 3] as const) {
+      const p = phonePosture(catalog, deviceId, state, rotation);
+      if (p) out.add(p.posture);
+    }
+  return out;
+}
 
 export async function checkDevice(url: string, serial: string, opts: DeviceCheckOptions, deps: DeviceCheckDeps): Promise<Report> {
   const { runner } = deps;
@@ -68,7 +95,7 @@ export async function checkDevice(url: string, serial: string, opts: DeviceCheck
   // The postures to check, in catalog order.
   const steps: Step[] = [];
   if (!deviceId) {
-    notes.push(`${device.model || serial} isn't in the Dobra catalog, so only the window was checked (no fold geometry).`);
+    notes.push(`${device.model || serial} isn't in the Dobra catalog, so only the window was captured: no rules ran, since they all need the device's geometry.`);
     steps.push({ posture: null, label: device.model || serial, display: null, orientation: null });
   } else if (device.emulator) {
     const seen = new Map<string, string>();
@@ -95,19 +122,29 @@ export async function checkDevice(url: string, serial: string, opts: DeviceCheck
       const p = postures.find((x) => x.id === current.posture)!;
       steps.push({ posture: p.id, label: p.label, display: p.display, orientation: current.orientation });
     } else {
-      notes.push(`The phone's state (${now.state ?? 'unknown'}) matches no ${cat?.name ?? deviceId} posture, so only the window was checked.`);
+      notes.push(`The phone's state (${now.state ?? 'unknown'}) matches no ${cat?.name ?? deviceId} posture, so only the window was captured: no rules ran.`);
       steps.push({ posture: null, label: device.model, display: null, orientation: null });
     }
-    if (opts.hold) for (const p of postures) if (p.id !== current?.posture) steps.push({ posture: p.id, label: p.label, display: p.display, orientation: null });
+    const canReach = reachable(catalog, deviceId);
+    if (opts.hold) for (const p of postures) if (p.id !== current?.posture && canReach.has(p.id)) steps.push({ posture: p.id, label: p.label, display: p.display, orientation: null });
   }
 
   const inputs: ReportInput[] = [];
   const extra = new Map<string, Finding[]>();
-  const chrome = await openChrome(runner, serial, url, { emulator: device.emulator });
+  if (!device.emulator && (await screenLocked(runner, serial))) throw new ToolError(`${device.model || serial} is locked or its screen is off: unlock the phone, then run the check again.`);
+  const frameTimeout = opts.frameTimeoutMs ?? FRAME_TIMEOUT;
+  // Listen for Ctrl+C before the forward exists, so it's removed however the run ends.
+  const forward: { close: (() => Promise<void>) | null } = { close: null };
+  const stop = deps.onInterrupt(() => void forward.close?.());
   let connection: Awaited<ReturnType<DeviceCheckDeps['connect']>> | null = null;
-  const stop = deps.onInterrupt(() => void chrome.close());
   try {
-    connection = await deps.connect(chrome.port);
+    const chrome = await openChrome(runner, serial, url, { emulator: device.emulator, sleep: deps.sleep, onForward: (close) => (forward.close = close) });
+    try {
+      connection = await deps.connect(chrome.port);
+    } catch (e) {
+      if (e instanceof ToolError) throw e;
+      throw new ToolError(`Couldn't connect to Chrome's DevTools on ${serial}: unlock the phone, keep Chrome in front, and run the check again. (${e instanceof Error ? e.message : String(e)})`);
+    }
     const { page } = connection;
     let previous: Step | null = null;
     for (const [i, step] of steps.entries()) {
@@ -142,13 +179,13 @@ export async function checkDevice(url: string, serial: string, opts: DeviceCheck
           await deps.sleep(1500);
           // Unfolding resizes the window without a reload: compare that with a fresh load.
           const unfold = opts.transitions && previous?.posture && postures.find((p) => p.id === previous!.posture)?.kind === 'cover';
-          if (unfold) afterResize = (await deps.collect(page)).root;
+          if (unfold) afterResize = (await within(frameTimeout, deps.collect(page))).root;
         }
         await page.goto(url);
         await deps.sleep(opts.wait);
-        const { root } = await deps.collect(page);
+        const { root } = await within(frameTimeout, deps.collect(page));
         const state = (await deviceState(runner, serial)).state;
-        const signals = await deps.signals(page, state);
+        const signals = await within(frameTimeout, deps.signals(page, state));
         inputs.push({ ref, name, page: url, width: signals.viewport.width, height: signals.viewport.height, tag, root, runtime, signals, skipRules: ['frame-size-mismatch'] });
         if (afterResize && tag) {
           const target = parseTargetKey(tag);
@@ -175,7 +212,7 @@ export async function checkDevice(url: string, serial: string, opts: DeviceCheck
   } finally {
     stop();
     await connection?.close().catch(() => {});
-    await chrome.close();
+    await forward.close?.();
   }
   if (opts.capture) for (const i of inputs) if (!i.root) opts.capture.missing[i.ref] = i.reason ?? 'The page did not load.';
   const report = buildReport(catalog, { kind: 'web', ref: url, name: url }, inputs);

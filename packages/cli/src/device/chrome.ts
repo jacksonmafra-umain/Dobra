@@ -17,7 +17,14 @@ export async function openChrome(
     waitMs = 20_000,
     sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms)),
     emulator = false,
-  }: { waitMs?: number; sleep?: (ms: number) => Promise<void>; emulator?: boolean } = {},
+    onForward,
+  }: {
+    waitMs?: number;
+    sleep?: (ms: number) => Promise<void>;
+    emulator?: boolean;
+    /** Hears the close function as soon as the forward exists, so Ctrl+C during the wait removes it. */
+    onForward?: (close: () => Promise<void>) => void;
+  } = {},
 ): Promise<ChromeSession> {
   const adb = adbFor(r);
   if (emulator) {
@@ -42,6 +49,7 @@ export async function openChrome(
     open = false;
     await r.exec(adb, ['-s', serial, 'forward', '--remove', `tcp:${port}`]);
   };
+  onForward?.(close);
   for (let waited = 0; ; waited += 500) {
     const unix = await r.exec(adb, ['-s', serial, 'shell', 'cat', '/proc/net/unix']);
     if (unix.stdout.includes('@chrome_devtools_remote')) return { port, close };
@@ -51,4 +59,27 @@ export async function openChrome(
     }
     await sleep(500);
   }
+}
+
+/** An address as Chrome may show it: any case, with or without www. and a trailing slash. */
+function normalized(address: string): { site: string; href: string } | null {
+  try {
+    const u = new URL(address);
+    const site = `${u.protocol}//${u.host.replace(/^www\./, '')}`;
+    return { site, href: `${site}${u.pathname.replace(/\/+$/, '')}${u.search}` };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Which open tab is the one Dobra opened: the exact address first, then another page on the same
+ * site (a redirect). -1 when no tab shows it, so a check never drives a tab the person had open.
+ */
+export function pickPage(urls: string[], url: string): number {
+  const want = normalized(url);
+  if (!want) return -1;
+  const have = urls.map(normalized);
+  const exact = have.findIndex((h) => h?.href === want.href);
+  return exact >= 0 ? exact : have.findIndex((h) => h?.site === want.site);
 }

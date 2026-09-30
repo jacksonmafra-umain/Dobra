@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { openChrome } from './chrome';
+import { openChrome, pickPage } from './chrome';
 import { fakeAdb } from './fakeAdb';
 
 const instant = { sleep: async () => {} };
@@ -63,3 +63,18 @@ describe('openChrome', () => {
   });
 });
 
+
+describe('pickPage', () => {
+  it("takes the tab showing the checked address, however Chrome writes it", () => {
+    expect(pickPage(['https://news.test/', 'https://example.com/'], 'https://Example.com')).toBe(1);
+    expect(pickPage(['https://www.example.com/shop/'], 'https://example.com/shop')).toBe(0);
+  });
+
+  it("prefers the exact address over another page on the same site", () => {
+    expect(pickPage(['https://example.com/other', 'https://example.com/shop'], 'https://example.com/shop')).toBe(1);
+  });
+
+  it("never falls back to a tab showing something else", () => {
+    expect(pickPage(['https://news.test/', 'about:blank'], 'https://example.com/')).toBe(-1);
+  });
+});
