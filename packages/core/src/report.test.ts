@@ -112,4 +112,12 @@ describe('device frames', () => {
     const r = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [{ ...input, runtime: undefined, signals: undefined }]);
     expect(parseReport(JSON.parse(JSON.stringify(r))).frames[0].runtime).toBeUndefined();
   });
+
+  it('notes once per device that Chrome older than 138 cannot report the fold, and runs no fold-API rule', () => {
+    const r = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [input, { ...input, ref: 'u#2', tag: 'galaxy-z-fold-7/inner/book/landscape', name: 'book' }]);
+    expect(r.notes?.filter((n) => n.includes('Chrome 133.0.6943.137'))).toHaveLength(1);
+    expect(r.notes?.[0]).toContain('need Chrome 138');
+    expect(r.frames.flatMap((f) => f.findings).some((f) => f.ruleId.startsWith('fold-'))).toBe(false);
+  });
 });
+

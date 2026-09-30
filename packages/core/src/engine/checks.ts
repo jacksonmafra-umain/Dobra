@@ -15,7 +15,9 @@ export type RuleId =
   | 'hinge-content'
   | 'overflow-x'
   | 'frame-size-mismatch'
-  | 'resize-vs-reload';
+  | 'resize-vs-reload'
+  | 'fold-layout-missing'
+  | 'fold-posture-mismatch';
 
 export interface Target {
   deviceId: string;

@@ -9,7 +9,7 @@ import type { GeoNode } from './geo';
 import { matchFrame } from './match';
 import type { RuleId } from './engine/checks';
 import { ALL_RULES, check } from './rules';
-import type { FrameRuntime, FrameSignals } from './signals';
+import { chromeMajor, FOLD_API_CHROME, signalFindings, type FrameRuntime, type FrameSignals } from './signals';
 import { envConfigOf, targetKey } from './targets';
 
 export interface ReportFrame {
@@ -135,10 +135,18 @@ export function buildReport(catalog: Catalog, source: Report['source'], inputs: 
     }
     const checked = check({ source: source.kind, ref: f.ref, targets: m.targets, confidence: m.by, width: f.width, height: f.height, root: f.root }, config, rules);
     const findings = f.tags && m.by === 'tag' ? onceEach(checked) : checked;
+    if (f.signals && f.runtime) findings.push(...signalFindings(f.signals, f.runtime, f.root, m.targets[0]));
     frames.push({ ...base, confidence: m.by, targets: m.targets.map(targetKey), findings });
     present.push({ frameId: f.ref, targets: m.targets, confidence: m.by });
   }
+  // One note per device whose Chrome can't report the fold, instead of passing the fold-API rules.
+  const oldChrome = new Map<string, FrameRuntime>();
+  for (const f of inputs) if (f.runtime && chromeMajor(f.runtime.chrome) < FOLD_API_CHROME) oldChrome.set(f.runtime.serial, f.runtime);
+  const notes = [...oldChrome.values()].map(
+    (r) => `Chrome ${r.chrome} on ${r.model} (${r.serial}) doesn't report viewport segments or posture (they need Chrome ${FOLD_API_CHROME}), so fold APIs weren't checked there.`,
+  );
   return {
+    ...(notes.length ? { notes } : {}),
     version: 1,
     generatedAt: now.toISOString(),
     source,
