@@ -220,6 +220,17 @@ export function FrameDetail({
             {frame.targets.length > 0 && <> · {frame.targets.join(', ')}</>}
             {frame.confidence === 'none' && ` · unknown size${frame.nearest ? `, nearest ${frame.nearest}` : ''}`}
           </p>
+          {frame.runtime && (
+            <p className="muted">
+              {frame.runtime.model} · Android {frame.runtime.android} · Chrome {frame.runtime.chrome} · {frame.runtime.emulator ? 'emulator' : 'phone'} {frame.runtime.serial}
+            </p>
+          )}
+          {frame.signals && (
+            <p className="muted mono">
+              viewport {frame.signals.viewport.width}×{frame.signals.viewport.height} @{frame.signals.viewport.dpr} · posture {frame.signals.devicePosture ?? 'not reported'} · segments{' '}
+              {frame.signals.segments ? frame.signals.segments.length : 'none'}
+            </p>
+          )}
         </div>
         <div className="row">
           <button disabled={!onPrev} onClick={onPrev} aria-label="Previous frame">
