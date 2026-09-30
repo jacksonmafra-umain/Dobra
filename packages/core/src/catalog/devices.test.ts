@@ -144,10 +144,13 @@ describe('Apple devices', () => {
     }
   });
 
-  it('keeps the iPhone Duo estimated', () => {
+  it("takes the iPhone Duo's displays from Apple's simulator", () => {
     const d = byId('iphone-duo');
     if (d.platform !== 'ios') throw new Error('ios expected');
-    expect(d.displays.inner.estimated).toBe(true);
+    // iPhone Duo.simdevicetype capabilities.plist (Xcode 27.2 beta 2): rendered pixels at 3x.
+    expect(d.displays.inner).toMatchObject({ portraitSize: { width: 669, height: 951 }, pixels: { width: 2007, height: 2853 }, scale: 3, cornerRadius: 55, estimated: false });
+    expect(d.displays.outer).toMatchObject({ portraitSize: { width: 466, height: 678 }, pixels: { width: 1398, height: 2034 }, scale: 3, estimated: false });
+    expect(d.simulator).toEqual({ deviceType: 'com.apple.CoreSimulator.SimDeviceType.iPhone-Duo', source: 'apple-device' });
   });
 });
 
