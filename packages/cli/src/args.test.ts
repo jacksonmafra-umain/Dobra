@@ -14,6 +14,8 @@ describe('parseArgs', () => {
       wait: 500,
       failOn: 'error',
       transitions: true,
+      on: null,
+      hold: false,
     });
   });
 
@@ -80,4 +82,24 @@ describe('parseArgs', () => {
     expect(parseArgs(['check', 'site', 'not an address'])).toMatchObject({ error: expect.stringMatching(/https:\/\//) });
     expect(parseArgs(['check', 'site', 'ftp://x'])).toMatchObject({ error: expect.stringContaining('ftp://x') });
   });
+
+  it('reads --on and --hold for a check in Chrome on a device', () => {
+    expect(parseArgs(['check', 'site', 'https://x.test', '--on', 'emulator-5554'])).toMatchObject({ command: 'site', on: 'emulator-5554', hold: false });
+    expect(parseArgs(['check', 'site', 'https://x.test', '--on', 'RZ', '--hold'])).toMatchObject({ on: 'RZ', hold: true });
+  });
+
+  it('reads check device <serial> <url> as the same check', () => {
+    expect(parseArgs(['check', 'device', 'RZ', 'https://x.test', '--no-zip'])).toMatchObject({ command: 'site', url: 'https://x.test', on: 'RZ', zip: null });
+  });
+
+  it('lists devices for --on with no serial', () => {
+    expect(parseArgs(['check', 'site', '--on'])).toEqual({ command: 'devices' });
+    expect(parseArgs(['check', 'site', '--on', '--json'])).toMatchObject({ help: expect.any(String) });
+  });
+
+  it('refuses --on with --targets or --category, and --hold without --on', () => {
+    expect(parseArgs(['check', 'site', 'https://x.test', '--on', 'RZ', '--category', 'phone'])).toMatchObject({ error: '--on checks one device; leave out --targets and --category.' });
+    expect(parseArgs(['check', 'site', 'https://x.test', '--hold'])).toMatchObject({ error: '--hold needs --on <serial>.' });
+  });
 });
+

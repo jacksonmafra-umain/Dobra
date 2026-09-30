@@ -5,9 +5,16 @@ import { fileURLToPath } from 'node:url';
 import { loadCatalog } from '@dobra/core/catalog/load';
 import { toMarkdown, type Report } from '@dobra/core/report';
 import { reportZip } from '@dobra/core/reportZip';
-import { parseArgs } from './args';
+import { chromeMajor, FOLD_API_CHROME } from '@dobra/core/signals';
+import { parseArgs, type SiteOptions } from './args';
+import { adbFor, listDevices } from './device/adb';
+import { checkDevice, UsageError, type DeviceCheckDeps, type DeviceCheckOptions } from './device/checkDevice';
+import { identify } from './device/identify';
+import { readSignals } from './device/signals';
 import { runEmulator } from './emulator/command';
+import { nodeRunner, ToolError, type Runner } from './emulator/runner';
 import { checkSite } from './checkSite';
+import { collectLayout } from './collect';
 import { isLoopback, startLocalServer } from './localServer';
 import { LOCAL } from './policy';
 import { createCheckHandler } from './server';
@@ -19,6 +26,65 @@ export interface Io {
   writeFile(path: string, data: string | Uint8Array): Promise<void>;
   check?: typeof checkSite;
   serve?: typeof startLocalServer;
+  /** For tests: the device check, and the machine adb runs on. */
+  checkDevice?: (url: string, serial: string, opts: DeviceCheckOptions) => Promise<Report>;
+  runner?: Runner;
+}
+
+/** The real dependencies of a device check: Playwright over DevTools, stdin, the clock. */
+function deviceDeps(runner: Runner, url: string): DeviceCheckDeps {
+  return {
+    runner,
+    connect: async (port) => {
+      const { chromium } = await import('playwright');
+      const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
+      const pages = browser.contexts().flatMap((c) => c.pages());
+      const page = pages.find((p) => p.url().startsWith(url)) ?? pages[0];
+      if (!page) throw new ToolError('Chrome on the device has no page open.');
+      return { page, close: () => browser.close() };
+    },
+    collect: (page) => collectLayout(page),
+    signals: readSignals,
+    waitForEnter: async (prompt) => {
+      const { createInterface } = await import('node:readline/promises');
+      const rl = createInterface({ input: process.stdin, output: process.stderr });
+      await rl.question(`${prompt} `);
+      rl.close();
+    },
+    sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+    now: () => Date.now(),
+    onInterrupt: (cleanup) => {
+      const handler = () => {
+        cleanup();
+        process.exit(130);
+      };
+      process.once('SIGINT', handler);
+      return () => process.off('SIGINT', handler);
+    },
+  };
+}
+
+async function listConnected(io: Io): Promise<number> {
+  const runner = io.runner ?? nodeRunner;
+  const catalog = loadCatalog();
+  let devices;
+  try {
+    devices = await listDevices(runner);
+  } catch (e) {
+    io.err(e instanceof Error ? e.message : String(e));
+    return 1;
+  }
+  if (!devices.length) io.out('No devices: connect a phone with USB debugging on, or start an emulator.');
+  for (const d of devices) {
+    if (d.state !== 'device') {
+      io.out(`${d.serial}  ${d.state}`);
+      continue;
+    }
+    const { deviceId } = await identify(runner, adbFor(runner), d, catalog);
+    const fold = d.chrome && chromeMajor(d.chrome) >= FOLD_API_CHROME ? 'yes' : 'no';
+    io.out(`${d.serial}  ${d.emulator ? 'emulator' : 'phone'}  ${d.model}  Android ${d.android}  Chrome ${d.chrome ?? 'none'}  ${deviceId ?? 'not in catalog'}  fold APIs: ${fold}`);
+  }
+  return 0;
 }
 
 /** The built report app, next to this package in the repo: apps/report/dist. */
@@ -50,6 +116,7 @@ export async function run(argv: string[], io: Io): Promise<number> {
     io.out(opts.help);
     return 2;
   }
+  if (opts.command === 'devices') return listConnected(io);
   if (opts.command === 'report') {
     const handler = createCheckHandler({
       policy: LOCAL,
@@ -66,6 +133,23 @@ export async function run(argv: string[], io: Io): Promise<number> {
     await server.closed;
     return 0;
   }
+  const capture = opts.zip ? { images: new Map<string, Uint8Array>(), missing: {} as Record<string, string> } : undefined;
+  let report: Report;
+  if (opts.on) {
+    const serial = opts.on;
+    try {
+      const runner = io.runner ?? nodeRunner;
+      const deviceOpts: DeviceCheckOptions = { wait: opts.wait, transitions: opts.transitions, hold: opts.hold, onProgress: (m) => io.err(m), ...(capture ? { capture } : {}) };
+      report = await (io.checkDevice ?? ((u, s, o) => checkDevice(u, s, o, deviceDeps(runner, u))))(opts.url, serial, deviceOpts);
+    } catch (e) {
+      if (e instanceof UsageError || e instanceof ToolError) {
+        io.err(e.message);
+        return e instanceof UsageError ? 2 : 1;
+      }
+      throw e;
+    }
+    return finish(report, opts, capture, io);
+  }
   let targets;
   try {
     targets = chooseTargets(loadCatalog(), opts);
@@ -78,8 +162,12 @@ export async function run(argv: string[], io: Io): Promise<number> {
     return 2;
   }
   const check = io.check ?? checkSite;
-  const capture = opts.zip ? { images: new Map<string, Uint8Array>(), missing: {} as Record<string, string> } : undefined;
-  const report = await check(opts.url, targets, { wait: opts.wait, transitions: opts.transitions, onProgress: (m) => io.err(m), ...(capture ? { capture } : {}) });
+  report = await check(opts.url, targets, { wait: opts.wait, transitions: opts.transitions, onProgress: (m) => io.err(m), ...(capture ? { capture } : {}) });
+  return finish(report, opts, capture, io);
+}
+
+/** Writes the report files, prints the summary and returns the exit code: the same for every kind of check. */
+async function finish(report: Report, opts: SiteOptions, capture: { images: Map<string, Uint8Array>; missing: Record<string, string> } | undefined, io: Io): Promise<number> {
   await io.writeFile(opts.out, `${JSON.stringify(report, null, 2)}\n`);
   if (opts.md) await io.writeFile(opts.md, toMarkdown(report));
   let zipSize = 0;

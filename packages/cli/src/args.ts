@@ -5,7 +5,7 @@ import { withScheme } from '@dobra/core/siteAddress';
 
 export type FailOn = 'error' | 'warn' | 'never';
 
-export type CliOptions = SiteOptions | ReportOptions;
+export type CliOptions = SiteOptions | ReportOptions | { command: 'devices' };
 
 export interface ReportOptions {
   command: 'report';
@@ -27,10 +27,16 @@ export interface SiteOptions {
   wait: number;
   failOn: FailOn;
   transitions: boolean;
+  /** An adb serial: check in Chrome on that device instead of emulating devices on this machine. */
+  on: string | null;
+  /** On a phone, wait for the person to fold it to each posture. */
+  hold: boolean;
 }
 
 export const USAGE = `Usage: dobra check site <url> [options]
        dobra report [--port <n>] [--host <addr>] [--dir <folder>]
+       dobra check site <url> --on <serial> [--hold]  (Chrome on a device; --on alone lists devices)
+       dobra check device <serial> <url> [options]
        dobra emulator list | create <device> | script <device>  (dobra emulator --help)
 
   --targets <keys>     Comma-separated target keys (device/display/posture/orientation)
@@ -62,6 +68,10 @@ function badAddress(raw: string): { help: string; error: string } {
 
 /** `error`, when set, says what was wrong before the usage text is shown. */
 export function parseArgs(argv: string[]): CliOptions | { help: string; error?: string } {
+  // check device <serial> <url> is check site <url> --on <serial>.
+  if (argv[0] === 'check' && argv[1] === 'device' && argv.length >= 4) argv = ['check', 'site', argv[3], '--on', argv[2], ...argv.slice(4)];
+  // --on with no serial after it lists the connected devices.
+  argv = argv.map((a, i) => (a === '--on' && (i === argv.length - 1 || argv[i + 1].startsWith('--')) ? '--list-devices' : a));
   let parsed;
   try {
     parsed = parseNodeArgs({
@@ -77,6 +87,9 @@ export function parseArgs(argv: string[]): CliOptions | { help: string; error?: 
         wait: { type: 'string' },
         'fail-on': { type: 'string' },
         'no-transitions': { type: 'boolean' },
+        on: { type: 'string' },
+        hold: { type: 'boolean' },
+        'list-devices': { type: 'boolean' },
         port: { type: 'string' },
         host: { type: 'string' },
         dir: { type: 'string' },
@@ -92,7 +105,10 @@ export function parseArgs(argv: string[]): CliOptions | { help: string; error?: 
     if (!Number.isInteger(port) || port < 0 || port > 65535) return { help: USAGE };
     return { command: 'report', port, host: v.host ?? '127.0.0.1', dir: v.dir ?? null };
   }
-  if (v.help || p.length !== 3 || p[0] !== 'check' || p[1] !== 'site') return { help: USAGE };
+  if (v['list-devices'] && !v.help && p.length === 2 && p[0] === 'check' && p[1] === 'site') return { command: 'devices' };
+  if (v.help || v['list-devices'] || p.length !== 3 || p[0] !== 'check' || p[1] !== 'site') return { help: USAGE };
+  if (v.on !== undefined && (v.targets !== undefined || v.category !== undefined)) return { help: USAGE, error: '--on checks one device; leave out --targets and --category.' };
+  if (v.hold && v.on === undefined) return { help: USAGE, error: '--hold needs --on <serial>.' };
 
   const address = withScheme(p[2]);
   let url: URL;
@@ -121,5 +137,7 @@ export function parseArgs(argv: string[]): CliOptions | { help: string; error?: 
     wait,
     failOn,
     transitions: !v['no-transitions'],
+    on: v.on ?? null,
+    hold: Boolean(v.hold),
   };
 }
