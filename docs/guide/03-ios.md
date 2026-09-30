@@ -1,8 +1,8 @@
 # iOS and SwiftUI
 
 This part answers the iOS questions: what size classes are and who assigns them, which SwiftUI
-containers adapt on their own, how safe areas and the keyboard work, what iPad windows mean for
-layout, and how Dynamic Type changes it. Statements were checked against Apple's documentation;
+containers adapt on their own, how safe areas and the keyboard work, what iPad windows and the
+foldable iPhone mean for layout, and how Dynamic Type changes it. Statements were checked against Apple's documentation;
 availability is the one each reference page lists, checked 2026-09-28.
 
 ## Size classes are assigned, not measured
@@ -119,6 +119,48 @@ change log 9 June 2025).
 - **Test at compact width on iPad.** A narrow iPad window gets a compact horizontal size class and
   collapses a split view to one column.
 
+## Foldable iPhone (iOS 27.1 beta)
+
+iOS 27.1 adds APIs for layouts that follow a fold. They come with the iPhone Duo simulator in Xcode
+27.1 beta, and every reference page marks them beta, iOS 27.1+. Names and behaviour may still
+change before release (checked 2026-09-30).
+
+- **Two pieces of content that follow the fold: `ArrangementView`.** It takes a primary and a
+  secondary view and "computes a layout for its content based on the context it is presented in,
+  including the available size, size class, and hardware features"
+  ([ArrangementView](https://developer.apple.com/documentation/swiftui/arrangementview)).
+  - **Split** (the default style) places the two side by side and adapts its axis to the size and
+    size class.
+  - **Overlay** layers the primary view over the secondary one, and "when a foldable device is
+    folded", can move them side by side.
+  - `axes(_:)` limits which axes a style may use.
+  - UIKit has the same model in `UIArrangementViewController`, with `updateArrangement(_:animated:)`
+    to change the style ([UIArrangementViewController](https://developer.apple.com/documentation/uikit/uiarrangementviewcontroller)).
+- **Where the fold is: reserved regions.** `UIView.reservedRegions(kind:options:)` returns
+  `UIView.ReservedRegion` values: "an area within a view's coordinate space that the view doesn't
+  own". Each has a `frame` (margins included), `margins`, `isActive` and a `kind`
+  ([ReservedRegion](https://developer.apple.com/documentation/uikit/uiview/reservedregion)). There
+  are two kinds:
+  - `division`: "a region where content splits into two separate regions", the fold;
+  - `occlusion`: "a region where an element, such as a camera, occludes content".
+
+  The query returns every region that intersects the view, active or not, so check `isActive`. A
+  SwiftUI modifier for reserved regions is [unverified — confirm before use].
+- **The vertical bar.** On this hardware the system may put toolbar content in a vertical bar at
+  the side. By default "the system determines whether a vertical bar is rendered based on the
+  device and application state". `toolbarVerticalBehavior(_:)` opts a view out, and when the value
+  changes, the status bar changes axis and "the leading or trailing safe area inset for the vertical
+  bar is added or removed"
+  ([toolbarVerticalBehavior(_:)](https://developer.apple.com/documentation/swiftui/view/toolbarverticalbehavior(_:))).
+  UIKit uses `preferredVerticalBarBehavior` on the view controller. Leave it on unless the screen is
+  better with horizontal bars, such as a full-screen player.
+- **No posture API.** Apple's documentation names no posture (closed, book, open) for apps to read.
+  Layout follows the size class, `ArrangementView` and the reserved regions, not a posture name.
+
+Test in the iPhone Duo simulator (Xcode 27.1 beta). Apple's release notes list what it can't do
+yet: StandBy is unavailable, and most app extensions can't be run or debugged
+([Xcode 27.1 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27_1-release-notes)).
+
 ## Dynamic Type
 
 Text scales with the user's chosen size. `DynamicTypeSize` has twelve ordered cases, from `xSmall`
@@ -169,6 +211,7 @@ defaults estimated for that reason.
 | Xcode previews ([Previews in Xcode](https://developer.apple.com/documentation/swiftui/previews-in-xcode)) | A view at chosen devices and settings while you edit | Real window resizing, keyboard behaviour, device safe areas. Preview traits for orientation and fixed layouts are [unverified — confirm before use] |
 | Simulator | Size classes per device and orientation, Dynamic Type sizes, the keyboard | Hardware feel and performance |
 | A resizable iPad window | Continuous width changes and the compact-width collapse | Every device |
+| The iPhone Duo simulator (Xcode 27.1 beta) | The folded and open displays, `ArrangementView`, reserved regions and the vertical bar | StandBy and most app extensions (Apple's release notes) |
 
 Check each screen at:
 - compact width in portrait and landscape;
@@ -188,6 +231,9 @@ safe area | The part of a window not covered by hardware or system bars | iOS | 
 pt | Point, the iOS layout unit, independent of the screen's pixel density | iOS | Android: `dp`; Web: CSS `px` | https://developer.apple.com/design/human-interface-guidelines/layout
 Stage Manager | An iPad window arrangement named in SwiftUI and older HIG text; the current HIG describes resizable windowed apps | iOS | Android: desktop windowing; Web: a resizable browser window | https://developer.apple.com/design/human-interface-guidelines/multitasking
 NavigationSplitView | A SwiftUI container with two or three columns that collapses to a stack when narrow | iOS | Android: `ListDetailPaneScaffold`; Web: a grid with a container query | https://developer.apple.com/documentation/swiftui/navigationsplitview
+ArrangementView | A SwiftUI container (iOS 27.1 beta) that lays out a primary and a secondary view split or overlaid, adapting to size, size class and hardware such as a fold | iOS | Android: `ListDetailPaneScaffold` or `SupportingPaneScaffold` with fold-aware panes; Web: a grid laid out on viewport segments | https://developer.apple.com/documentation/swiftui/arrangementview
+reserved region | An area of a view that something else occupies (iOS 27.1 beta), of kind `division` (a fold) or `occlusion` (for example the camera) | iOS | Android: a `FoldingFeature` for a division, a display cutout for an occlusion; Web: the gap between viewport segments, or `env(safe-area-inset-*)` | https://developer.apple.com/documentation/uikit/uiview/reservedregion
+vertical bar | A toolbar the system may place at the side of the screen on the foldable iPhone (iOS 27.1 beta), with its own safe area inset | iOS | Android: a navigation rail (the app's choice, not the system's); Web: none | https://developer.apple.com/documentation/swiftui/view/toolbarverticalbehavior(_:)
 inspector | A SwiftUI side panel that is a trailing column in regular width and a sheet in compact width | iOS | Android: supporting pane; Web: an aside column | https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:)
 
 ## Sources
@@ -209,3 +255,8 @@ inspector | A SwiftUI side panel that is a trailing column in regular width and 
 - https://developer.apple.com/documentation/swiftui/scaledmetric/init(wrappedvalue:relativeto:)
 - https://developer.apple.com/documentation/swiftui/view/inspector(ispresented:content:)
 - https://developer.apple.com/documentation/swiftui/previews-in-xcode
+- https://developer.apple.com/documentation/swiftui/arrangementview
+- https://developer.apple.com/documentation/uikit/uiarrangementviewcontroller
+- https://developer.apple.com/documentation/uikit/uiview/reservedregion
+- https://developer.apple.com/documentation/swiftui/view/toolbarverticalbehavior(_:)
+- https://developer.apple.com/documentation/xcode-release-notes/xcode-27_1-release-notes
