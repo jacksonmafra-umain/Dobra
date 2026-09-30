@@ -6,6 +6,7 @@ const tools = [
   { name: 'Figma plugin', href: 'https://github.com/jacksonmafra-umain/Dobra/tree/main/packages/figma-plugin', text: 'Creates tagged artboards with hinge overlays and grids, shows which device postures a file covers, checks frames against the foldable rules and adapts a frame to another target.' },
   { name: 'Web report', href: '/report/', text: "Opens a Figma file or a report JSON and shows the file's coverage and the rule findings per frame, with thumbnails and downloads." },
   { name: 'Emulator generator', href: '/generator/', text: 'Creates an Android emulator or an iOS simulator configured like any catalog device, with its screen, density, fold and postures, from one script or one dobra command.' },
+  { name: 'Claude Code skill', href: '/claude-code/', text: 'Lets Claude Code check a site or an Android or iOS app on foldables from any project, create emulators like catalog devices, and explain each fix with the guide.' },
   { name: 'CLI', href: 'https://github.com/jacksonmafra-umain/Dobra/tree/main/packages/cli', text: 'Checks a website in Chromium at every device target with fold emulation, and writes the same report the other tools read.' },
 ];
 const installer = 'https://raw.githubusercontent.com/jacksonmafra-umain/Dobra/main/install.sh';
@@ -50,6 +51,7 @@ dobra report             # open the web report and check websites
 dobra plugin             # add the Figma plugin to Figma desktop
 dobra check site https://example.com
 dobra update             # get the latest version</code></pre>
+    <p>The installer also adds the <a href="/claude-code/">dobra skill for Claude Code</a>, so you can ask Claude Code to check a site or an app on foldables.</p>
     <h3 id="plugin-title">Add the Figma plugin</h3>
     <p>The plugin runs in the Figma desktop app, not in the browser. Add it once:</p>
     <ol class="steps">
