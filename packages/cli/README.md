@@ -107,8 +107,9 @@ npm run dobra -- check site https://example.com --on RZCXA15YFEJ --hold  # a pho
 - **Phones** are checked in the posture they're in. With `--hold`, Dobra asks you to fold the phone
   to each other posture and press Enter, and waits up to 60 s for it to get there. On a phone, Dobra
   only opens a Chrome tab and reads its state. It never changes a setting or installs anything.
-- **Which device it is:** an emulator's AVD name (`dobra_<device>`), or a phone's model id matched to
-  the catalog's `models`, such as `SM-F741` for the Galaxy Z Flip 6. A phone the catalog doesn't
+- **Which device it is:** an emulator's AVD name (`dobra_<device>`, so an emulator created with a
+  custom `--name` falls back to its model), or a phone's model id matched to the catalog's `models`,
+  such as `SM-F741` for the Galaxy Z Flip 6. A phone the catalog doesn't
   know is checked as a window only.
 - **Fold APIs:** each frame records the viewport, `navigator.devicePosture` and the viewport segments
   Chrome reports, and two rules read them: `fold-layout-missing` and `fold-posture-mismatch`. They
