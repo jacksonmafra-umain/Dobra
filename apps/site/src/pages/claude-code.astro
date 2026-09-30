@@ -1,0 +1,42 @@
+---
+// The dobra skill for Claude Code: what it does, how to add it, and what to ask.
+import Base from '../layouts/Base.astro';
+---
+<Base title="Dobra in Claude Code" description="The dobra skill lets Claude Code check websites and Android and iOS apps on foldables, dual-screen devices and tablets, and create emulators like catalog devices." path="/claude-code/">
+  <section class="skill-page">
+    <h1>Dobra in Claude Code</h1>
+    <p class="skill-page__lede">
+      The <code>dobra</code> skill lets Claude Code use Dobra in any project. Ask it to check a site or an app on foldables,
+      dual-screen devices and tablets: it runs the Dobra tools, explains each problem with a fix from the guide, and says what
+      it couldn't check.
+    </p>
+
+    <h2 id="what">What it does</h2>
+    <ul>
+      <li><strong>Checks a website.</strong> Runs <code>dobra check site</code> at every device target with fold emulation, and turns the report into findings with fixes.</li>
+      <li><strong>Reviews an Android or iOS app.</strong> Reads Jetpack Compose or SwiftUI code against the guide: window size classes, folding features, adaptive containers, insets, Dynamic Type and more.</li>
+      <li><strong>Creates emulators and simulators.</strong> Uses <code>dobra emulator create</code> to make an Android emulator or iOS simulator like a catalog device, switches postures, and tells you what the emulator can't reproduce.</li>
+    </ul>
+
+    <h2 id="install">Add it</h2>
+    <p>The <a href="/#install-title">installer</a> copies the skill to <code>~/.claude/skills/dobra</code>, so it's ready once Dobra is installed. Without the installer, add it as a plugin in Claude Code:</p>
+    <pre><code>/plugin marketplace add jacksonmafra-umain/Dobra
+/plugin install dobra@dobra</code></pre>
+    <p>Checks and emulators need Dobra installed. If it isn't, the skill shows the installer and asks before running it.</p>
+
+    <h2 id="ask">What to ask</h2>
+    <pre><code>Check https://example.com on foldables.
+Check http://localhost:3000 on the Galaxy Z Fold 7 and the Surface Duo 2.
+Review this app's layout for foldables and tablets.
+Create a Pixel Fold emulator and walk my app through its postures.</code></pre>
+
+    <h2 id="report">What you get</h2>
+    <ul>
+      <li>A verdict first: passes, passes with warnings, fails, or not checked (when nothing loaded or the app wasn't run).</li>
+      <li>Each problem with where it is (the device, posture and orientation, or the file and line), a fix in your code's style, and the guide section it comes from.</li>
+      <li>Units per platform: dp and sp on Android, pt on iOS. Estimated values are marked as estimated.</li>
+      <li>What it couldn't check, such as iOS website targets being size-only, or a device the emulator doesn't fully reproduce.</li>
+    </ul>
+    <p>It doesn't change your code unless you ask it to.</p>
+  </section>
+</Base>
