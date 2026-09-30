@@ -111,7 +111,9 @@ describe('built site', () => {
     const html = readFileSync(join(dist, 'generator/index.html'), 'utf8');
     expect(html).toContain('#!/bin/sh');
     expect(html).toContain('dobra emulator create');
-    expect(html).toContain('<optgroup');
+    expect(html).toContain('Download script');
+    expect(html).toContain('<details class="generator__script"');
+    expect(html).toContain('<input type="checkbox" name="device"');
   });
 
   it('presents the dobra Claude Code skill on the landing page and its own page', () => {
