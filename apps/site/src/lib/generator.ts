@@ -2,15 +2,19 @@
 // from the same plan dobra emulator runs, so the page and the CLI always agree.
 import { loadCatalog } from '@dobra/core/catalog/load';
 import { emulationSupport, emulatorPlan, EmulatorPlanError, type Support } from '@dobra/core/emulator/plan';
-import { renderScript } from '@dobra/core/emulator/script';
+import { renderScripts, shQuote } from '@dobra/core/emulator/script';
 
 const catalog = loadCatalog();
 
 export interface GeneratorResult {
+  /** The dobra line for every device that can be made, or null when there are none. */
+  cli: string | null;
+  /** One script for the same devices, to download and run with sh, or null. */
   script: string | null;
-  cli: string;
-  limits: string[];
-  error: string | null;
+  /** What each device's emulator can't reproduce, by device name. */
+  limits: { device: string; limits: string[] }[];
+  /** Devices left out, with the reason. */
+  skipped: string[];
 }
 
 export interface DeviceOption {
@@ -31,15 +35,32 @@ export function deviceOptions(): { category: string; devices: DeviceOption[] }[]
   return [...groups].map(([category, devices]) => ({ category, devices }));
 }
 
-export function generate(deviceId: string, opts: { api?: number; runtime?: string }): GeneratorResult {
-  const device = catalog.devices.find((d) => d.id === deviceId);
-  const option = device?.platform === 'android' ? (opts.api ? ` --api ${opts.api}` : '') : opts.runtime ? ` --runtime ${opts.runtime}` : '';
-  const cli = `dobra emulator create ${deviceId}${option}`;
-  try {
-    const plan = emulatorPlan(catalog, deviceId, device?.platform === 'android' ? (opts.api ? { api: opts.api } : {}) : opts.runtime ? { runtime: opts.runtime } : {});
-    return { script: renderScript(plan), cli, limits: plan.limits, error: null };
-  } catch (e) {
-    if (e instanceof EmulatorPlanError) return { script: null, cli, limits: [], error: e.message };
-    throw e;
+export function generate(deviceIds: string[], opts: { api?: number; runtime?: string }): GeneratorResult {
+  const plans = [];
+  const skipped: string[] = [];
+  for (const id of deviceIds) {
+    const device = catalog.devices.find((d) => d.id === id);
+    try {
+      plans.push(emulatorPlan(catalog, id, device?.platform === 'android' ? (opts.api ? { api: opts.api } : {}) : opts.runtime ? { runtime: opts.runtime } : {}));
+    } catch (e) {
+      if (!(e instanceof EmulatorPlanError)) throw e;
+      skipped.push(e.message);
+    }
   }
+  if (!plans.length) return { cli: null, script: null, limits: [], skipped };
+  const android = plans.some((p) => p.platform === 'android');
+  const ios = plans.some((p) => p.platform === 'ios');
+  const cli = [
+    'dobra emulator create',
+    ...plans.map((p) => p.device.id),
+    ...(android && opts.api ? ['--api', String(opts.api)] : []),
+    ...(ios && opts.runtime ? ['--runtime', shQuote(opts.runtime)] : []),
+    '--start',
+  ].join(' ');
+  return {
+    cli,
+    script: renderScripts(plans),
+    limits: plans.filter((p) => p.limits.length).map((p) => ({ device: p.device.name, limits: p.limits })),
+    skipped,
+  };
 }
