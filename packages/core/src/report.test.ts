@@ -88,3 +88,28 @@ describe('report', () => {
     expect(parseReport(JSON.parse(JSON.stringify(sim))).source.kind).toBe('simulator');
   });
 });
+
+describe('device frames', () => {
+  const runtime = { kind: 'android-chrome', serial: 'emulator-5554', model: 'sdk_gphone64_arm64', android: '16', chrome: '133.0.6943.137', emulator: true } as const;
+  const signals = { viewport: { width: 750, height: 680, dpr: 2.625 }, devicePosture: 'continuous', segments: null, mq: { horizontalSegments2: false, verticalSegments2: false, postureFolded: false }, deviceState: 'OPENED' } as const;
+  const input = { ref: 'u#1', name: 'galaxy-z-fold-7/inner/open/portrait', page: 'u', width: 750, height: 680, tag: 'galaxy-z-fold-7/inner/open/portrait', root: [], runtime, signals, skipRules: ['frame-size-mismatch' as const] };
+  const cat = loadCatalog();
+
+  it('keeps runtime and signals on the frame, and through parseReport', () => {
+    const r = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [input]);
+    expect(r.frames[0]).toMatchObject({ runtime, signals });
+    expect(parseReport(JSON.parse(JSON.stringify(r))).frames[0]).toMatchObject({ runtime, signals });
+  });
+
+  it('skips the rules a device frame asks it to', () => {
+    const r = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [input]);
+    expect(r.frames[0].findings.map((f) => f.ruleId)).not.toContain('frame-size-mismatch');
+    const without = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [{ ...input, skipRules: undefined }]);
+    expect(without.frames[0].findings.map((f) => f.ruleId)).toContain('frame-size-mismatch');
+  });
+
+  it('still parses a report from before these fields', () => {
+    const r = buildReport(cat, { kind: 'web', ref: 'u', name: 'u' }, [{ ...input, runtime: undefined, signals: undefined }]);
+    expect(parseReport(JSON.parse(JSON.stringify(r))).frames[0].runtime).toBeUndefined();
+  });
+});
