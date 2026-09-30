@@ -256,7 +256,8 @@ tabletop
 
 ### SwiftUI
 
-iOS has no fold API, so the SwiftUI sketch covers compact and wide only.
+The SwiftUI sketch covers compact and wide. On the foldable iPhone, `ArrangementView` (iOS 27.1 beta)
+puts the two panes on either side of the fold; see [iOS](03-ios.md#foldable-iphone-ios-271-beta).
 
 ```swift
 struct CanvasAndControls<Canvas: View, Controls: View>: View {
@@ -522,7 +523,7 @@ size ([MDN: <length>](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference
 
 container query | A CSS rule (`@container`) that styles an element by the size of its container rather than the viewport | Web | Android: none (read the size the parent gives, for example `BoxWithConstraints`) [unverified — confirm before use]; iOS: `ViewThatFits` and the proposed size | https://developer.mozilla.org/en-US/docs/Web/CSS/@container
 intrinsic sizing | Sizing from content and constraints (min, max, fit) rather than fixed breakpoints | Web, Android, iOS | Android: `GridCells.Adaptive`, `widthIn`; iOS: `ViewThatFits`; Web: `minmax()`, `auto-fill` | https://developer.mozilla.org/en-US/docs/Web/CSS/minmax
-viewport segment | A logically separate region of the viewport, created when a fold or hinge splits it | Web | Android: the areas between separating `FoldingFeature`s; iOS: none | https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API
+viewport segment | A logically separate region of the viewport, created when a fold or hinge splits it | Web | Android: the areas between separating `FoldingFeature`s; iOS: the areas either side of a `division` reserved region (iOS 27.1 beta) | https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API
 grid gutter | The space between grid columns | Android, iOS, Web | Android: `Arrangement.spacedBy`, the grid gutter in layout guidance; iOS: `spacing` in grids and stacks; Web: `gap` | https://developer.mozilla.org/en-US/docs/Web/CSS/minmax
 reachability | Keeping frequent controls where one thumb can reach them, which is why compact modals become bottom sheets | Android, iOS | Android: bottom sheet and navigation bar placement; iOS: sheets; Web: none as a term | https://developer.android.com/develop/ui/compose/components/bottom-sheets
 

@@ -138,7 +138,9 @@ The Device Posture API only reports `continuous` or `folded`, which is why the W
 segments for layout.
 
 APIs: [Android](02-android.md#foldables-and-postures) and
-[Web](04-web.md#foldables-and-dual-screens-the-viewport-segments-api). iOS has no fold API.
+[Web](04-web.md#foldables-and-dual-screens-the-viewport-segments-api). On iOS, a fold is a reserved
+region of kind `division`, and `ArrangementView` lays out along it (iOS 27.1 beta;
+[iOS](03-ios.md#foldable-iphone-ios-271-beta)).
 
 ## Change is normal
 
