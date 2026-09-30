@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { loadCatalog } from '../catalog/load';
 import { emulatorPlan } from './plan';
-import { renderScript, shQuote } from './script';
+import { renderScript, renderScripts, shQuote } from './script';
 
 const catalog = loadCatalog();
 const syntaxOk = (s: string) => execFileSync('sh', ['-n'], { input: s });
@@ -80,6 +80,31 @@ describe('renderScript', () => {
     const s = renderScript(emulatorPlan(catalog, 'iphone-se'));
     syntaxOk(s);
     expect(s).toMatch(/for RUNTIME in \$RUNTIMES; do/);
+  });
+});
+
+describe('renderScripts', () => {
+  it('writes one valid script that runs each device in its own sh, keeps going past a failure and exits 1', () => {
+    const s = renderScripts([emulatorPlan(catalog, 'pixel-9'), emulatorPlan(catalog, 'galaxy-z-fold-7')]);
+    syntaxOk(s);
+    expect(s.match(/^sh <<'DOBRA_DEVICE_\d+'$/gm)).toHaveLength(2);
+    const sdk = mkdtempSync(join(tmpdir(), 'dobra sdk '));
+    try {
+      mkdirSync(join(sdk, 'system-images', 'android-36', 'google_apis', 'arm64-v8a'), { recursive: true });
+      mkdirSync(join(sdk, 'system-images', 'android-36', 'google_apis', 'x86_64'), { recursive: true });
+      // No avdmanager in the fake SDK: both devices fail, and the second still runs.
+      const run = spawnSync('sh', ['-c', s], { env: { PATH: '/usr/bin:/bin:/usr/sbin:/sbin', HOME: sdk, ANDROID_HOME: sdk }, encoding: 'utf8' });
+      expect(run.status).toBe(1);
+      expect(run.stderr.match(/avdmanager not found/g)).toHaveLength(2);
+      expect(run.stderr).toContain('Failed: Pixel 9, Galaxy Z Fold 7');
+    } finally {
+      rmSync(sdk, { recursive: true, force: true });
+    }
+  });
+
+  it('is the single script unchanged for one device', () => {
+    const plan = emulatorPlan(catalog, 'pixel-9');
+    expect(renderScripts([plan])).toBe(renderScript(plan));
   });
 });
 

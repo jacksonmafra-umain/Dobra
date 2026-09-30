@@ -128,3 +128,25 @@ export function renderScript(plan: EmulatorPlan): string {
     '',
   ].join('\n');
 }
+
+/**
+ * Several plans as one script file. Each device runs in its own `sh`, so its `set -eu` and `exit`
+ * stop that device only; the file then says which ones failed and exits 1. Run it as a file
+ * (`sh dobra-emulators.sh`), never pasted: pasted into a shell, `exit` would close the shell.
+ */
+export function renderScripts(plans: EmulatorPlan[]): string {
+  if (plans.length === 1) return renderScript(plans[0]);
+  const sections = plans.map((plan, i) => {
+    const tag = `DOBRA_DEVICE_${i + 1}`;
+    const body = renderScript(plan).split('\n').slice(1).join('\n'); // no second #! line
+    return [`printf '\\n== %s ==\\n' ${shQuote(plan.device.name)}`, `sh <<'${tag}'`, body.trimEnd(), tag, `[ $? -eq 0 ] || FAILED="$FAILED, "${shQuote(plan.device.name)}`].join('\n');
+  });
+  return [
+    '#!/bin/sh',
+    `# ${plans.length} emulators and simulators from the Dobra catalog. Run it with: sh dobra-emulators.sh`,
+    'FAILED=""',
+    ...sections,
+    'if [ -n "$FAILED" ]; then echo "Failed: ${FAILED#, }" >&2; exit 1; fi',
+    '',
+  ].join('\n');
+}
