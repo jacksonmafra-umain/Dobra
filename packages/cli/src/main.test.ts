@@ -155,6 +155,13 @@ describe('dobra check site --on', () => {
     expect(tool.err.join('\n')).toContain('No device e');
   });
 
+  it('exits 130 when the check is stopped at a prompt', async () => {
+    const { Interrupted } = await import('./device/checkDevice');
+    const h = harness(report());
+    expect(await run(['check', 'site', 'https://x.test', '--on', 'e', '--no-zip'], { ...h.io, checkDevice: async () => Promise.reject(new Interrupted('Stopped.')) })).toBe(130);
+    expect(h.err.join('\n')).toContain('Stopped.');
+  });
+
   it('lists connected devices for --on with no serial', async () => {
     const h = harness(report());
     const { fakeAdb } = await import('./device/fakeAdb');

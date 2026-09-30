@@ -8,7 +8,8 @@ import { reportZip } from '@dobra/core/reportZip';
 import { chromeMajor, FOLD_API_CHROME } from '@dobra/core/signals';
 import { parseArgs, type SiteOptions } from './args';
 import { adbFor, listDevices } from './device/adb';
-import { checkDevice, UsageError, type DeviceCheckDeps, type DeviceCheckOptions } from './device/checkDevice';
+import { checkDevice, Interrupted, UsageError, type DeviceCheckDeps, type DeviceCheckOptions } from './device/checkDevice';
+import { pickPage } from './device/chrome';
 import { identify } from './device/identify';
 import { readSignals } from './device/signals';
 import { runEmulator } from './emulator/command';
@@ -37,19 +38,36 @@ function deviceDeps(runner: Runner, url: string): DeviceCheckDeps {
     runner,
     connect: async (port) => {
       const { chromium } = await import('playwright');
-      const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
-      const pages = browser.contexts().flatMap((c) => c.pages());
-      const page = pages.find((p) => p.url().startsWith(url)) ?? pages[0];
-      if (!page) throw new ToolError('Chrome on the device has no page open.');
-      return { page, close: () => browser.close() };
+      const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`, { timeout: 20_000 });
+      // The tab Chrome opened for the address can take a moment to appear. Never another tab.
+      for (let waited = 0; ; waited += 500) {
+        const pages = browser.contexts().flatMap((c) => c.pages());
+        const i = pickPage(
+          pages.map((p) => p.url()),
+          url,
+        );
+        if (i >= 0) return { page: pages[i], close: () => browser.close() };
+        if (waited >= 20_000) {
+          await browser.close().catch(() => {});
+          throw new ToolError(`Chrome on the device didn't show ${url}: unlock the phone, keep Chrome in front, and run the check again.`);
+        }
+        await new Promise((r) => setTimeout(r, 500));
+      }
     },
     collect: (page) => collectLayout(page),
     signals: readSignals,
     waitForEnter: async (prompt) => {
       const { createInterface } = await import('node:readline/promises');
       const rl = createInterface({ input: process.stdin, output: process.stderr });
-      await rl.question(`${prompt} `);
-      rl.close();
+      try {
+        await rl.question(`${prompt} `);
+      } catch (e) {
+        // Ctrl+C at the prompt rejects the question instead of raising SIGINT.
+        if (e instanceof Error && e.name === 'AbortError') throw new Interrupted('Stopped.');
+        throw e;
+      } finally {
+        rl.close();
+      }
     },
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
     now: () => Date.now(),
@@ -142,9 +160,9 @@ export async function run(argv: string[], io: Io): Promise<number> {
       const deviceOpts: DeviceCheckOptions = { wait: opts.wait, transitions: opts.transitions, hold: opts.hold, onProgress: (m) => io.err(m), ...(capture ? { capture } : {}) };
       report = await (io.checkDevice ?? ((u, s, o) => checkDevice(u, s, o, deviceDeps(runner, u))))(opts.url, serial, deviceOpts);
     } catch (e) {
-      if (e instanceof UsageError || e instanceof ToolError) {
+      if (e instanceof UsageError || e instanceof ToolError || e instanceof Interrupted) {
         io.err(e.message);
-        return e instanceof UsageError ? 2 : 1;
+        return e instanceof UsageError ? 2 : e instanceof Interrupted ? 130 : 1;
       }
       throw e;
     }
