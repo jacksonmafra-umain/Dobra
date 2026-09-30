@@ -79,7 +79,8 @@ emulator-5554`) and sends the posture: closed, half-open (book, tabletop, flex) 
 catalog marks as rotated, such as tabletop, also turns the screen 90°; `--orientation
 portrait|landscape` chooses it yourself. `dobra emulator list --json` lists each device's postures.
 Postures the emulator doesn't have (rear display), devices with two hinges and iOS simulators exit 2
-with the reason; an emulator that isn't running exits 1 with the command that starts it.
+with the reason. The iPhone Duo simulator does fold, but only from Xcode's Device Hub, since `simctl`
+has no pose command; an emulator that isn't running exits 1 with the command that starts it.
 
 What an emulator can't reproduce is listed as **limits**, never guessed. Examples: a flip phone's
 cover screen, a rear-display posture, and posture switching on devices with two hinges. iOS

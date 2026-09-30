@@ -25,7 +25,16 @@ export function posturesOf(catalog: Catalog, deviceId: string): string[] {
 export function emulatorPosture(catalog: Catalog, deviceId: string, postureId: string, orientation?: 'portrait' | 'landscape'): EmulatorPosture {
   const device = catalog.devices.find((d) => d.id === deviceId);
   if (!device) throw new EmulatorPlanError('unknown-device', `Unknown device "${deviceId}". Run dobra emulator list to see them.`);
-  if (device.platform === 'ios') throw new EmulatorPlanError('no-posture', `${device.name} is an iOS simulator: it doesn't fold, so it has no postures.`);
+  if (device.platform === 'ios') {
+    const poses = device.poses ?? [];
+    // simctl has no pose, fold or posture command (checked on Xcode 27.2 beta 2); Device Hub has the buttons.
+    if (poses.some((p) => p.folded))
+      throw new EmulatorPlanError(
+        'no-posture',
+        `The ${device.name} simulator folds only in Xcode's Device Hub (DeviceHub.app, in Xcode's Contents/Applications): simctl can't fold it. Its poses: ${poses.map((p) => p.id).join(', ')}.`,
+      );
+    throw new EmulatorPlanError('no-posture', `${device.name} is an iOS simulator: it doesn't fold, so it has no postures.`);
+  }
   const postures = device.postures ?? [];
   const posture = postures.find((p) => p.id === postureId);
   if (!posture)
