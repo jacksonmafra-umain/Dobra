@@ -42,4 +42,11 @@ describe('emulatorPosture', () => {
     expect(posturesOf(catalog, 'galaxy-z-fold-7')).toEqual(['closed', 'open', 'book', 'tabletop', 'dual-screen']);
     expect(() => emulatorPosture(catalog, 'galaxy-z-fold-7', 'flex')).toThrow(/closed, open, book, tabletop, dual-screen/);
   });
+
+  it('sends a folding iOS simulator to Device Hub, since simctl cannot fold it', () => {
+    expect(() => emulatorPosture(catalog, 'iphone-duo', 'book')).toThrow(/Device Hub/);
+    expect(() => emulatorPosture(catalog, 'iphone-duo', 'book')).toThrow(/closed, open, book/);
+    expect(() => emulatorPosture(catalog, 'iphone-17', 'open')).toThrow(/doesn't fold/);
+  });
 });
+
