@@ -22,6 +22,21 @@ describe('listDevices', () => {
   });
 });
 
+describe('a device that drops off while it is read', () => {
+  const flaky = () =>
+    fakeAdb({ A: { model: 'SM-F741B', chrome: '154.0' }, 'emulator-5614': { model: 'sdk_gphone64_arm64', emulator: true, chrome: '133.0' } }, (args) =>
+      args[1] === 'A' && args[2] === 'shell' ? { code: 1, stdout: '', stderr: "adb: device 'A' not found" } : undefined,
+    );
+
+  it("doesn't stop a check of another device", async () => {
+    expect((await requireDevice(flaky(), 'emulator-5614')).model).toBe('sdk_gphone64_arm64');
+  });
+
+  it('is listed as offline', async () => {
+    expect((await listDevices(flaky())).find((d) => d.serial === 'A')?.state).toBe('offline');
+  });
+});
+
 describe('requireDevice', () => {
   it('returns a ready device and explains the others', async () => {
     expect((await requireDevice(three(), 'RZCXA15YFEJ')).model).toBe('SM-F741B');

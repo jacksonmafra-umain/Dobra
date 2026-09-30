@@ -21,30 +21,42 @@ async function shell(r: Runner, adb: string, serial: string, ...args: string[]):
   return res.stdout;
 }
 
-export async function listDevices(r: Runner): Promise<ConnectedDevice[]> {
-  const adb = adbFor(r);
+/** What `adb devices` lists: each serial and its state, before any device is asked anything. */
+async function attached(r: Runner, adb: string): Promise<{ serial: string; state: ConnectedDevice['state'] }[]> {
   const res = await r.exec(adb, ['devices', '-l']);
   if (res.code !== 0) throw new ToolError(`adb devices failed: ${(res.stderr || res.stdout).trim()}`);
-  const out: ConnectedDevice[] = [];
-  for (const m of res.stdout.matchAll(/^(\S+)\s+(device|unauthorized|offline)\b/gm)) {
-    const [, serial, state] = m as unknown as [string, string, ConnectedDevice['state']];
-    if (state !== 'device') {
-      out.push({ serial, state, emulator: serial.startsWith('emulator-'), model: '', android: '', chrome: null });
-      continue;
-    }
+  return [...res.stdout.matchAll(/^(\S+)\s+(device|unauthorized|offline)\b/gm)].map((m) => ({ serial: m[1], state: m[2] as ConnectedDevice['state'] }));
+}
+
+/** Reads one device's model, versions and kind; a device that stops answering reads as offline. */
+async function describe(r: Runner, adb: string, serial: string, state: ConnectedDevice['state']): Promise<ConnectedDevice> {
+  const bare: ConnectedDevice = { serial, state, emulator: serial.startsWith('emulator-'), model: '', android: '', chrome: null };
+  if (state !== 'device') return bare;
+  try {
     const prop = async (name: string) => (await shell(r, adb, serial, 'getprop', name)).trim();
     const chrome = /versionName=(\S+)/.exec(await shell(r, adb, serial, 'dumpsys', 'package', 'com.android.chrome'))?.[1] ?? null;
     // Recent emulator images leave ro.kernel.qemu empty and set ro.boot.qemu; adb names emulators emulator-<port>.
     const emulator = serial.startsWith('emulator-') || (await prop('ro.kernel.qemu')) === '1' || (await prop('ro.boot.qemu')) === '1';
-    out.push({ serial, state, emulator, model: await prop('ro.product.model'), android: await prop('ro.build.version.release'), chrome });
+    return { serial, state, emulator, model: await prop('ro.product.model'), android: await prop('ro.build.version.release'), chrome };
+  } catch (e) {
+    if (e instanceof ToolError) return { ...bare, state: 'offline' };
+    throw e;
   }
+}
+
+export async function listDevices(r: Runner): Promise<ConnectedDevice[]> {
+  const adb = adbFor(r);
+  const out: ConnectedDevice[] = [];
+  for (const { serial, state } of await attached(r, adb)) out.push(await describe(r, adb, serial, state));
   return out;
 }
 
-/** The device, when it's connected and has allowed this computer; otherwise what to do about it. */
+/** The device, when it's connected and has allowed this computer; otherwise what to do about it. Only this device is asked. */
 export async function requireDevice(r: Runner, serial: string): Promise<ConnectedDevice> {
-  const d = (await listDevices(r)).find((x) => x.serial === serial);
-  if (!d) throw new ToolError(`No device ${serial}: connect it, or check adb devices.`);
+  const adb = adbFor(r);
+  const listed = (await attached(r, adb)).find((x) => x.serial === serial);
+  if (!listed) throw new ToolError(`No device ${serial}: connect it, or check adb devices.`);
+  const d = await describe(r, adb, serial, listed.state);
   if (d.state === 'unauthorized') throw new ToolError(`${serial} hasn't allowed USB debugging from this computer: unlock it and accept the prompt.`);
   if (d.state === 'offline') throw new ToolError(`${serial} is offline: reconnect it.`);
   return d;
