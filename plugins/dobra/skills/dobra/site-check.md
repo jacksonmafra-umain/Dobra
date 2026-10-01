@@ -44,6 +44,41 @@ If it fails before checking anything:
 | `Not a web address` | The URL is malformed | Ask for a full URL |
 | `Unknown target` | A bad `--targets` key | Rebuild it from the catalog (step 1) |
 
+## 2b. On a real device (`--on`)
+
+Use this instead of step 2 when the user asks for a real device, or wants the fold APIs checked
+(`fold-layout-missing` and `fold-posture-mismatch` only run here). It runs the same check in Chrome
+on an Android emulator or a phone connected over USB. iOS devices aren't supported.
+
+1. List the connected devices:
+
+       dobra check site --on
+
+   Each line has the serial, `phone` or `emulator`, the model, the Android and Chrome versions, the
+   catalog device it matched (or `not in catalog`, which is checked as a window only), and whether
+   Chrome has the fold APIs (Chrome 138 or newer).
+2. Run it on one serial, with the outputs in a scratch folder as in step 2:
+
+       dobra check site <url> --on <serial> --out "$out/foldable-report.json" --md "$out/report.md" --fail-on never
+
+   - **An emulator** from `dobra emulator create` is put in each catalog posture in turn, on its own.
+   - **A phone** is checked in the posture it's in. To check its other postures, `--hold` asks a
+     person to fold the phone and press Enter at each one. You can't answer those prompts, so give
+     the user the command with `--hold` to run in their own terminal, then read the report it writes.
+     Dobra only opens a Chrome tab on the phone and reads its state; it changes no settings.
+   - `--targets` and `--category` don't apply with `--on` (exit 2), and neither does `--hold` on an
+     emulator.
+   - `dobra check device <serial> <url>` is the same check, device first.
+3. Exit codes: 0 clean, 1 findings or a device problem (the device disconnected, Chrome isn't
+   installed, or DevTools can't be reached: the message says what to do, usually unlock the phone
+   and keep Chrome in front), 2 invalid use, 130 stopped at a `--hold` prompt.
+
+Each frame in the report also has `runtime` (`serial`, `model`, `android`, `chrome`, `emulator`) and
+`signals` (the `viewport`, `devicePosture`, `segments` and media queries Chrome reported, and the
+device's fold state). Name the device, Chrome version and posture for each frame in the report. On
+Chrome older than 138 (the emulator images ship 133), the report says the fold APIs weren't
+checked: report that under "What wasn't checked", never as a pass.
+
 ## 3. Read the JSON
 
 Read `$out/foldable-report.json`, not the Markdown. What matters:
