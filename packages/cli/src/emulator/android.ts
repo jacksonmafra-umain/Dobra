@@ -2,6 +2,7 @@
 // settings into its config.ini. The same rules as the script core renders.
 import { join } from 'node:path';
 import type { EmulatorPlan } from '@dobra/core/emulator/plan';
+import type { EmulatorPosture } from '@dobra/core/emulator/posture';
 import { ToolError, type Runner } from './runner';
 
 export interface AndroidPaths {
@@ -107,5 +108,19 @@ export async function findEmulator(r: Runner, adb: string, avd: string): Promise
     if (name.code === 0 && name.stdout.split(/\r?\n/)[0].trim() === avd) return serial;
   }
   return null;
+}
+
+/** Puts a running emulator in a posture: absolute rotation first (when there is one), then the posture. Emulators only. */
+export async function setEmulatorPosture(r: Runner, adb: string, serial: string, target: Pick<EmulatorPosture, 'emulator' | 'rotation'>): Promise<void> {
+  const send = async (argv: string[]) => {
+    const res = await r.exec(adb, ['-s', serial, ...argv]);
+    if (res.code !== 0 || /^KO/m.test(res.stdout)) throw new ToolError(`adb ${argv.join(' ')} failed on ${serial}: ${(res.stderr || res.stdout).trim()}`);
+  };
+  if (target.rotation !== null) {
+    // Auto-rotate off, then USER_ROTATION (0 natural, 1 turned 90°).
+    await send(['shell', 'settings', 'put', 'system', 'accelerometer_rotation', '0']);
+    await send(['shell', 'settings', 'put', 'system', 'user_rotation', String(target.rotation)]);
+  }
+  await send(['emu', 'posture', String(target.emulator)]);
 }
 

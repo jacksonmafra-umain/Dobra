@@ -4,7 +4,7 @@ import { loadCatalog } from '@dobra/core/catalog/load';
 import { avdName, emulationSupport, emulatorPlan, EmulatorPlanError, type EmulatorPlan } from '@dobra/core/emulator/plan';
 import { emulatorPosture, posturesOf } from '@dobra/core/emulator/posture';
 import { renderScripts } from '@dobra/core/emulator/script';
-import { adbPath, androidPaths, createAvd, findEmulator } from './android';
+import { adbPath, androidPaths, createAvd, findEmulator, setEmulatorPosture } from './android';
 import { parseEmulatorArgs } from './args';
 import { createSimulator } from './ios';
 import { nodeRunner, ToolError, type Runner } from './runner';
@@ -106,16 +106,7 @@ async function posture(args: PostureArgs, io: Out, runner: Runner): Promise<numb
     const name = args.name ?? avdName(args.device);
     const serial = args.serial ?? (await findEmulator(runner, adb, name));
     if (!serial) throw new ToolError(`${name} isn't running. Start it with:\n  ${paths.emulator} -avd ${name}`);
-    const send = async (argv: string[]) => {
-      const res = await runner.exec(adb, ['-s', serial, ...argv]);
-      if (res.code !== 0 || /^KO/m.test(res.stdout)) throw new ToolError(`adb ${argv.join(' ')} failed on ${serial}: ${(res.stderr || res.stdout).trim()}`);
-    };
-    if (target.rotation !== null) {
-      // Absolute rotation: auto-rotate off, then USER_ROTATION (0 natural, 1 turned 90°), then the posture.
-      await send(['shell', 'settings', 'put', 'system', 'accelerometer_rotation', '0']);
-      await send(['shell', 'settings', 'put', 'system', 'user_rotation', String(target.rotation)]);
-    }
-    await send(['emu', 'posture', String(target.emulator)]);
+    await setEmulatorPosture(runner, adb, serial, target);
     const { orientation } = target;
     if (args.json) {
       io.out(JSON.stringify({ version: 1, device: target.device, posture: target.posture, emulator: target.emulator, serial, orientation }, null, 2));

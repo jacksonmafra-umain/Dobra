@@ -83,6 +83,21 @@ describe('frame overlay', () => {
   });
 });
 
+describe('FrameDetail on a device', () => {
+  it('shows where the frame ran and what Chrome reported', () => {
+    const frame = {
+      ...sampleReport().frames[0],
+      runtime: { kind: 'android-chrome' as const, serial: 'RZCXA15YFEJ', model: 'SM-F741B', android: '16', chrome: '154.0.8037.57', emulator: false },
+      signals: { viewport: { width: 880, height: 360, dpr: 3 }, devicePosture: 'folded' as const, segments: [{ x: 0, y: 0, width: 440, height: 360 }, { x: 440, y: 0, width: 440, height: 360 }], mq: { horizontalSegments2: true, verticalSegments2: false, postureFolded: true }, deviceState: 'HALF_OPENED' as const },
+    };
+    const out = renderToStaticMarkup(
+      createElement(FrameDetail, { device: { id: 'd', name: 'Galaxy Z Flip 6', counts: { error: 0, warn: 0, info: 0 }, frames: [] }, entry: { frame, label: 'inner · flex-rotated · landscape', counts: { error: 0, warn: 0, info: 0 } }, thumbnail: null, preset: null }),
+    );
+    expect(out).toContain('SM-F741B · Android 16 · Chrome 154.0.8037.57 · phone RZCXA15YFEJ');
+    expect(out).toContain('viewport 880×360 @3 · posture folded · segments 2');
+  });
+});
+
 describe('FindingsView', () => {
   const report = sampleReport();
   const view = () =>

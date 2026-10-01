@@ -126,7 +126,10 @@ export function buildReport(catalog: Catalog, source: Report['source'], inputs: 
       unloaded.push({ ref: f.ref, name: f.name, reason: f.reason ?? 'Not loaded' });
       continue;
     }
-    const m = matchFrame({ tag: f.tag || undefined, ...(f.tags ? { tags: f.tags } : {}), name: f.name, width: f.width, height: f.height }, config);
+    // A device frame without a tag is a device the catalog doesn't know: matching it by size would
+    // check another device's geometry.
+    const m: ReturnType<typeof matchFrame> =
+      f.runtime && !f.tag && !f.tags ? { by: 'none', targets: [] } : matchFrame({ tag: f.tag || undefined, ...(f.tags ? { tags: f.tags } : {}), name: f.name, width: f.width, height: f.height }, config);
     const base = { ref: f.ref, name: f.name, page: f.page, width: f.width, height: f.height, ...(f.runtime ? { runtime: f.runtime } : {}), ...(f.signals ? { signals: f.signals } : {}) };
     const rules = f.skipRules?.length ? ALL_RULES.filter((r) => !f.skipRules!.includes(r)) : undefined;
     if (m.by === 'none') {

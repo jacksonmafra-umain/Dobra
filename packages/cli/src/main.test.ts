@@ -134,3 +134,41 @@ describe('dobra emulator', () => {
     expect(help.out.join('\n')).toMatch(/dobra emulator list \| create <device> \| script <device>/);
   });
 });
+
+describe('dobra check site --on', () => {
+  it('runs the device check, writes the report and exits on its findings', async () => {
+    const h = harness(report());
+    const calls: string[] = [];
+    const io = { ...h.io, checkDevice: async (url: string, serial: string) => (calls.push(`${url} ${serial}`), report()) };
+    expect(await run(['check', 'site', 'https://x.test', '--on', 'emulator-5554', '--out', 'r.json', '--no-zip'], io)).toBe(0);
+    expect(calls).toEqual(['https://x.test emulator-5554']);
+    expect(h.files.has('r.json')).toBe(true);
+  });
+
+  it('exits 2 for invalid use and 1 when the device fails', async () => {
+    const { UsageError } = await import('./device/checkDevice');
+    const { ToolError } = await import('./emulator/runner');
+    const usage = harness(report());
+    expect(await run(['check', 'site', 'https://x.test', '--on', 'e', '--no-zip'], { ...usage.io, checkDevice: async () => Promise.reject(new UsageError('--hold is for phones')) })).toBe(2);
+    const tool = harness(report());
+    expect(await run(['check', 'site', 'https://x.test', '--on', 'e', '--no-zip'], { ...tool.io, checkDevice: async () => Promise.reject(new ToolError('No device e')) })).toBe(1);
+    expect(tool.err.join('\n')).toContain('No device e');
+  });
+
+  it('exits 130 when the check is stopped at a prompt', async () => {
+    const { Interrupted } = await import('./device/checkDevice');
+    const h = harness(report());
+    expect(await run(['check', 'site', 'https://x.test', '--on', 'e', '--no-zip'], { ...h.io, checkDevice: async () => Promise.reject(new Interrupted('Stopped.')) })).toBe(130);
+    expect(h.err.join('\n')).toContain('Stopped.');
+  });
+
+  it('lists connected devices for --on with no serial', async () => {
+    const h = harness(report());
+    const { fakeAdb } = await import('./device/fakeAdb');
+    const runner = fakeAdb({ RZCXA15YFEJ: { model: 'SM-F741B', android: '16', chrome: '154.0.8037.57' }, 'emulator-5554': { emulator: true, model: 'sdk', chrome: '133.0', avd: 'dobra_galaxy-z-fold-7' } });
+    expect(await run(['check', 'site', '--on'], { ...h.io, runner })).toBe(0);
+    const out = h.out.join('\n');
+    expect(out).toMatch(/RZCXA15YFEJ\s+phone\s+SM-F741B\s+Android 16\s+Chrome 154\.0\.8037\.57\s+galaxy-z-flip-6\s+fold APIs: yes/);
+    expect(out).toMatch(/emulator-5554\s+emulator.*galaxy-z-fold-7\s+fold APIs: no/);
+  });
+});
