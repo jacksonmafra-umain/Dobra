@@ -285,6 +285,8 @@ const androidDevice = z.strictObject({
   category,
   media,
   displays: z.record(z.string(), androidDisplay),
+  /** ro.product.model values, or their prefix before a region suffix, that identify this device on a connected phone. */
+  models: z.array(z.strictObject({ id: z.string(), source: sourceRef })).optional(),
   postures: z.array(posture).optional(),
   /** Window states this device offers. The first is the default. */
   windowModes: z.array(z.enum(['fullscreen', 'split', 'freeform', 'popup', 'pip'])).min(1),

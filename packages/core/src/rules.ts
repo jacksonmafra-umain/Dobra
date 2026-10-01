@@ -252,6 +252,9 @@ const RULES: Partial<Record<RuleId, (ctx: Ctx) => void>> = {
   'chrome-overlap': chromeOverlap,
 };
 
+/** Every rule check() runs by default. */
+export const ALL_RULES = Object.keys(RULES) as RuleId[];
+
 /** Runs the rules against every candidate target of a subject; findings carry their target. */
 export function check(subject: Subject, config: EnvConfig, rules?: RuleId[]): Finding[] {
   const out: Finding[] = [];

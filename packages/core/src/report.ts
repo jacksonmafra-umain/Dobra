@@ -7,7 +7,9 @@ import { coverage, type CoverageMatrix, type PresentFrame } from './coverage';
 import type { Finding } from './engine/checks';
 import type { GeoNode } from './geo';
 import { matchFrame } from './match';
-import { check } from './rules';
+import type { RuleId } from './engine/checks';
+import { ALL_RULES, check } from './rules';
+import { chromeMajor, FOLD_API_CHROME, signalFindings, type FrameRuntime, type FrameSignals } from './signals';
 import { envConfigOf, targetKey } from './targets';
 
 export interface ReportFrame {
@@ -20,6 +22,10 @@ export interface ReportFrame {
   targets: string[];
   nearest?: string;
   findings: Finding[];
+  /** Where the frame was checked, when it ran in Chrome on a device. */
+  runtime?: FrameRuntime;
+  /** What that Chrome reported about the window and the fold. */
+  signals?: FrameSignals;
 }
 
 export interface Report {
@@ -46,6 +52,10 @@ export interface ReportInput {
   /** null when the frame could not be loaded. */
   root: GeoNode[] | null;
   reason?: string;
+  runtime?: FrameRuntime;
+  signals?: FrameSignals;
+  /** Rules that don't apply to this frame, such as frame-size-mismatch for a real browser window. */
+  skipRules?: RuleId[];
 }
 
 const rect = z.object({ x: z.number(), y: z.number(), width: z.number(), height: z.number() });
@@ -69,6 +79,16 @@ export const reportSchema = z.object({
       targets: z.array(z.string()),
       nearest: z.string().optional(),
       findings: z.array(finding),
+      runtime: z.object({ kind: z.literal('android-chrome'), serial: z.string(), model: z.string(), android: z.string(), chrome: z.string(), emulator: z.boolean() }).optional(),
+      signals: z
+        .object({
+          viewport: z.object({ width: z.number(), height: z.number(), dpr: z.number() }),
+          devicePosture: z.enum(['continuous', 'folded']).nullable(),
+          segments: z.array(rect).nullable(),
+          mq: z.object({ horizontalSegments2: z.boolean(), verticalSegments2: z.boolean(), postureFolded: z.boolean() }),
+          deviceState: z.enum(['CLOSED', 'HALF_OPENED', 'OPENED']).nullable(),
+        })
+        .optional(),
     }),
   ),
   coverage: z.object({
@@ -107,17 +127,26 @@ export function buildReport(catalog: Catalog, source: Report['source'], inputs: 
       continue;
     }
     const m = matchFrame({ tag: f.tag || undefined, ...(f.tags ? { tags: f.tags } : {}), name: f.name, width: f.width, height: f.height }, config);
-    const base = { ref: f.ref, name: f.name, page: f.page, width: f.width, height: f.height };
+    const base = { ref: f.ref, name: f.name, page: f.page, width: f.width, height: f.height, ...(f.runtime ? { runtime: f.runtime } : {}), ...(f.signals ? { signals: f.signals } : {}) };
+    const rules = f.skipRules?.length ? ALL_RULES.filter((r) => !f.skipRules!.includes(r)) : undefined;
     if (m.by === 'none') {
       frames.push({ ...base, confidence: 'none', targets: [], ...(m.nearest ? { nearest: m.nearest.key } : {}), findings: [] });
       continue;
     }
-    const checked = check({ source: source.kind, ref: f.ref, targets: m.targets, confidence: m.by, width: f.width, height: f.height, root: f.root }, config);
+    const checked = check({ source: source.kind, ref: f.ref, targets: m.targets, confidence: m.by, width: f.width, height: f.height, root: f.root }, config, rules);
     const findings = f.tags && m.by === 'tag' ? onceEach(checked) : checked;
+    if (f.signals && f.runtime) findings.push(...signalFindings(f.signals, f.runtime, f.root, m.targets[0]));
     frames.push({ ...base, confidence: m.by, targets: m.targets.map(targetKey), findings });
     present.push({ frameId: f.ref, targets: m.targets, confidence: m.by });
   }
+  // One note per device whose Chrome can't report the fold, instead of passing the fold-API rules.
+  const oldChrome = new Map<string, FrameRuntime>();
+  for (const f of inputs) if (f.runtime && chromeMajor(f.runtime.chrome) < FOLD_API_CHROME) oldChrome.set(f.runtime.serial, f.runtime);
+  const notes = [...oldChrome.values()].map(
+    (r) => `Chrome ${r.chrome} on ${r.model} (${r.serial}) doesn't report viewport segments or posture (they need Chrome ${FOLD_API_CHROME}), so fold APIs weren't checked there.`,
+  );
   return {
+    ...(notes.length ? { notes } : {}),
     version: 1,
     generatedAt: now.toISOString(),
     source,

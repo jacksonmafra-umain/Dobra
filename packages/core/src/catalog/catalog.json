@@ -10,6 +10,8 @@
     "android-docs": "Android platform documentation (developer.android.com)",
     "device-spec": "Manufacturer device specification (pixels and default density); dp derived as px / density",
     "observed": "Observed on hardware or an emulator while testing an Android app",
+    "device-measured": "Read from a connected device with adb (wm size, wm density, dumpsys display); dp derived as px / density",
+    "google-device": "Google's published device name, which Pixel phones report as ro.product.model",
     "microsoft-learn": "Microsoft Learn, Surface Duo screen dimensions: learn.microsoft.com/en-us/previous-versions/dual-screen/android/surface-duo-dimensions",
     "android-studio-avd": "Android Studio device definitions (AOSP sdklib devices/nexus.xml)",
     "apple-hig": "Apple Human Interface Guidelines, Layout (developer.apple.com/design/human-interface-guidelines/layout) and UIKit system layout margins"
@@ -1992,6 +1994,12 @@
           "$note": "2076×2152 px at 390 dpi. Flexible display: the crease has no width and hides nothing (OcclusionType.NONE). Inner width 851 dp is Expanded."
         }
       },
+      "models": [
+        {
+          "id": "Pixel 9 Pro Fold",
+          "source": "google-device"
+        }
+      ],
       "postures": [
         {
           "id": "closed",
@@ -2172,6 +2180,12 @@
           "$note": "Android Studio AVD pixel_fold: 420 dpi. The inner display is landscape-native (2208×1840 px); the crease runs across its width."
         }
       },
+      "models": [
+        {
+          "id": "Pixel Fold",
+          "source": "google-device"
+        }
+      ],
       "postures": [
         {
           "id": "closed",
@@ -2335,6 +2349,12 @@
           "$note": "Android Studio AVD pixel_10_pro_fold: 390 dpi. Outer 1080×2364 px is 443×970 dp (not 995, which is the 9 Pro Fold). Chrome DevTools uses 2.625 for the 9 Pro Fold cover; if the cover uses it, the outer would be about 411×900 dp."
         }
       },
+      "models": [
+        {
+          "id": "Pixel 10 Pro Fold",
+          "source": "google-device"
+        }
+      ],
       "postures": [
         {
           "id": "closed",
@@ -2705,6 +2725,12 @@
           "$note": "1968×2184 px (Samsung Developers emulator skin). Samsung publishes no density; 2.625 is supported by Chrome DevTools' Fold 5 profile, which matches the Fold 5 pixels exactly. 750×832 dp. duoresponsive lists the Fold 6 at 768×904, which no single density produces: not a dp value."
         }
       },
+      "models": [
+        {
+          "id": "SM-F966",
+          "source": "device-spec"
+        }
+      ],
       "postures": [
         {
           "id": "closed",
@@ -3102,6 +3128,172 @@
       "$note": "Pixels from oppo.com Find N6 specs (announced March 2026). Oppo does not publish the density; 2.625 is an assumption, so every dp value is a guess."
     },
     {
+      "id": "galaxy-z-flip-6",
+      "platform": "android",
+      "name": "Galaxy Z Flip 6",
+      "enabled": true,
+      "category": "foldable-flip",
+      "displays": {
+        "cover": {
+          "label": "Cover display (FlexWindow)",
+          "size": {
+            "width": 352,
+            "height": 339
+          },
+          "density": 2.125,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": false
+          },
+          "insets": {
+            "statusBar": 0,
+            "cutout": null,
+            "navigationBar": {
+              "gesture": 0,
+              "threeButton": 0,
+              "threeButtonLandscape": "bottom"
+            },
+            "ime": {
+              "portrait": 200,
+              "landscape": 200
+            },
+            "source": "observed",
+            "estimated": true,
+            "$note": "The observed 352×339 dp app window already excludes the cover screen system areas."
+          },
+          "coverScreen": {
+            "policy": "user-granted",
+            "continuity": false,
+            "note": "Samsung only runs an app on the cover screen when the user allows it (Settings › Advanced features › Labs › Apps allowed on cover screen, or Good Lock MultiStar). No manifest flag puts an app there."
+          },
+          "source": "device-measured",
+          "estimated": false,
+          "$note": "Measured on SM-F741B: dumpsys display 748 x 720, density 340.",
+          "pixels": {
+            "width": 748,
+            "height": 720
+          }
+        },
+        "inner": {
+          "label": "Inner display",
+          "size": {
+            "width": 360,
+            "height": 880
+          },
+          "pixels": {
+            "width": 1080,
+            "height": 2640
+          },
+          "density": 3,
+          "cornerRadius": 28,
+          "rotation": {
+            "supported": true
+          },
+          "insets": {
+            "statusBar": 24,
+            "cutout": {
+              "edge": "top",
+              "size": 40,
+              "hole": {
+                "diameter": 24,
+                "offset": 0.5
+              }
+            },
+            "navigationBar": {
+              "gesture": 24,
+              "threeButton": 48,
+              "threeButtonLandscape": "side"
+            },
+            "ime": {
+              "portrait": 290,
+              "landscape": 210
+            },
+            "source": "estimated",
+            "estimated": true
+          },
+          "hinges": [
+            {
+              "id": "crease",
+              "axis": "horizontal",
+              "position": 440,
+              "width": 0,
+              "occlusion": "NONE",
+              "source": "estimated",
+              "estimated": true
+            }
+          ],
+          "source": "device-measured",
+          "estimated": false,
+          "$note": "Measured on SM-F741B, Android 16: wm size 1080x2640, wm density 480."
+        }
+      },
+      "models": [
+        {
+          "id": "SM-F741",
+          "source": "device-measured"
+        }
+      ],
+      "postures": [
+        {
+          "id": "closed",
+          "label": "Closed (cover display)",
+          "kind": "cover",
+          "display": "cover",
+          "features": [],
+          "note": "Only when the user has allowed the app on the cover screen."
+        },
+        {
+          "id": "open",
+          "label": "Open, flat",
+          "kind": "flat",
+          "display": "inner",
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "FLAT"
+            }
+          ]
+        },
+        {
+          "id": "flex",
+          "label": "Half-open, Flex mode (tabletop)",
+          "kind": "tabletop",
+          "display": "inner",
+          "rotation": 0,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "note": "A clamshell hinge is HORIZONTAL in the natural orientation: half-open is tabletop without rotating."
+        },
+        {
+          "id": "flex-rotated",
+          "label": "Half-open, rotated (book)",
+          "kind": "book",
+          "display": "inner",
+          "rotation": 90,
+          "features": [
+            {
+              "hinge": "crease",
+              "state": "HALF_OPENED"
+            }
+          ],
+          "estimated": true
+        }
+      ],
+      "windowModes": [
+        "fullscreen",
+        "split",
+        "popup",
+        "pip"
+      ],
+      "source": "device-spec",
+      "estimated": true,
+      "$comment": "Measured on a connected SM-F741B. Insets, postures and window modes copied from the Flip 7, with their estimated flags."
+    },
+    {
       "id": "galaxy-z-flip-7",
       "platform": "android",
       "name": "Galaxy Z Flip 7",
@@ -3197,6 +3389,12 @@
           "$note": "Brief value 360×880 dp. Samsung specifies 1080×2520 px, which at 3.0 gives 360×840 dp: confirm with adb shell wm size / wm density."
         }
       },
+      "models": [
+        {
+          "id": "SM-F766",
+          "source": "device-spec"
+        }
+      ],
       "postures": [
         {
           "id": "closed",

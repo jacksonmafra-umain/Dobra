@@ -68,6 +68,8 @@ Read `$out/foldable-report.json`, not the Markdown. What matters:
 | `overflow-x` | Content runs past the window's width | `04-web.md#intrinsic-layout`, `04-web.md#viewport-units` |
 | `chrome-overlap` | A fixed bar covers content in a short window | `04-web.md#safe-areas`, `04-web.md#viewport-units` |
 | `touch-target` | A control is smaller than the touch minimum | `07-accessibility.md#touch-targets` |
+| `fold-layout-missing` | Only in Chrome 138 or newer on an Android device: Chrome reports two viewport segments, but nothing on the page lines up with the fold | One pane per segment with `env(viewport-segment-*)`: `04-web.md#foldables-and-dual-screens-the-viewport-segments-api` |
+| `fold-posture-mismatch` | Only in Chrome 138 or newer on an Android device: the device is half-open, but `navigator.devicePosture` isn't `folded` | Check that nothing overrides the posture: `04-web.md#foldables-and-dual-screens-the-viewport-segments-api` |
 | `resize-vs-reload` | The page lays itself out only on load, not when a foldable unfolds | Use CSS queries or `ResizeObserver`, not a width read once: `08-anti-patterns.md#assuming-the-window-size-never-changes-after-first-layout` |
 | `frame-size-mismatch` | The checked window differs from the target's size | Report it as a note about the run |
 
