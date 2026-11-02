@@ -21,9 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node 26 is the Active LTS and is patched for CVE-2026-111497 (Brotli); Node 20 and 25 are EOL.
       - uses: actions/setup-node@v4
         with:
-          node-version: 25
+          node-version: 26
           cache: npm
 
       - run: npm ci
